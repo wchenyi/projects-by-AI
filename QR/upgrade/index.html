@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="streak">🔥 Streak: <span id="streakCount">4</span> days</div>
+            <div id="logoContainer"></div>
+            <button id="themeToggle">☀️</button>
+        </div>
+        <div class="card">
+            <h1>QR Code Generator</h1>
+            <div class="input-group">
+                <select id="qrType">
+                    <option value="text">Text</option>
+                    <option value="url">URL</option>
+                    <option value="tel">Phone</option>
+                    <option value="email">Email</option>
+                    <option value="image">Image</option>
+                </select>
+                <input type="text" id="qrInput" placeholder="Enter content for QR code">
+                <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                <button id="generateBtn">Generate QR Code</button>
+            </div>
+            <div id="qrcode"></div>
+            <div class="save-options">
+                <button id="savePDF">PDF</button>
+                <button id="saveJPG">JPG</button>
+                <button id="savePNG">PNG</button>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span id="generatedCount" class="stat-value">3</span>
+                    <span class="stat-label">Generated</span>
+                </div>
+                <div class="stat-item">
+                    <span id="savedCount" class="stat-value">0</span>
+                    <span class="stat-label">Saved</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
