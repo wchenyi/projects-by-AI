@@ -10,6 +10,10 @@
 - ……
 
 # 项目预览
-- [赞助页面]()
-- [二维码生成页面]()
-- [起始页生成]()
+> Claude
+- [赞助页面](https://wchenyi.github.io/donate)
+- [二维码生成页面](https://wchenyi.github.io/projects-by-AI/QR/QR.html)
+- [二维码生成改进版](https://wchenyi.github.io/projects-by-AI/QR/upgrade/index.html)
+
+> ChatGPT
+- [起始页生成](https://wchenyi.github.io/Auto-search)
