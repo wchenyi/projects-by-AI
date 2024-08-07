@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的个人项目展示</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+</head>
+<body>
+    <div class="background-wrapper">
+        <div class="background-gradient"></div>
+        <div class="background-highlight"></div>
+    </div>
+
+    <div class="background-gradient"></div>
+    <header>
+        <nav class="glass-effect">
+            <div class="logo">Wangcy</div>
+            <ul class="nav-links">
+                <li><a href="#home">首页</a></li>
+                <li><a href="#projects">项目</a></li>
+                <li><a href="#about">关于</a></li>
+            </ul>
+            <button id="theme-toggle" class="glass-button">
+                <i class="fas fa-moon"></i>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="banner glass-effect">
+            <h1>欢迎来到我的创意世界</h1>
+            <p class="subtitle">探索独特的设计与创新</p>
+            <p>projects-by-AI</p>
+        </section>
+
+        <section id="projects">
+            <h2>我的项目</h2>
+            <div class="category-filter glass-effect">
+                <button class="active" data-category="all">全部</button>
+                <button data-category="GPT">GPT</button>
+                <button data-category="Claude">Claude</button>
+                <button data-category="Gemini">Gemini</button>
+            </div>
+            <div class="project-grid" id="project-container"></div>
+        </section>
+
+        <section id="about" class="glass-effect">
+            <h2>关于我</h2>
+            <p>主要展示AI项目，也有部分手搓项目</p>
+        </section>
+    </main>
+
+    <footer class="glass-effect">
+        <div class="social-links">
+            <a href="#" target="_blank"><i class="fab fa-github"></i></a>
+            <a href="#" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="#" target="_blank"><i class="fab fa-twitter"></i></a>
+        </div>
+        <p>&copy; 2024 我的个人项目展示. 保留所有权利.</p>
+    </footer>
+
+    <div id="announcement-modal" class="modal">
+        <div class="modal-content glass-effect">
+            <h2>公告</h2>
+            <p id="announcement-content"></p>
+            <button id="close-announcement" class="glass-button">关闭</button>
+        </div>
+    </div>
+    
+
+    <script src="script.js"></script>
+</body>
+</html>
