@@ -16,6 +16,7 @@
 - [二维码生成改进版](https://projects.wangcy.site/QR/upgrade/index.html)
 - [个人项目展示页](https://projects.wangcy.site/lib/index.html)
 - [道家小六壬起卦](https://wchenyi.github.io/daoist-xiaoliu/)
+- [音乐播放器](https://wchenyi.github.io/Music)
 
 > ChatGPT
 - [起始页生成](https://wchenyi.github.io/Auto-search)
