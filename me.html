@@ -50,6 +50,7 @@
         }
         .profile-info {
             display: flex;
+            flex-direction: column;
             align-items: center;
             margin-bottom: 2rem;
         }
@@ -57,14 +58,15 @@
             width: 150px;
             height: 150px;
             border-radius: 50%;
-            margin-right: 2rem;
+            margin-bottom: 1rem;
         }
         .bio {
-            flex: 1;
+            text-align: center;
         }
         .tags {
             display: flex;
             flex-wrap: wrap;
+            justify-content: center;
             margin-bottom: 1rem;
         }
         .tag {
@@ -127,6 +129,23 @@
         a:hover {
             text-decoration: underline;
         }
+        
+        @media (min-width: 768px) {
+            .profile-info {
+                flex-direction: row;
+                text-align: left;
+            }
+            .profile-pic {
+                margin-right: 2rem;
+                margin-bottom: 0;
+            }
+            .bio {
+                text-align: left;
+            }
+            .tags {
+                justify-content: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
@@ -134,7 +153,7 @@
     <div class="container">
         <h1>欢迎来到我的GitHub主页！👋</h1>
         <div class="profile-info">
-            <img src="https://www.freeimg.cn/i/2023/12/11/6575f10443115.png" alt="个人头像" class="profile-pic">
+            <img src="/api/placeholder/150/150" alt="个人头像" class="profile-pic">
             <div class="bio">
                 <p>你好！我是一名15岁的少年，来自中国内地一个不太发达省份的小县城。尽管年轻，但我对生活充满热爱，对知识充满渴望。</p>
                 <p>我热衷于探索玄学的奥秘，练习太极拳来保持身心平衡，同时也对计算机科学充满热情。虽然有时会感到些许抑郁，但我始终保持积极乐观的态度面对生活。</p>
