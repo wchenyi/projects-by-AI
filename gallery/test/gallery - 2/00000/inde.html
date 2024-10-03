@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>精美应用商店</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --card-bg: #ffffff;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .dark {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --card-bg: #2a2a2a;
+            --card-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 2rem;
+        }
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+        .banner {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .banner img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+        .banner img.active {
+            opacity: 1;
+        }
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 40px 10px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: var(--text-color);
+        }
+        .search-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .category-btn {
+            padding: 5px 15px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        .category-btn.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .app-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s;
+        }
+        .app-card:hover {
+            transform: translateY(-5px);
+        }
+        .app-icon {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        .app-info {
+            padding: 15px;
+        }
+        .app-name {
+            font-size: 1.2rem;
+            margin: 0 0 10px 0;
+        }
+        .app-description {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .app-links {
+            display: flex;
+            justify-content: space-between;
+        }
+        .app-link {
+            text-decoration: none;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>精美应用商店</h1>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </header>
+        
+        <div class="banner" id="banner">
+            <img src="https://via.placeholder.com/1200x300?text=Banner+1" alt="Banner 1" class="active">
+            <img src="https://via.placeholder.com/1200x300?text=Banner+2" alt="Banner 2">
+            <img src="https://via.placeholder.com/1200x300?text=Banner+3" alt="Banner 3">
+        </div>
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="搜索应用...">
+            <span class="search-icon">🔍</span>
+        </div>
+        
+        <div class="categories" id="categories">
+            <!-- 分类按钮将通过JavaScript动态添加 -->
+        </div>
+        
+        <div class="app-grid" id="appGrid">
+            <!-- 应用卡片将通过JavaScript动态添加 -->
+        </div>
+    </div>
+
+    <script>
+        const apps = [
+            { id: 1, name: "应用1", description: "这是应用1的描述", icon: "https://via.placeholder.com/150", website: "#", download: "#", category: "娱乐" },
+            { id: 2, name: "应用2", description: "这是应用2的描述", icon: "https://via.placeholder.com/150", website: "#", download: "#", category: "生产力" },
+            { id: 3, name: "应用3", description: "这是应用3的描述", icon: "https://via.placeholder.com/150", website: "#", download: "#", category: "教育" },
+            { id: 4, name: "应用4", description: "这是应用4的描述", icon: "https://via.placeholder.com/150", website: "#", download: "#", category: "娱乐" },
+            { id: 5, name: "应用5", description: "这是应用5的描述", icon: "https://via.placeholder.com/150", website: "#", download: "#", category: "生产力" },
+            { id: 6, name: "应用6", description: "这是应用6的描述", icon: "https://via.placeholder.com/150", website: "#", download: "#", category: "教育" },
+        ];
+
+        const categories = ["所有", "娱乐", "生产力", "教育"];
+
+        let currentCategory = "所有";
+        let searchTerm = "";
+
+        function renderApps() {
+            const appGrid = document.getElementById('appGrid');
+            appGrid.innerHTML = '';
+
+            const filteredApps = apps.filter(app => 
+                (currentCategory === "所有" || app.category === currentCategory) &&
+                app.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            filteredApps.forEach(app => {
+                const appCard = document.createElement('div');
+                appCard.className = 'app-card';
+                appCard.innerHTML = `
+                    <img src="${app.icon}" alt="${app.name}" class="app-icon">
+                    <div class="app-info">
+                        <h3 class="app-name">${app.name}</h3>
+                        <p class="app-description">${app.description}</p>
+                        <div class="app-links">
+                            <a href="${app.website}" class="app-link">官网</a>
+                            <a href="${app.download}" class="app-link">下载</a>
+                        </div>
+                    </div>
+                `;
+                appGrid.appendChild(appCard);
+            });
+        }
+
+        function renderCategories() {
+            const categoriesContainer = document.getElementById('categories');
+            categories.forEach(category => {
+                const button = document.createElement('button');
+                button.className = 'category-btn';
+                button.textContent = category;
+                button.addEventListener('click', () => {
+                    currentCategory = category;
+                    updateActiveCategory();
+                    renderApps();
+                });
+                categoriesContainer.appendChild(button);
+            });
+            updateActiveCategory();
+        }
+
+        function updateActiveCategory() {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === currentCategory);
+            });
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                searchTerm = e.target.value;
+                renderApps();
+            });
+        }
+
+        function setupThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                themeToggle.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+            });
+        }
+
+        function rotateBanners() {
+            const banners = document.querySelectorAll('.banner img');
+            let currentBanner = 0;
+            setInterval(() => {
+                banners[currentBanner].classList.remove('active');
+                currentBanner = (currentBanner + 1) % banners.length;
+                banners[currentBanner].classList.add('active');
+            }, 5000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCategories();
+            renderApps();
+            setupSearch();
+            setupThemeToggle();
+            rotateBanners();
+        });
+    </script>
+</body>
+</html>

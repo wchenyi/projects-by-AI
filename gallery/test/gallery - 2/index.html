@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学小道应用商店</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <aside id="sidebar" class="sidebar">
+            <img src="images/logo.png" alt="Logo" class="sidebar-logo">
+            <a href="#" class="sidebar-icon active" data-page="home"><i class="fas fa-home"></i></a>
+            <a href="#" class="sidebar-icon" data-page="android"><i class="fab fa-android"></i></a>
+            <a href="#" class="sidebar-icon" data-page="apple"><i class="fab fa-apple"></i></a>
+            <a href="#" class="sidebar-icon" data-page="windows"><i class="fab fa-windows"></i></a>
+            <a href="#" class="sidebar-icon" data-page="linux"><i class="fab fa-linux"></i></a>
+            <a href="#" class="sidebar-icon" data-page="other"><i class="fas fa-ellipsis-h"></i></a>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="search-bar">
+                    <input type="text" placeholder="搜索应用、游戏、电影、设备等">
+                </div>
+                <button id="darkModeToggle" class="dark-mode-toggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+
+            <div class="content-area">
+                <div class="banner-scroll">
+                    <!-- Banner内容将由JavaScript动态生成 -->
+                </div>
+
+                <div id="appContent">
+                    <!-- 应用内容将由JavaScript动态生成 -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 引入应用数据文件 -->
+    <script src="js/android.js"></script>
+    <script src="js/apple.js"></script>
+    <script src="js/windows.js"></script>
+    <script src="js/linux.js"></script>
+    <script src="js/other.js"></script>
+    
+    <!-- 主脚本文件 -->
+    <script src="js/script.js"></script>
+</body>
+</html>

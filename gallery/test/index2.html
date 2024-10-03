@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>应用商店</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar-icon { transition: all 0.3s; }
+        .sidebar-icon:hover { transform: scale(1.1); }
+        .banner-scroll::-webkit-scrollbar { display: none; }
+        .banner-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex">
+        <!-- 左侧边栏 -->
+        <aside class="w-16 h-screen bg-gray-800 text-white flex flex-col items-center py-4 fixed">
+            <a href="#" class="sidebar-icon mb-8 text-2xl"><i class="fas fa-home"></i></a>
+            <a href="#" class="sidebar-icon mb-4 text-xl"><i class="fab fa-android"></i></a>
+            <a href="#" class="sidebar-icon mb-4 text-xl"><i class="fab fa-apple"></i></a>
+            <a href="#" class="sidebar-icon mb-4 text-xl"><i class="fab fa-windows"></i></a>
+            <a href="#" class="sidebar-icon mb-4 text-xl"><i class="fab fa-linux"></i></a>
+            <a href="#" class="sidebar-icon mb-4 text-xl"><i class="fas fa-ellipsis-h"></i></a>
+            <a href="#" class="sidebar-icon text-xl"><i class="fas fa-file-alt"></i></a>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="flex-1 ml-16 p-4">
+            <!-- 顶部搜索栏 -->
+            <div class="mb-4">
+                <input type="text" placeholder="搜索应用、游戏、电影、设备等" class="w-full p-2 rounded-md border border-gray-300">
+            </div>
+
+            <!-- Banner区域 -->
+            <div class="banner-scroll overflow-x-auto flex space-x-4 mb-8">
+                <div class="flex-none w-2/3 h-64 bg-blue-500 rounded-lg flex items-center justify-center text-white text-2xl">
+                    Apps for PCs with All-Day Battery Life
+                </div>
+                <div class="flex-none w-2/3 h-64 bg-purple-500 rounded-lg flex items-center justify-center text-white text-2xl">
+                    Dolby Access
+                </div>
+                <div class="flex-none w-2/3 h-64 bg-green-500 rounded-lg flex items-center justify-center text-white text-2xl">
+                    Draw freely anytime, anywhere with ibisPaint
+                </div>
+                <div class="flex-none w-2/3 h-64 bg-red-500 rounded-lg flex items-center justify-center text-white text-2xl">
+                    Microsoft Copilot
+                </div>
+            </div>
+
+            <!-- 最畅销的应用 -->
+            <h2 class="text-2xl font-bold mb-4">最畅销的应用</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white p-4 rounded-lg shadow flex items-center">
+                    <img src="/api/placeholder/64/64" alt="App Icon" class="w-16 h-16 mr-4">
+                    <div>
+                        <h3 class="font-bold">PDF X: PDF编辑和PDF阅读</h3>
+                        <p class="text-sm text-gray-500">4.7 ★ 商务</p>
+                        <button class="mt-2 bg-blue-500 text-white px-4 py-1 rounded">免费下载</button>
+                    </div>
+                </div>
+                <!-- 重复上面的div结构来添加更多应用卡片 -->
+            </div>
+
+            <!-- 基本应用 -->
+            <h2 class="text-2xl font-bold mb-4">基本应用</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+                <div class="bg-gray-200 p-4 rounded-lg text-center">
+                    <img src="/api/placeholder/64/64" alt="TikTok" class="w-16 h-16 mx-auto mb-2">
+                    <h3 class="font-bold">TikTok</h3>
+                    <p class="text-sm text-gray-500">4.3 ★</p>
+                    <button class="mt-2 bg-blue-500 text-white px-4 py-1 rounded text-sm">免费下载</button>
+                </div>
+                <!-- 重复上面的div结构来添加更多应用图标 -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 这里可以添加一些JavaScript来实现banner的自动滚动等功能
+    </script>
+</body>
+</html>

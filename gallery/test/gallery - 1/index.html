@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>应用商店</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <button id="sidebar-toggle" class="sidebar-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">应用商店</div>
+            <div class="nav-links">
+                <input type="text" class="search-bar" placeholder="搜索应用...">
+                <button id="dark-mode-toggle" class="dark-mode-toggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li><a href="#home"><i class="fas fa-home"></i> 主页</a></li>
+                <li><a href="#android"><i class="fab fa-android"></i> 安卓 & 鸿蒙</a></li>
+                <li><a href="#apple"><i class="fab fa-apple"></i> Apple</a></li>
+                <li><a href="#windows"><i class="fab fa-windows"></i> Windows</a></li>
+                <li><a href="#linux"><i class="fab fa-linux"></i> Linux</a></li>
+                <li><a href="#other"><i class="fas fa-ellipsis-h"></i> 其他软件</a></li>
+                <li><a href="#docs"><i class="fas fa-file-alt"></i> 文档</a></li>
+            </ul>
+        </aside>
+
+        <main id="main-content">
+            <!-- 内容将通过 JavaScript 动态加载 -->
+        </main>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

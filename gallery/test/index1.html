@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级应用商店</title>
+    <link rel="manifest" href="data:application/manifest+json,{
+        &quot;name&quot;: &quot;高级应用商店&quot;,
+        &quot;short_name&quot;: &quot;应用商店&quot;,
+        &quot;start_url&quot;: &quot;.&quot;,
+        &quot;display&quot;: &quot;standalone&quot;,
+        &quot;background_color&quot;: &quot;#ffffff&quot;,
+        &quot;theme_color&quot;: &quot;#007bff&quot;,
+        &quot;icons&quot;: [{
+            &quot;src&quot;: &quot;https://via.placeholder.com/192&quot;,
+            &quot;sizes&quot;: &quot;192x192&quot;,
+            &quot;type&quot;: &quot;image/png&quot;
+        }]
+    }">
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #333333;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --sidebar-bg: rgba(255, 255, 255, 0.8);
+            --sidebar-hover: rgba(0, 123, 255, 0.1);
+            --primary-color: #007bff;
+        }
+        .dark {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --card-bg: rgba(45, 45, 45, 0.7);
+            --card-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+            --sidebar-bg: rgba(30, 30, 30, 0.8);
+            --sidebar-hover: rgba(255, 255, 255, 0.1);
+            --primary-color: #4da3ff;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            transition: margin-left 0.3s;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 2rem;
+            margin: 0;
+        }
+        .theme-toggle, .sidebar-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+        .logo {
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+        }
+        .banner {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+        .banner img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s;
+            border-radius: 10px;
+        }
+        .banner img.active {
+            opacity: 1;
+        }
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 40px 10px 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: var(--text-color);
+        }
+        .search-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .category-btn {
+            padding: 5px 15px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: var(--text-color);
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .category-btn:hover, .category-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .app-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            cursor: pointer;
+        }
+        .app-card:hover {
+            transform: translateY(-5px);
+        }
+        .app-icon {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        .app-info {
+            padding: 15px;
+        }
+        .app-name {
+            font-size: 1.2rem;
+            margin: 0 0 10px 0;
+        }
+        .app-description {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        .app-links {
+            display: flex;
+            justify-content: space-between;
+        }
+        .app-link {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: var(--sidebar-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: left 0.3s;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .sidebar.active {
+            left: 0;
+        }
+        .sidebar-menu {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar-menu li {
+            padding: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .sidebar-menu li:hover {
+            background-color: var(--sidebar-hover);
+        }
+        .sidebar-menu li i {
+            margin-right: 10px;
+        }
+        .app-details {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 80%;
+            max-width: 500px;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: transform 0.3s, opacity 0.3s, visibility 0.3s;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .app-details.active {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            visibility: visible;
+        }
+        .app-details-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        .recommended-apps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .recommended-app {
+            flex: 1 1 300px;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .recommended-app img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .recommended-app-info {
+            padding: 20px;
+        }
+        .recommended-app-name {
+            font-size: 1.4rem;
+            margin: 0 0 10px 0;
+        }
+        .recommended-app-description {
+            font-size: 1rem;
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-bottom: 15px;
+        }
+        .auxiliary-apps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 40px;
+        }
+        .auxiliary-app {
+            flex: 1 1 200px;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .auxiliary-app-name {
+            font-size: 1rem;
+            margin: 0 0 5px 0;
+        }
+        .auxiliary-app-description {
+            font-size: 0.8rem;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+        .docs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .doc-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .doc-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+        }
+        .doc-meta {
+            font-size: 0.8rem;
+            color: var(--text-color);
+            opacity: 0.7;
+            margin-bottom: 10px;
+        }
+        .doc-author {
+            text-decoration: underline;
+            font-weight: bold;
+        }
+        .doc-excerpt {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            opacity: 0.8;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .search-input {
+                font-size: 0.9rem;
+            }
+            .app-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            .recommended-app {
+                flex: 1 1 100%;
+            }
+            .auxiliary-app {
+                flex: 1 1 100%;
+            }
+            .docs-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li data-category="home"><i>🏠</i>主页</li>
+            <li data-category="androidharmony"><i>📱</i>安卓&鸿蒙</li>
+            <li data-category="apple"><i>🍎</i>Apple</li>
+            <li data-category="windows"><i>🪟</i>Windows</li>
+            <li data-category="linux"><i>🐧</i>Linux</li>
+            <li data-category="other"><i>🔧</i>其他软件</li>
+            <li data-category="docs"><i>📄</i>文档</li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <header>
+            <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+            <h1>高级应用商店</h1>
+            <div class="logo"></div>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </header>
+        
+        <div class="banner" id="banner">
+            <img src="https://via.placeholder.com/1200x300?text=Banner+1" alt="Banner 1" class="active">
+            <img src="https://via.placeholder.com/1200x300?text=Banner+2" alt="Banner 2">
+            <img src="https://via.placeholder.com/1200x300?text=Banner+3" alt="Banner 3">
+        </div>
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="搜索应用...">
+            <span class="search-icon">🔍</span>
+        </div>
+        
+        <div class="categories" id="categories">
+            <!-- 分类按钮将通过JavaScript动态添加 -->
+        </div>
+        
+<div class="recommended-apps" id="recommendedApps">
+            <!-- 推荐应用将通过JavaScript动态添加 -->
+        </div>
+        
+        <div class="app-grid" id="appGrid">
+            <!-- 应用卡片将通过JavaScript动态添加 -->
+        </div>
+
+        <div class="auxiliary-apps" id="auxiliaryApps">
+            <!-- 辅助应用将通过JavaScript动态添加 -->
+        </div>
+
+        <div class="docs-grid" id="docsGrid">
+            <!-- 文档卡片将通过JavaScript动态添加 -->
+        </div>
+    </div>
+
+    <div class="app-details" id="appDetails">
+        <button class="app-details-close" id="appDetailsClose">×</button>
+        <h2 id="appDetailsName"></h2>
+        <p id="appDetailsDescription"></p>
+        <div id="appDetailsLinks"></div>
+    </div>
+
+    <script>
+        const apps = [
+            { id: 1, name: "应用1", description: "这是应用1的详细描述。它提供了许多有用的功能，可以帮助用户提高工作效率。", icon: "https://via.placeholder.com/150", website: "#", download: "#", alternativeDownload: "#", category: "androidharmony", recommended: true },
+            { id: 2, name: "应用2", description: "应用2是一款优秀的工具，专为创意工作者设计。它具有直观的界面和强大的功能。", icon: "https://via.placeholder.com/150", website: "#", download: "#", alternativeDownload: "#", category: "apple" },
+            { id: 3, name: "应用3", description: "应用3是一个教育类应用，适合各年龄段的学习者。它采用了先进的教学方法和互动式内容。", icon: "https://via.placeholder.com/150", website: "#", download: "#", alternativeDownload: "#", category: "windows" },
+            { id: 4, name: "应用4", description: "应用4是一款强大的系统工具，可以帮助用户优化他们的计算机性能。", icon: "https://via.placeholder.com/150", website: "#", download: "#", alternativeDownload: "#", category: "linux" },
+            { id: 5, name: "应用5", description: "应用5是一个创新的社交平台，旨在连接有相似兴趣的人。", icon: "https://via.placeholder.com/150", website: "#", download: "#", alternativeDownload: "#", category: "other", recommended: true },
+            { id: 6, name: "应用6", description: "应用6是一款专业的图像编辑软件，提供了丰富的工具和滤镜。", icon: "https://via.placeholder.com/150", website: "#", download: "#", alternativeDownload: "#", category: "windows" },
+        ];
+
+        const documents = [
+            { id: 1, title: "如何选择适合你的应用", author: "张三", date: "2023-05-01", excerpt: "在众多应用中选择最适合自己的可能会让人感到困惑。本文将为你提供一些实用的建议，帮助你做出明智的选择。" },
+            { id: 2, title: "应用安全指南", author: "李四", date: "2023-05-15", excerpt: "随着网络威胁的增加，确保你的应用安全变得越来越重要。本指南将介绍一些基本的安全措施，帮助你保护你的设备和数据。" },
+            { id: 3, title: "提高工作效率的十大应用", author: "王五", date: "2023-06-01", excerpt: "想要提高工作效率？本文推荐了十款能够显著提升生产力的应用，涵盖了时间管理、任务规划、笔记等多个方面。" },
+        ];
+
+        let currentCategory = "home";
+
+        function renderApps() {
+            const appGrid = document.getElementById('appGrid');
+            const recommendedApps = document.getElementById('recommendedApps');
+            const auxiliaryApps = document.getElementById('auxiliaryApps');
+            
+            appGrid.innerHTML = '';
+            recommendedApps.innerHTML = '';
+            auxiliaryApps.innerHTML = '';
+
+            const filteredApps = apps.filter(app => 
+                (currentCategory === "home" || app.category === currentCategory)
+            );
+
+            filteredApps.forEach(app => {
+                if (app.recommended) {
+                    const recommendedAppEl = document.createElement('div');
+                    recommendedAppEl.className = 'recommended-app';
+                    recommendedAppEl.innerHTML = `
+                        <img src="${app.icon}" alt="${app.name}">
+                        <div class="recommended-app-info">
+                            <h3 class="recommended-app-name">${app.name}</h3>
+                            <p class="recommended-app-description">${app.description}</p>
+                            <div class="app-links">
+                                <a href="${app.website}" class="app-link">官网</a>
+                                <a href="${app.download}" class="app-link">下载</a>
+                                <a href="${app.alternativeDownload}" class="app-link">备用下载</a>
+                            </div>
+                        </div>
+                    `;
+                    recommendedAppEl.addEventListener('click', () => showAppDetails(app));
+                    recommendedApps.appendChild(recommendedAppEl);
+                } else {
+                    const appCard = document.createElement('div');
+                    appCard.className = 'app-card';
+                    appCard.innerHTML = `
+                        <img src="${app.icon}" alt="${app.name}" class="app-icon">
+                        <div class="app-info">
+                            <h3 class="app-name">${app.name}</h3>
+                            <p class="app-description">${app.description.substring(0, 50)}...</p>
+                        </div>
+                    `;
+                    appCard.addEventListener('click', () => showAppDetails(app));
+                    appGrid.appendChild(appCard);
+                }
+            });
+
+            // 添加一些辅助应用
+            for (let i = 1; i <= 3; i++) {
+                const auxiliaryApp = document.createElement('div');
+                auxiliaryApp.className = 'auxiliary-app';
+                auxiliaryApp.innerHTML = `
+                    <h4 class="auxiliary-app-name">辅助应用 ${i}</h4>
+                    <p class="auxiliary-app-description">这是辅助应用 ${i} 的简短描述。</p>
+                `;
+                auxiliaryApps.appendChild(auxiliaryApp);
+            }
+        }
+
+        function renderDocs() {
+            const docsGrid = document.getElementById('docsGrid');
+            docsGrid.innerHTML = '';
+
+            documents.forEach(doc => {
+                const docCard = document.createElement('div');
+                docCard.className = 'doc-card';
+                docCard.innerHTML = `
+                    <h3 class="doc-title">${doc.title}</h3>
+                    <p class="doc-meta">
+                        <span class="doc-date">${doc.date}</span> | 
+                        <span class="doc-author">${doc.author}</span>
+                    </p>
+                    <p class="doc-excerpt">${doc.excerpt}</p>
+                `;
+                docsGrid.appendChild(docCard);
+            });
+        }
+
+        function showAppDetails(app) {
+            const appDetails = document.getElementById('appDetails');
+            const appDetailsName = document.getElementById('appDetailsName');
+            const appDetailsDescription = document.getElementById('appDetailsDescription');
+            const appDetailsLinks = document.getElementById('appDetailsLinks');
+
+            appDetailsName.textContent = app.name;
+            appDetailsDescription.textContent = app.description;
+            appDetailsLinks.innerHTML = `
+                <a href="${app.website}" class="app-link">官网</a>
+                <a href="${app.download}" class="app-link">下载</a>
+                <a href="${app.alternativeDownload}" class="app-link">备用下载</a>
+            `;
+
+            appDetails.classList.add('active');
+        }
+
+        function setupEventListeners() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const themeToggle = document.getElementById('themeToggle');
+            const appDetailsClose = document.getElementById('appDetailsClose');
+            const sidebarItems = document.querySelectorAll('.sidebar-menu li');
+
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                themeToggle.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+            });
+
+            appDetailsClose.addEventListener('click', () => {
+                document.getElementById('appDetails').classList.remove('active');
+            });
+
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    currentCategory = item.dataset.category;
+                    if (currentCategory === 'docs') {
+                        renderDocs();
+                        document.getElementById('appGrid').style.display = 'none';
+                        document.getElementById('recommendedApps').style.display = 'none';
+                        document.getElementById('auxiliaryApps').style.display = 'none';
+                        document.getElementById('docsGrid').style.display = 'grid';
+                    } else {
+                        renderApps();
+                        document.getElementById('appGrid').style.display = 'grid';
+                        document.getElementById('recommendedApps').style.display = 'flex';
+                        document.getElementById('auxiliaryApps').style.display = 'flex';
+                        document.getElementById('docsGrid').style.display = 'none';
+                    }
+                    sidebar.classList.remove('active');
+                });
+            });
+        }
+
+        function rotateBanners() {
+            const banners = document.querySelectorAll('.banner img');
+            let currentBanner = 0;
+            setInterval(() => {
+                banners[currentBanner].classList.remove('active');
+                currentBanner = (currentBanner + 1) % banners.length;
+                banners[currentBanner].classList.add('active');
+            }, 5000);
+        }
+
+        // 注册Service Worker以支持PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                })
+                .catch(error => {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            renderApps();
+            rotateBanners();
+        });
+    </script>
+</body>
+</html>
