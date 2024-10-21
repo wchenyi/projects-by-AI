@@ -18,7 +18,7 @@
 - [道家小六壬起卦](https://dao6.wangcy.cam)
 - [在线歌单](https://music.wangcy.site/)
 - [个人介绍](https://projects.wangcy.site/me.html)
-- [startpage](https://projects.wangcy.site/startpage/index.html)
+- [startpage](https://projects.wangcy.site/start-page/index.html)
 
 > ChatGPT
 - [起始页生成](https://wchenyi.github.io/Auto-search)
