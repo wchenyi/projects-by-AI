@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多功能搜索起始页</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0f0f0;
+            --text-color: #333;
+            --accent-color: #4285f4;
+            --bing-color: #008373;
+            --baidu-color: #2932e1;
+            --google-color: #ea4335;
+            --github-color: #24292e;
+            --bilibili-color: #fb7299;
+            --youtube-color: #ff0000;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .logo {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 1rem;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .search-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .search-box-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 1rem 3rem 1rem 1rem;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 2rem;
+            outline: none;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .search-box:focus {
+            box-shadow: 0 0 0 2px var(--accent-color);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-color);
+            cursor: pointer;
+        }
+
+        .search-engines {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .search-engine-btn {
+            margin: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 1rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-engine-btn i {
+            margin-right: 0.5rem;
+        }
+
+        .search-engine-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .search-engine-btn.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a1a1a;
+            --text-color: #f0f0f0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+                padding: 1rem;
+            }
+
+            .search-engines {
+                flex-direction: column;
+            }
+
+            .search-engine-btn {
+                width: 100%;
+                margin: 0.25rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">🌟</div>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+    <div class="container">
+        <div class="search-container">
+            <div class="search-box-wrapper">
+                <input type="text" class="search-box" id="searchBox" placeholder="输入搜索内容...">
+                <i class="fas fa-search search-icon" onclick="performSearch()"></i>
+            </div>
+            <div class="search-engines">
+                <button class="search-engine-btn active" data-engine="bing" onclick="setSearchEngine('bing')"><i class="fab fa-microsoft"></i>Bing</button>
+                <button class="search-engine-btn" data-engine="baidu" onclick="setSearchEngine('baidu')"><i class="fas fa-paw"></i>Baidu</button>
+                <button class="search-engine-btn" data-engine="google" onclick="setSearchEngine('google')"><i class="fab fa-google"></i>Google</button>
+                <button class="search-engine-btn" data-engine="github" onclick="setSearchEngine('github')"><i class="fab fa-github"></i>GitHub</button>
+                <button class="search-engine-btn" data-engine="bilibili" onclick="setSearchEngine('bilibili')"><i class="fas fa-play-circle"></i>Bilibili</button>
+                <button class="search-engine-btn" data-engine="youtube" onclick="setSearchEngine('youtube')"><i class="fab fa-youtube"></i>YouTube</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEngine = 'bing';
+
+        function setSearchEngine(engine) {
+            currentEngine = engine;
+            document.querySelectorAll('.search-engine-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-engine="${engine}"]`).classList.add('active');
+            
+            const root = document.documentElement;
+            switch(engine) {
+                case 'bing':
+                    root.style.setProperty('--accent-color', '#008373');
+                    break;
+                case 'baidu':
+                    root.style.setProperty('--accent-color', '#2932e1');
+                    break;
+                case 'google':
+                    root.style.setProperty('--accent-color', '#ea4335');
+                    break;
+                case 'github':
+                    root.style.setProperty('--accent-color', '#24292e');
+                    break;
+                case 'bilibili':
+                    root.style.setProperty('--accent-color', '#fb7299');
+                    break;
+                case 'youtube':
+                    root.style.setProperty('--accent-color', '#ff0000');
+                    break;
+            }
+        }
+
+        function performSearch() {
+            const query = encodeURIComponent(document.getElementById('searchBox').value);
+            let url;
+            switch(currentEngine) {
+                case 'bing':
+                    url = `https://www.bing.com/search?q=${query}`;
+                    break;
+                case 'baidu':
+                    url = `https://www.baidu.com/s?wd=${query}`;
+                    break;
+                case 'google':
+                    url = `https://www.google.com/search?q=${query}`;
+                    break;
+                case 'github':
+                    url = `https://github.com/search?q=${query}`;
+                    break;
+                case 'bilibili':
+                    url = `https://search.bilibili.com/all?keyword=${query}`;
+                    break;
+                case 'youtube':
+                    url = `https://www.youtube.com/results?search_query=${query}`;
+                    break;
+            }
+            window.open(url, '_blank');
+        }
+
+        document.getElementById('searchBox').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多功能搜索起始页</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="logo" class="logo">
+        <!-- 如果有自定义logo，请替换下面的默认logo -->
+        <span class="default-logo">🌟</span>
+    </div>
+    <button id="themeToggle" class="theme-toggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+    <div class="container">
+        <div class="search-container">
+            <div class="search-box-wrapper">
+                <input type="text" class="search-box" id="searchBox" placeholder="输入搜索内容...">
+                <i class="fas fa-search search-icon" id="searchIcon"></i>
+            </div>
+            <div class="search-engines">
+                <div class="search-row">
+                    <button class="search-engine-btn active" data-engine="bing"><i class="fab fa-microsoft"></i>Bing</button>
+                    <button class="search-engine-btn" data-engine="baidu"><i class="fas fa-paw"></i>Baidu</button>
+                    <button class="search-engine-btn" data-engine="google"><i class="fab fa-google"></i>Google</button>
+                </div>
+                <div class="search-row">
+                    <button class="search-engine-btn" data-engine="github"><i class="fab fa-github"></i>GitHub</button>
+                    <button class="search-engine-btn" data-engine="bilibili"><i class="fas fa-play-circle"></i>Bilibili</button>
+                    <button class="search-engine-btn" data-engine="youtube"><i class="fab fa-youtube"></i>YouTube</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
