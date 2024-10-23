@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云盘系统</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="login-screen">
+        <div class="login-container">
+            <img src="images/logo.svg" alt="Logo" class="login-logo">
+            <h2>欢迎使用云盘系统</h2>
+            <div class="input-group">
+                <input type="password" id="password-input" placeholder="请输入密码">
+                <button onclick="checkPassword()" class="btn-primary">登录</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="app" style="display: none;">
+        <nav class="navbar">
+            <div class="nav-left">
+                <img src="images/logo.svg" alt="Logo" class="nav-logo">
+                <h1>云盘系统</h1>
+            </div>
+            <div class="controls">
+                <input type="text" id="search-input" placeholder="搜索文件..." class="search-box">
+                <button class="btn-icon" onclick="toggleView()" title="切换视图">
+                    <span id="view-icon">▤</span>
+                </button>
+                <button class="btn-icon" onclick="toggleTheme()" title="切换主题">
+                    <span id="theme-icon">🌓</span>
+                </button>
+            </div>
+        </nav>
+
+        <div class="breadcrumb" id="breadcrumb">
+            <span onclick="navigateTo('')">首页</span>
+        </div>
+
+        <div class="content">
+            <div id="files-container" class="files-grid"></div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="../src/docs.js"></script>
+    <script src="../src/musics.js"></script>
+    <script src="../src/pictures.js"></script>
+    <script src="../src/programs.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

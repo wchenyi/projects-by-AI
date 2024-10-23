@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网盘系统</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --folder-color: #4a90e2;
+            --border-color: #e0e0e0;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --folder-color: #66b1ff;
+            --border-color: #333333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-container {
+            background-color: var(--bg-color);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .login-container input {
+            padding: 0.5rem;
+            margin: 1rem 0;
+            width: 200px;
+        }
+
+        .header {
+            padding: 1rem;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .view-toggle, .theme-toggle {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--folder-color);
+            color: white;
+            cursor: pointer;
+        }
+
+        .content {
+            padding: 1rem;
+        }
+
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .files-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .file-item {
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .file-item:hover {
+            background-color: var(--border-color);
+        }
+
+        .file-icon {
+            font-size: 2rem;
+            color: var(--folder-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .file-name {
+            word-break: break-word;
+        }
+
+        .breadcrumb {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .breadcrumb span {
+            cursor: pointer;
+            color: var(--folder-color);
+        }
+
+        .breadcrumb span:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .files-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="login-screen">
+        <div class="login-container">
+            <h2>请输入密码</h2>
+            <input type="password" id="password-input" placeholder="请输入密码">
+            <button onclick="checkPassword()" class="view-toggle">登录</button>
+        </div>
+    </div>
+
+    <div id="app" style="display: none;">
+        <div class="header">
+            <h1>网盘系统</h1>
+            <div class="controls">
+                <button class="view-toggle" onclick="toggleView()">切换视图</button>
+                <button class="theme-toggle" onclick="toggleTheme()">切换主题</button>
+            </div>
+        </div>
+
+        <div class="breadcrumb" id="breadcrumb">
+            <span onclick="navigateTo('')">首页</span>
+        </div>
+
+        <div class="content">
+            <div id="files-container" class="files-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        const CORRECT_PASSWORD = 'wangcy12121';
+        let currentView = 'grid';
+        let currentPath = '';
+        let isDarkMode = false;
+
+        // 示例文件系统结构
+        const fileSystem = {
+            '文档': {
+                type: 'folder',
+                content: {
+                    '工作文件.doc': { type: 'file', extension: 'doc' },
+                    '报告.pdf': { type: 'file', extension: 'pdf' }
+                }
+            },
+            '图片': {
+                type: 'folder',
+                content: {
+                    '照片1.jpg': { type: 'file', extension: 'jpg' },
+                    '照片2.jpg': { type: 'file', extension: 'jpg' },
+                    '截图': {
+                        type: 'folder',
+                        content: {
+                            '截图1.png': { type: 'file', extension: 'png' },
+                            '截图2.png': { type: 'file', extension: 'png' }
+                        }
+                    }
+                }
+            },
+            '音乐': {
+                type: 'folder',
+                content: {
+                    '歌曲1.mp3': { type: 'file', extension: 'mp3' },
+                    '歌曲2.mp3': { type: 'file', extension: 'mp3' }
+                }
+            }
+        };
+
+        function checkPassword() {
+            const password = document.getElementById('password-input').value;
+            if (password === CORRECT_PASSWORD) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                renderFiles();
+            } else {
+                alert('密码错误！');
+            }
+        }
+
+        function getIconForFile(extension) {
+            const icons = {
+                'folder': '📁',
+                'doc': '📄',
+                'pdf': '📑',
+                'jpg': '🖼️',
+                'png': '🖼️',
+                'mp3': '🎵'
+            };
+            return icons[extension] || '📄';
+        }
+
+        function getCurrentFolder() {
+            if (!currentPath) return fileSystem;
+            return currentPath.split('/').reduce((current, folder) => current[folder].content, fileSystem);
+        }
+
+        function renderFiles() {
+            const container = document.getElementById('files-container');
+            const currentFolder = getCurrentFolder();
+            container.className = currentView === 'grid' ? 'files-grid' : 'files-list';
+            
+            container.innerHTML = '';
+            
+            Object.entries(currentFolder).forEach(([name, item]) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                const icon = document.createElement('div');
+                icon.className = 'file-icon';
+                icon.textContent = getIconForFile(item.type === 'folder' ? 'folder' : item.extension);
+                
+                const fileName = document.createElement('div');
+                fileName.className = 'file-name';
+                fileName.textContent = name;
+                
+                fileItem.appendChild(icon);
+                fileItem.appendChild(fileName);
+                
+                if (item.type === 'folder') {
+                    fileItem.onclick = () => {
+                        currentPath = currentPath ? `${currentPath}/${name}` : name;
+                        updateBreadcrumb();
+                        renderFiles();
+                    };
+                }
+                
+                container.appendChild(fileItem);
+            });
+        }
+
+        function updateBreadcrumb() {
+            const breadcrumb = document.getElementById('breadcrumb');
+            const paths = currentPath.split('/');
+            
+            breadcrumb.innerHTML = '<span onclick="navigateTo(\'\')">首页</span>';
+            
+            let currentBreadcrumb = '';
+            paths.forEach((path, index) => {
+                if (path) {
+                    currentBreadcrumb += (currentBreadcrumb ? '/' : '') + path;
+                    breadcrumb.innerHTML += ` / <span onclick="navigateTo('${currentBreadcrumb}')">${path}</span>`;
+                }
+            });
+        }
+
+        function navigateTo(path) {
+            currentPath = path;
+            updateBreadcrumb();
+            renderFiles();
+        }
+
+        function toggleView() {
+            currentView = currentView === 'grid' ? 'list' : 'grid';
+            renderFiles();
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+        }
+
+        // 监听Enter键登录
+        document.getElementById('password-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+    </script>
+</body>
+</html>
