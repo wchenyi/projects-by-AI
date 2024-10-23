@@ -19,6 +19,7 @@
 - [在线歌单](https://music.wangcy.site/)
 - [个人介绍](https://projects.wangcy.site/me.html)
 - [startpage](https://projects.wangcy.site/start-page/index.html)
+- [netdisk](https://projects.wangcy.site/netdisk/assets/index.html)
 
 > ChatGPT
 - [起始页生成](https://wchenyi.github.io/Auto-search)
