@@ -26,6 +26,7 @@ export const windowsApps = [
       official: "https://learn.microsoft.com/zh-cn/windows/powertoys/install", // 官网链接
       appStore: "ms-windows-store://pdp/?productid=9MT60BCXJ3TT", // 应用商店链接 (例如 Microsoft Store)
       alternative: "https://.../powertoys.zip" // 备用下载链接
+    }
   },
   {
     // --- 基础信息 ---
@@ -72,6 +73,8 @@ export const windowsApps = [
       official: "https://learn.microsoft.com/zh-cn/windows/powertoys/install", // 官网链接
       appStore: "ms-windows-store://pdp/?productid=9MT60BCXJ3TT", // 应用商店链接 (例如 Microsoft Store)
       alternative: "https://.../powertoys.zip" // 备用下载链接
+        }
   },
 ];
+
 
