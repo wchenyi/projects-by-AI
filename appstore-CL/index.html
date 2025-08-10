@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>应用商店 - 发现精彩应用</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <h1><i class="fas fa-cube"></i> 应用商店</h1>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="category-link active" data-category="win"><i class="fas fa-desktop"></i> PC端 (Windows)</a></li>
+                <li><a href="#" class="category-link" data-category="and"><i class="fab fa-android"></i> 安卓端</a></li>
+                <li><a href="#" class="category-link" data-category="apple"><i class="fab fa-apple"></i> 苹果端</a></li>
+                <li><a href="#" class="category-link" data-category="linux"><i class="fab fa-linux"></i> Linux</a></li>
+                <li><a href="#" class="category-link" data-category="other"><i class="fas fa-ellipsis-h"></i> 其他</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <section class="hero-banner">
+                <h2>发现精彩应用</h2>
+                <p>探索最新、最热门的应用程序，让您的数字生活更加精彩</p>
+            </section>
+
+            <section>
+                <h2 class="section-title">
+                    <i class="fas fa-fire"></i>
+                    <span id="current-category-title">PC端应用</span>
+                </h2>
+                <div class="app-grid" id="app-grid">
+                    <!-- 应用卡片将通过JavaScript动态生成 -->
+                </div>
+                
+                <!-- 加载提示 -->
+                <div class="loading" id="loading-indicator">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>正在加载应用...</span>
+                </div>
+                
+                <!-- 空状态提示 -->
+                <div class="empty-state" id="empty-state" style="display: none;">
+                    <i class="fas fa-box-open"></i>
+                    <h3>暂无应用</h3>
+                    <p>该分类下暂时没有应用，敬请期待更多精彩内容！</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 应用详情模态窗口 -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+        <div class="app-modal glass" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <div class="modal-icon" id="modalIcon">
+                    <img id="modalIconImg" alt="应用图标">
+                </div>
+                <div class="modal-info">
+                    <h3 id="modalTitle"></h3>
+                    <div class="category" id="modalCategory"></div>
+                    <div class="modal-rating">
+                        <div class="stars" id="modalStars"></div>
+                        <span id="modalRating"></span>
+                        <span id="modalDownloads"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="download-section">
+                <button class="download-btn-primary" id="officialDownload">
+                    <i class="fas fa-download"></i>
+                    官方下载
+                </button>
+                <button class="download-btn-secondary" id="alternateDownload" style="display: none;">备用下载</button>
+            </div>
+
+            <div class="platform-tags" id="modalPlatforms"></div>
+
+            <div id="modalDescription"></div>
+
+            <div class="features-grid" id="modalFeatures"></div>
+        </div>
+    </div>
+
+    <!-- 引入JavaScript文件 -->
+    <script src="js/theme.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/appLoader.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+[
+  {
+    "name": "微信",
+    "category": "社交通讯",
+    "description": "微信是一个为智能终端提供即时通讯服务的免费应用程序，支持发送语音短信、视频、图片和文字，可以群聊。",
+    "rating": 4.5,
+    "downloads": "1B+",
+    "platforms": ["Android", "iOS"],
+    "icon_url": "and/img/wechat.png",
+    "download_url": "https://weixin.qq.com/",
+    "alternate_url": "https://play.google.com/store/apps/details?id=com.tencent.mm",
+    "features": [
+      {
+        "icon": "fas fa-comments",
+        "title": "即时聊天",
+        "description": "文字、语音、视频多种聊天方式"
+      },
+      {
+        "icon": "fas fa-camera",
+        "title": "朋友圈",
+        "description": "分享生活动态，查看朋友状态"
+      },
+      {
+        "icon": "fas fa-qrcode",
+        "title": "扫一扫",
+        "description": "二维码扫描，便捷添加好友"
+      },
+      {
+        "icon": "fas fa-credit-card",
+        "title": "微信支付",
+        "description": "安全便捷的移动支付服务"
+      }
+    ]
+  },
+  {
+    "name": "抖音",
+    "category": "短视频",
+    "description": "抖音是由字节跳动孵化的音乐创意短视频社交软件，用户可以通过这款软件选择歌曲，拍摄音乐短视频。",
+    "rating": 4.3,
+    "downloads": "800M+",
+    "platforms": ["Android", "iOS"],
+    "icon_url": "and/img/douyin.png",
+    "download_url": "https://www.douyin.com/",
+    "alternate_url": "https://play.google.com/store/apps/details?id=com.ss.android.ugc.aweme",
+    "features": [
+      {
+        "icon": "fas fa-video",
+        "title": "短视频拍摄",
+        "description": "15秒到3分钟的短视频创作"
+      },
+      {
+        "icon": "fas fa-music",
+        "title": "音乐库",
+        "description": "海量音乐素材，让视频更精彩"
+      },
+      {
+        "icon": "fas fa-magic",
+        "title": "特效滤镜",
+        "description": "丰富的特效和美颜滤镜"
+      },
+      {
+        "icon": "fas fa-share",
+        "title": "社交分享",
+        "description": "一键分享到各大社交平台"
+      }
+    ]
+  },
+  {
+    "name": "支付宝",
+    "category": "生活服务",
+    "description": "支付宝是蚂蚁集团旗下的第三方移动支付平台，致力于提供简单、安全、快速的支付解决方案。",
+    "rating": 4.6,
+    "downloads": "500M+",
+    "platforms": ["Android", "iOS"],
+    "icon_url": "and/img/alipay.png",
+    "download_url": "https://mobile.alipay.com/index.htm",
+    "alternate_url": "https://play.google.com/store/apps/details?id=com.eg.android.AlipayGphone",
+    "features": [
+      {
+        "icon": "fas fa-mobile-alt",
+        "title": "移动支付",
+        "description": "安全便捷的手机支付服务"
+      },
+      {
+        "icon": "fas fa-credit-card",
+        "title": "信用卡管理",
+        "description": "信用卡还款、账单管理"
+      },
+      {
+        "icon": "fas fa-piggy-bank",
+        "title": "理财服务",
+        "description": "余额宝、基金、保险等理财产品"
+      },
+      {
+        "icon": "fas fa-bus",
+        "title": "生活缴费",
+        "description": "水电煤气、交通出行等生活服务"
+      }
+    ]
+  },
+  {
+    "name": "QQ音乐",
+    "category": "音乐娱乐",
+    "description": "QQ音乐是腾讯公司推出的一款网络音乐服务产品，拥有海量音乐在线试听、最流行音乐在线首发。",
+    "rating": 4.4,
+    "downloads": "300M+",
+    "platforms": ["Android", "iOS"],
+    "icon_url": "and/img/qqmusic.png",
+    "download_url": "https://y.qq.com/",
+    "alternate_url": "https://play.google.com/store/apps/details?id=com.tencent.qqmusic",
+    "features": [
+      {
+        "icon": "fas fa-music",
+        "title": "海量曲库",
+        "description": "数千万首正版高品质音乐"
+      },
+      {
+        "icon": "fas fa-headphones",
+        "title": "无损音质",
+        "description": "支持无损音质播放体验"
+      },
+      {
+        "icon": "fas fa-list",
+        "title": "个性歌单",
+        "description": "智能推荐，个性化音乐体验"
+      },
+      {
+        "icon": "fas fa-karaoke",
+        "title": "K歌功能",
+        "description": "在线K歌，展示音乐才华"
+      }
+    ]
+  },
+  {
+    "name": "美团",
+    "category": "生活服务",
+    "description": "美团是中国领先的生活服务电子商务平台，提供外卖、酒店、旅游、电影等多种生活服务。",
+    "rating": 4.2,
+    "downloads": "400M+",
+    "platforms": ["Android", "iOS"],
+    "icon_url": "and/img/meituan.png",
+    "download_url": "https://www.meituan.com/",
+    "alternate_url": "https://play.google.com/store/apps/details?id=com.sankuai.meituan",
+    "features": [
+      {
+        "icon": "fas fa-utensils",
+        "title": "外卖订餐",
+        "description": "附近美食，快速送达"
+      },
+      {
+        "icon": "fas fa-bed",
+        "title": "酒店预订",
+        "description": "酒店、民宿在线预订服务"
+      },
+      {
+        "icon": "fas fa-film",
+        "title": "电影票",
+        "description": "在线选座购买电影票"
+      },
+      {
+        "icon": "fas fa-shopping-bag",
+        "title": "生活购物",
+        "description": "超市购物、药品配送等服务"
+      }
+    ]
+  }
+]

@@ -1,0 +1,134 @@
+[
+  {
+    "name": "Adobe Photoshop",
+    "category": "图像编辑",
+    "description": "全球最受欢迎的图像编辑软件，为创作者提供无限可能。无论是照片修饰、数字绘画还是复杂的图像合成，Photoshop都能帮助您实现创意愿景。",
+    "rating": 4.8,
+    "downloads": "100M+",
+    "platforms": ["Windows", "macOS"],
+    "icon_url": "win/img/photoshop.png",
+    "download_url": "https://www.adobe.com/products/photoshop.html",
+    "alternate_url": "",
+    "features": [
+      {
+        "icon": "fas fa-magic",
+        "title": "智能AI功能",
+        "description": "基于AI的内容感知填充和对象选择"
+      },
+      {
+        "icon": "fas fa-layers",
+        "title": "图层系统", 
+        "description": "强大的图层管理和混合模式"
+      },
+      {
+        "icon": "fas fa-palette",
+        "title": "丰富画笔",
+        "description": "数千种预设画笔和自定义选项"
+      },
+      {
+        "icon": "fas fa-cloud",
+        "title": "云同步",
+        "description": "跨设备同步您的创作项目"
+      }
+    ]
+  },
+  {
+    "name": "Visual Studio Code",
+    "category": "开发工具",
+    "description": "微软开发的轻量级但功能强大的源代码编辑器，支持多种编程语言，拥有丰富的扩展生态系统。",
+    "rating": 4.9,
+    "downloads": "50M+",
+    "platforms": ["Windows", "macOS", "Linux"],
+    "icon_url": "win/img/vscode.png",
+    "download_url": "https://code.visualstudio.com/",
+    "alternate_url": "https://github.com/microsoft/vscode/releases",
+    "features": [
+      {
+        "icon": "fas fa-code",
+        "title": "语法高亮",
+        "description": "支持数百种编程语言的语法高亮"
+      },
+      {
+        "icon": "fas fa-bug",
+        "title": "调试支持",
+        "description": "内置调试器，支持断点和变量监视"
+      },
+      {
+        "icon": "fas fa-git-alt",
+        "title": "Git集成",
+        "description": "完整的Git版本控制集成"
+      },
+      {
+        "icon": "fas fa-puzzle-piece",
+        "title": "扩展市场",
+        "description": "数万个扩展插件可供选择"
+      }
+    ]
+  },
+  {
+    "name": "Steam",
+    "category": "游戏平台",
+    "description": "Valve开发的数字发行平台，是全球最大的PC游戏平台，拥有数万款游戏。",
+    "rating": 4.8,
+    "downloads": "120M+",
+    "platforms": ["Windows", "macOS", "Linux"],
+    "icon_url": "win/img/steam.png",
+    "download_url": "https://store.steampowered.com/about/",
+    "alternate_url": "",
+    "features": [
+      {
+        "icon": "fas fa-gamepad",
+        "title": "海量游戏",
+        "description": "超过50000款游戏可供选择"
+      },
+      {
+        "icon": "fas fa-users",
+        "title": "社区功能",
+        "description": "好友系统、成就、工作坊等"
+      },
+      {
+        "icon": "fas fa-shopping-cart",
+        "title": "促销活动",
+        "description": "定期大型促销和特惠活动"
+      },
+      {
+        "icon": "fas fa-cloud",
+        "title": "云存档",
+        "description": "游戏存档云端同步保护"
+      }
+    ]
+  },
+  {
+    "name": "OBS Studio",
+    "category": "直播录制",
+    "description": "开源的视频录制和直播软件，支持多种直播平台，是内容创作者的首选工具。",
+    "rating": 4.7,
+    "downloads": "30M+",
+    "platforms": ["Windows", "macOS", "Linux"],
+    "icon_url": "win/img/obs.png",
+    "download_url": "https://obsproject.com/",
+    "alternate_url": "https://github.com/obsproject/obs-studio/releases",
+    "features": [
+      {
+        "icon": "fas fa-video",
+        "title": "高质量录制",
+        "description": "支持4K 60fps高质量视频录制"
+      },
+      {
+        "icon": "fas fa-broadcast-tower",
+        "title": "直播推流",
+        "description": "支持所有主流直播平台"
+      },
+      {
+        "icon": "fas fa-layer-group",
+        "title": "场景切换",
+        "description": "无缝的场景和源切换"
+      },
+      {
+        "icon": "fas fa-plug",
+        "title": "插件支持",
+        "description": "丰富的插件生态系统"
+      }
+    ]
+  }
+]

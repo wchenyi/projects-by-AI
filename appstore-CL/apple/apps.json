@@ -1,0 +1,172 @@
+[
+  {
+    "name": "Final Cut Pro",
+    "category": "视频编辑",
+    "description": "苹果公司开发的专业视频编辑软件，为Mac用户提供强大的视频制作工具，支持4K和360度视频编辑。",
+    "rating": 4.7,
+    "downloads": "5M+",
+    "platforms": ["macOS"],
+    "device_type": "桌面端",
+    "icon_url": "apple/img/finalcutpro.png",
+    "download_url": "https://apps.apple.com/app/final-cut-pro/id424389933",
+    "alternate_url": "",
+    "features": [
+      {
+        "icon": "fas fa-video",
+        "title": "专业编辑",
+        "description": "支持多机位编辑和高级色彩校正"
+      },
+      {
+        "icon": "fas fa-magic",
+        "title": "智能功能",
+        "description": "机器学习驱动的智能剪辑工具"
+      },
+      {
+        "icon": "fas fa-tachometer-alt",
+        "title": "高性能",
+        "description": "针对Mac硬件优化的极速渲染"
+      },
+      {
+        "icon": "fas fa-film",
+        "title": "专业输出",
+        "description": "支持HDR和ProRes RAW格式"
+      }
+    ]
+  },
+  {
+    "name": "Logic Pro",
+    "category": "音乐制作",
+    "description": "苹果专业音乐制作软件，为音乐人提供完整的录音、编辑、混音和母带制作解决方案。",
+    "rating": 4.8,
+    "downloads": "3M+",
+    "platforms": ["macOS"],
+    "device_type": "桌面端",
+    "icon_url": "apple/img/logicpro.png",
+    "download_url": "https://apps.apple.com/app/logic-pro/id634148309",
+    "alternate_url": "",
+    "features": [
+      {
+        "icon": "fas fa-music",
+        "title": "丰富音源",
+        "description": "数千种乐器和采样音色"
+      },
+      {
+        "icon": "fas fa-sliders-h",
+        "title": "专业混音",
+        "description": "专业级混音台和效果器"
+      },
+      {
+        "icon": "fas fa-microphone",
+        "title": "录音功能",
+        "description": "支持多轨道同时录音"
+      },
+      {
+        "icon": "fas fa-wave-square",
+        "title": "MIDI编辑",
+        "description": "强大的MIDI编辑和量化功能"
+      }
+    ]
+  },
+  {
+    "name": "Procreate",
+    "category": "数字绘画",
+    "description": "iPad上最受欢迎的数字绘画应用，为艺术家提供直观的绘画体验和强大的创作工具。",
+    "rating": 4.9,
+    "downloads": "20M+",
+    "platforms": ["iPadOS"],
+    "device_type": "移动端",
+    "icon_url": "apple/img/procreate.png",
+    "download_url": "https://apps.apple.com/app/procreate/id425073498",
+    "alternate_url": "",
+    "features": [
+      {
+        "icon": "fas fa-paint-brush",
+        "title": "自然画笔",
+        "description": "模拟真实画笔的绘画体验"
+      },
+      {
+        "icon": "fas fa-layers",
+        "title": "图层支持",
+        "description": "最多支持数百个图层"
+      },
+      {
+        "icon": "fas fa-play-circle",
+        "title": "时光录制",
+        "description": "自动录制绘画过程并导出视频"
+      },
+      {
+        "icon": "fas fa-palette",
+        "title": "色彩管理",
+        "description": "专业的色彩选择和管理工具"
+      }
+    ]
+  },
+  {
+    "name": "GarageBand",
+    "category": "音乐制作",
+    "description": "苹果免费音乐制作应用，让每个人都能轻松创作音乐，支持iPhone、iPad和Mac。",
+    "rating": 4.6,
+    "downloads": "100M+",
+    "platforms": ["iOS", "macOS"],
+    "device_type": "全平台",
+    "icon_url": "apple/img/garageband.png",
+    "download_url": "https://apps.apple.com/app/garageband/id408709785",
+    "alternate_url": "",
+    "features": [
+      {
+        "icon": "fas fa-guitar",
+        "title": "虚拟乐器",
+        "description": "钢琴、吉他、鼓等虚拟乐器"
+      },
+      {
+        "icon": "fas fa-microphone-alt",
+        "title": "录音功能",
+        "description": "高质量音频录制和编辑"
+      },
+      {
+        "icon": "fas fa-music",
+        "title": "循环乐段",
+        "description": "数千个免费循环音乐片段"
+      },
+      {
+        "icon": "fas fa-share",
+        "title": "分享作品",
+        "description": "一键分享到社交平台"
+      }
+    ]
+  },
+  {
+    "name": "Affinity Designer",
+    "category": "平面设计",
+    "description": "专业矢量图形设计应用，为设计师提供精确的绘图工具和强大的设计功能。",
+    "rating": 4.5,
+    "downloads": "8M+",
+    "platforms": ["iOS", "macOS"],
+    "device_type": "全平台",
+    "icon_url": "apple/img/affinity.png",
+    "download_url": "https://apps.apple.com/app/affinity-designer/id824171161",
+    "alternate_url": "",
+    "features": [
+      {
+        "icon": "fas fa-vector-square",
+        "title": "矢量设计",
+        "description": "专业级矢量图形创作工具"
+      },
+      {
+        "icon": "fas fa-pen-nib",
+        "title": "精密绘图",
+        "description": "像素级精确的绘图控制"
+      },
+      {
+        "icon": "fas fa-file-export",
+        "title": "格式支持",
+        "description": "支持多种设计文件格式导入导出"
+      },
+      {
+        "icon": "fas fa-tachometer-alt",
+        "title": "高性能",
+        "description": "流畅的实时预览和渲染"
+      }
+    ]
+  }
+]
