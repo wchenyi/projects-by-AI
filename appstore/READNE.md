@@ -47,6 +47,15 @@ export const windowsApps = [
       "Git集成",
       "海量插件"
     ],
+    // --- 下载链接 (新增) ---
+    // 这是一个对象，您可以按需提供以下四种链接中的任意几种。
+    // 如果某个应用没有某种下载方式，直接省略那一行即可。
+    downloads: {
+      github: "https://github.com/microsoft/PowerToys/", // Github 链接
+      official: "https://learn.microsoft.com/zh-cn/windows/powertoys/install", // 官网链接
+      appStore: "ms-windows-store://pdp/?productid=9MT60BCXJ3TT", // 应用商店链接 (例如 Microsoft Store)
+      alternative: "https://.../powertoys.zip" // 备用下载链接
+    }
   },
   
   // 这是一个模板，您可以复制这个模板来添加新应用
@@ -83,3 +92,4 @@ export const windowsApps = [
 }
 ```
 三、总结您现在拥有了一个高度自动化的应用商店。您的日常工作就是：放图标到对应的 img 文件夹。填表格到对应的 data.js 文件。网站会自动完成剩下的所有工作。祝您使用愉快！
+
