@@ -736,31 +736,34 @@
                 toggleOptionsMenu(false);
             });
         };
-        
+
+        // 确保 toggleOptionsMenu 函数逻辑正确
         const toggleOptionsMenu = (forceShow) => {
             const isHidden = optionsMenu.classList.contains('hidden');
-            if (forceShow === true || isHidden) {
+            if (forceShow === true || (forceShow === undefined && isHidden)) {
                 optionsMenu.classList.remove('hidden');
                 setTimeout(() => {
                     optionsMenu.classList.remove('opacity-0', 'scale-95');
                 }, 10);
-            } else {
+            } else if (forceShow === false || (forceShow === undefined && !isHidden)) {
                 optionsMenu.classList.add('opacity-0', 'scale-95');
                 setTimeout(() => {
                     optionsMenu.classList.add('hidden');
                 }, 200);
             }
         };
-
+        
         optionsMenuToggle.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleOptionsMenu();
         });
+        // 点击其他地方关闭菜单
         doc.addEventListener('click', (e) => {
             if (!optionsMenu.contains(e.target) && !optionsMenuToggle.contains(e.target)) {
                 toggleOptionsMenu(false);
             }
         });
+        
 
         // --- App Detail Modal Logic ---
         const modal = doc.getElementById('app-detail-modal'), modalContent = doc.getElementById('modal-content'), modalBackdrop = doc.getElementById('modal-backdrop'), closeBtn = doc.getElementById('modal-close-btn'), modalAppName = doc.getElementById('modal-app-name'), modalAppIcon = doc.getElementById('modal-app-icon'), modalAppRating = doc.getElementById('modal-app-rating'), modalAppDesc = doc.getElementById('modal-app-desc'), modalAppFeatures = doc.getElementById('modal-app-features'), modalAppPlatform = doc.getElementById('modal-app-platform'), modalDownloadLinks = doc.getElementById('modal-download-links');
