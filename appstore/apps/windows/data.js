@@ -8,12 +8,12 @@ export const windowsApps = [
   {
     name: "Clash For Windows",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://pic1.zhimg.com/v2-ab67026231c772c19b923846e6cd65ee_720w.jpg?source=172ae18b",
     size: "large",
     rating: "5.0",
     platform: "Windows",
     description: "界面美观操作简便，占用空间较大，官网下载需自行安装汉化。",
-    features: [],
+    features: ["轻松上手", "分流强大", "界面美观"],
     downloads: {
       github: "https://github.com/Fndroid/clash_for_windows_pkg/releases",
       alternative: "https://d3.netfiles.pw/v2/windows/Clash.for.Windows.Setup.0.19.15.exe"
@@ -22,12 +22,12 @@ export const windowsApps = [
   {
     name: "v2RayN-Core",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://ts1.tc.mm.bing.net/th/id/R-C.1d8eb1af33a92865f0255eab4deb3ab6?rik=R1Bz36MCoDSLGw&riu=http%3a%2f%2fwww.clash1688.com%2fassets%2fimg%2fblog%2fV2rayN.jpg&ehk=i6is759Vcwn4WsS%2f3ur4xc5YlvWb2TSqjNfaptdFySQ%3d&risl=&pid=ImgRaw&r=0",
     size: "large",
     rating: "5.0",
     platform: "Windows",
     description: "小白操作，空间占用小，zip解压安装，无需汉化，不支持ss插件。",
-    features: [],
+    features: ["操作便捷", "自定义强", "调试工具", "更新快捷"],
     downloads: {
       github: "https://github.com/2dust/v2rayN/releases",
       alternative: "https://d2.netfiles.pw/v2/windows/v2rayN-v5.9.zip"
@@ -38,12 +38,12 @@ export const windowsApps = [
   {
     name: "Clash Verge",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://pp.myapp.com/ma_icon/0/icon_54397632_1724394093/256",
     size: "medium",
     rating: "4.5",
     platform: "Windows",
     description: "Clash 的变体，资源占用小，自定义皮肤，配置文件管理和增强。",
-    features: [],
+    features: ["轻松上手", "分流强大", "界面美观", "插件众多"],
     downloads: {
       github: "https://github.com/zzzgydi/clash-verge/releases",
       official: "https://clashverge.net/"
@@ -52,12 +52,12 @@ export const windowsApps = [
   {
     name: "clash-verge-rev",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://pp.myapp.com/ma_icon/0/icon_54397632_1724394093/256",
     size: "medium",
     rating: "4.5",
     platform: "Windows",
-    description: "",
-    features: [],
+    description: "原本软件基础上的升级改版，功能更强、界面更舒适",
+    features: ["轻松上手", "分流强大", "界面美观", "插件众多"],
     downloads: {
       github: "https://github.com/clash-verge-rev/clash-verge-rev",
       official: "https://clashverge.net/clash-verge-rev/"
@@ -66,12 +66,12 @@ export const windowsApps = [
   {
     name: "Clash.Net",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://linux.do/uploads/default/original/3X/9/b/9bc586bba07cc2b81c368186d0a387d2fdf083af.png",
     size: "medium",
     rating: "4.5",
     platform: "Windows",
     description: "依赖于 .Net 运行的轻量级 Clash，原生支持中文，项目已删库，列出最后一版下载地址。",
-    features: [],
+    features: ["使用方便", "界面美观", "配置多样", "占用极低"],
     downloads: {
       github: "https://github.com/V2RaySSR/Clash.Net/releases"
     }
@@ -79,12 +79,12 @@ export const windowsApps = [
   {
     name: "ClashWeb",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://pp.myapp.com/ma_icon/0/icon_54397632_1724394093/256",
     size: "medium",
     rating: "4.5",
     platform: "Windows",
     description: "轻量级 Clash，`withoutPython` 版本依赖 Python 环境，基本操作同 CFW。",
-    features: [],
+    features: ["流量监测", "上手容易", "资源丰富", "界面美观"],
     downloads: {
       official: "https://merlinblog.xyz/wiki/clashweb.html",
       alternative: "https://musetransfer.com/s/ukmtdumku"
@@ -93,12 +93,12 @@ export const windowsApps = [
   {
     name: "ClashMeta",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://mogua.co/download/99b5fb7dda6fe114e45fdc3b6d170358-icon.png",
     size: "medium",
     rating: "4.5",
     platform: "多平台",
-    description: "",
-    features: [],
+    description: "操作同CFA，界面也高度相似便于上手，又有很多实用升级",
+    features: ["流量监测", "上手容易", "资源丰富", "界面美观"],
     downloads: {
       github: "https://github.com/MetaCubeX/Clash.Meta/releases",
       official: "https://clashmeta.xyz/"
@@ -107,51 +107,54 @@ export const windowsApps = [
   {
     name: "Mihomo Party",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://mihomoparty.net/wp-content/uploads/2024/09/icon-150x150.png",
     size: "medium",
     rating: "4.5",
     platform: "Windows",
-    description: "",
-    features: [],
+    description: "界面模仿surge和stash，在win端独具一格，非常实用",
+    features: ["界面美观", "功能丰富", "更新较快"],
     downloads: {
-      github: "https://github.com/pompurin404/mihomo-party/releases"
+      official: "https://mihomoparty.net/"
+      github: "https://github.com/pompurin404/mihomo-party/releases",
     }
   },
   {
     name: "Hiddify-next",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://store-images.s-microsoft.com/image/apps.11245.14155126203361258.5bed0304-dfff-4ff6-8d04-2e8186b86297.04f73a7e-fb28-451a-9e5a-3bc55ebe67bf",
     size: "medium",
     rating: "4.5",
     platform: "多平台",
-    description: "多平台支持。",
-    features: [],
+    description: "多平台支持，使用便捷，高效顺滑",
+    features: ["多平台", "页面简洁"],
     downloads: {
       github: "https://github.com/hiddify/hiddify-next/releases"
+      official: "https://hiddify.me/",
     }
   },
   {
     name: "sing-box",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://sing-box.org/wp-content/uploads/2023/12/1702057725-favicon.png",
     size: "medium",
     rating: "4.5",
     platform: "多平台",
     description: "少有的免费，支持多平台（Win/Android/iOS/Apple TV）。",
-    features: [],
+    features: ["风格独特", "配置特殊", "全端免费"],
     downloads: {
       github: "https://github.com/SagerNet/sing-box"
+      official: "https://singbox.app/official/",
     }
   },
   {
-    name: "F1Clash",
+    name: "FIClash",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://doc.clashforwindows.app/logo_64.png",
     size: "medium",
     rating: "4.5",
     platform: "全平台",
-    description: "基于 ClashMeta，Material You 设计风格，全平台支持。",
-    features: [],
+    description: "基于 ClashMeta，Material You 设计风格，全平台支持，模仿surfboard。",
+    features: ["全平台支持", "使用方便", "界面美观"],
     downloads: {
       github: "https://github.com/chen08209/FlClash"
     }
@@ -294,6 +297,7 @@ export const windowsApps = [
     }
   }
 ];
+
 
 
 
