@@ -18,11 +18,11 @@
         #app-detail-modal.hidden { display: none; }
         .grid-auto-fit { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
         
-        /* 关键：确保所有卡片内的图标大小统一且不变形 */
-        .app-icon-large { width: 4.5rem; height: 4.5rem; object-fit: contain; } /* 72px */
-        .app-icon-medium { width: 4rem; height: 4rem; object-fit: contain; } /* 64px */
-        .app-icon-small { width: 3rem; height: 3rem; object-fit: contain; } /* 48px */
-        .modal-app-icon { width: 5rem; height: 5rem; object-fit: contain; } /* 80px */
+        /* 图标大小控制 */
+        .app-icon-large { width: 4.5rem; height: 4.5rem; object-fit: contain; }
+        .app-icon-medium { width: 4rem; height: 4rem; object-fit: contain; }
+        .app-icon-small { width: 3rem; height: 3rem; object-fit: contain; }
+        .modal-app-icon { width: 5rem; height: 5rem; object-fit: contain; }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
@@ -56,9 +56,7 @@
 
             <!-- 滚动内容区 -->
             <main id="main-content" class="p-4 sm:p-6 lg:p-8 space-y-8">
-                <div class="text-center py-16">
-                    <p class="text-gray-500">正在加载应用...</p>
-                </div>
+                <div class="text-center py-16"><p class="text-gray-500">正在加载应用...</p></div>
             </main>
         </div>
     </div>
@@ -85,82 +83,66 @@
                 <div><h3 class="font-bold text-lg mb-2">简介</h3><p id="modal-app-desc" class="text-gray-600 dark:text-gray-300"></p></div>
                 <div><h3 class="font-bold text-lg mb-3">特色介绍</h3><div id="modal-app-features" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div></div>
             </div>
-            <div class="flex-shrink-0 p-6 border-t border-gray-300 dark:border-gray-700 bg-white/30 dark:bg-gray-900/30 flex flex-col sm:flex-row items-center gap-4">
-                <button class="w-full sm:w-auto flex-1 bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-blue-500/50 transform hover:-translate-y-0.5">官方下载</button>
-                <button class="w-full sm:w-auto flex-1 bg-gray-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition-all duration-200">备用链接</button>
+            <!-- 下载按钮容器 -->
+            <div id="modal-download-links" class="flex-shrink-0 p-6 border-t border-gray-300 dark:border-gray-700 bg-white/30 dark:bg-gray-900/30 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- 下载按钮将由JS动态生成 -->
             </div>
         </div>
     </div>
 
     <script type="module">
-        // ===================================================================================
-        // 主应用逻辑 (最终版 - 动态加载数据)
-        // ===================================================================================
         document.addEventListener('DOMContentLoaded', async () => {
             const mainContent = document.getElementById('main-content');
             const categoryNav = document.getElementById('category-nav');
             const searchInput = document.getElementById('search-input');
             
-            let allAppsData = {}; // 存储从文件加载的所有应用数据
-            let allAppsList = []; // 扁平化的应用列表，用于搜索
-            let currentCategory = 'windows'; // 默认显示的分类
+            let allAppsData = {};
+            let allAppsList = [];
+            let currentCategory = 'windows';
 
-            // 定义分类信息，程序将根据这个配置加载对应文件
             const categories = [
-                { id: 'windows', name: 'PC端', file: './apps/windows/data.js', dataKey: 'windowsApps', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5C4 4.44772 4.44772 4 5 4H19C19.5523 4 20 4.44772 20 5V15C20 15.5523 19.5523 16 19 16H5C4.44772 16 4 15.5523 4 15V5Z" stroke="currentColor" stroke-width="2"/><path d="M12 16V20M12 20H15M12 20H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
-                { id: 'apple', name: '苹果端', file: './apps/apple/data.js', dataKey: 'appleApps', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.5001 19.5C11.2147 19.5001 9.96223 19.1145 8.88281 18.3916C7.66085 17.575 6.75338 16.3575 6.32001 14.94C5.22001 15.04 4.16001 14.33 3.68001 13.33C3.20001 12.33 3.39001 11.17 4.17001 10.42C4.1239 9.86311 4.21922 9.29943 4.44853 8.78418C4.67784 8.26892 5.03462 7.82143 5.48001 7.49C5.97001 6.66 6.75001 6.06 7.68001 5.79C8.21001 4.96 9.01001 4.35 9.95001 4.07C10.89 3.79 11.9 3.86 12.83 4.26C13.76 4.66 14.56 5.37 15.08 6.26C15.8233 6.13112 16.582 6.25735 17.24 6.62C18.19 7.15 18.82 8.11 18.94 9.2C19.8495 9.40794 20.5925 10.053 20.94 10.94C21.2875 11.827 21.2101 12.8349 20.73 13.67C20.25 14.5051 19.4187 15.0713 18.5 15.2C18.5 16.71 17.8 18.16 16.61 19.07C15.42 19.98 13.9701 20.24 12.6001 19.99" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 4C11.41 4.41 11.03 5.05 10.96 5.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
-                { id: 'android', name: '安卓端', file: './apps/android/data.js', dataKey: 'androidApps', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.5 8.5C15.5 9.32843 14.8284 10 14 10C13.1716 10 12.5 9.32843 12.5 8.5C12.5 7.67157 13.1716 7 14 7C14.8284 7 15.5 7.67157 15.5 8.5ZM10.5 8.5C10.5 9.32843 9.82843 10 9 10C8.17157 10 7.5 9.32843 7.5 8.5C7.5 7.67157 8.17157 7 9 7C9.82843 7 10.5 7.67157 10.5 8.5ZM18 13C18 13.5523 17.5523 14 17 14H7C6.44772 14 6 13.5523 6 13C6 12.4477 6.44772 12 7 12H17C17.5523 12 18 12.4477 18 13ZM20 5.5L18.7941 4.29412C18.3922 3.89216 17.7598 3.82353 17.2941 4.11765L16 5V3H8L6.70588 4.11765C6.2402 3.82353 5.60784 3.89216 5.20588 4.29412L4 5.5V18C4 19.6569 5.34314 21 7 21H17C18.6569 21 20 19.6569 20 18V5.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
-                { id: 'linux', name: 'Linux', file: './apps/linux/data.js', dataKey: 'linuxApps', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21C12 21 15 18.5 15 15C15 11.6863 12 11 12 6C12 11 9 11.6863 9 15C9 18.5 12 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 6C12 3.79086 10.2091 2 8 2C5.79086 2 4 3.79086 4 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 15C15 15 16.5 16 17 17C18.5 19.5 15 22 12 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 15C9 15 7.5 16 7 17C5.5 19.5 9 22 12 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
-                { id: 'other', name: '其他', file: './apps/other/data.js', dataKey: 'otherApps', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12C13.1046 12 14 11.1046 14 10C14 8.89543 13.1046 8 12 8C10.8954 8 10 8.89543 10 10C10 11.1046 10.8954 12 12 12ZM6 12C7.10457 12 8 11.1046 8 10C8 8.89543 7.10457 8 6 8C4.89543 8 4 8.89543 4 10C4 11.1046 4.89543 12 6 12ZM18 12C19.1046 12 20 11.1046 20 10C20 8.89543 19.1046 8 18 8C16.8954 8 16 8.89543 16 10C16 11.1046 16.8954 12 18 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
+                { id: 'windows', name: 'PC端', file: './apps/windows/data.js', dataKey: 'windowsApps', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 6a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H7a2 2 0 01-2-2V6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 16h18m-12 4h6m-3-4v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
+                { id: 'apple', name: '苹果端', file: './apps/apple/data.js', dataKey: 'appleApps', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.28.96a.83.83 0 00-.85.25C12.5 2.37 11.1 4.33 11.1 6.5c0 2.3 1.59 4.29 3.32 5.16a.4.4 0 01.18.37c0 .18-.1.34-.26.43-1.83 1-3.23 2.78-3.23 4.93 0 3.1 2.3 5.61 5.3 5.61a.48.48 0 00.34-.15c2.9-2.91 4.42-6.3 4.42-9.64 0-3.41-1.7-6.2-4.17-7.25z" fill="currentColor"/><path d="M13.15 2.11a4.33 4.33 0 00-2.88 1.88A10.5 10.5 0 008.2 7.15c-2.22 0-4.2-1.2-5.3-3.11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
+                { id: 'android', name: '安卓端', file: './apps/android/data.js', dataKey: 'androidApps', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="7" y="2" width="10" height="20" rx="2" stroke="currentColor" stroke-width="2"/><path d="M10 18h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>` },
+                { id: 'linux', name: 'Linux', file: './apps/linux/data.js', dataKey: 'linuxApps', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21C12 21 15 18.5 15 15C15 11.6863 12 11 12 6C12 11 9 11.6863 9 15C9 18.5 12 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 6C12 3.79086 10.2091 2 8 2C5.79086 2 4 3.79086 4 6m11 9c0 0 1.5 1 2 2 1.5 2.5-2 5-5 4M9 15c0 0-1.5 1-2 2-1.5 2.5 2 5 5 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
+                { id: 'other', name: '其他', file: './apps/other/data.js', dataKey: 'otherApps', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12a2 2 0 100-4 2 2 0 000 4zM6 12a2 2 0 100-4 2 2 0 000 4zm12 0a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
             ];
 
-            // --- 核心数据加载函数 ---
             const loadAllData = async () => {
                 const dataPromises = categories.map(cat => 
                     import(cat.file)
                         .then(module => ({ id: cat.id, data: module[cat.dataKey] || [] }))
                         .catch(error => {
                             console.warn(`无法加载分类 "${cat.name}" 的数据文件: ${cat.file}`, error);
-                            return { id: cat.id, data: [] }; // 如果文件不存在或出错，返回空数组
+                            return { id: cat.id, data: [] };
                         })
                 );
-                
                 const results = await Promise.all(dataPromises);
-                
                 results.forEach(result => {
                     allAppsData[result.id] = result.data;
                     allAppsList.push(...result.data);
                 });
             };
 
-            // --- 动态渲染函数 ---
             const renderApps = (apps) => {
-                mainContent.innerHTML = ''; // 清空当前内容
+                mainContent.innerHTML = '';
                 if (!apps || apps.length === 0) {
-                    mainContent.innerHTML = `<div class="text-center py-16"><p class="text-gray-500">这个分类下还没有应用，请检查对应的 data.js 文件是否已创建并包含内容。</p></div>`;
+                    mainContent.innerHTML = `<div class="text-center py-16"><p class="text-gray-500">这个分类下还没有应用，请检查对应的 data.js 文件。</p></div>`;
                     return;
                 }
-                
-                // 排序：large > medium > small
                 apps.sort((a, b) => {
                     const sizes = { 'large': 3, 'medium': 2, 'small': 1 };
                     return (sizes[b.size] || 1) - (sizes[a.size] || 1);
                 });
-
                 const appGrid = document.createElement('div');
                 appGrid.className = 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4';
-                
-                apps.forEach(app => {
-                    const card = createAppCard(app);
-                    appGrid.appendChild(card);
-                });
+                apps.forEach(app => appGrid.appendChild(createAppCard(app)));
                 mainContent.appendChild(appGrid);
             };
 
             const createAppCard = (app) => {
                 const card = document.createElement('div');
                 card.className = 'app-card group cursor-pointer transition-all duration-300';
-                
                 let typeBadge = '';
                 if (app.type) {
                     const isDesktop = app.type.toLowerCase() === 'desktop';
@@ -168,44 +150,27 @@
                     const badgeText = isDesktop ? '桌面' : '移动';
                     typeBadge = `<span class="absolute top-2 right-2 text-xs font-semibold text-white ${badgeColor} px-2 py-0.5 rounded-full z-10">${badgeText}</span>`;
                 }
-
                 const size = app.size || 'small';
                 if (size === 'large') {
                     card.classList.add('col-span-2', 'row-span-2', 'rounded-2xl', 'overflow-hidden', 'relative', 'shadow-lg', 'hover:shadow-2xl');
-                    card.innerHTML = `
-                        <img src="https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=2670&auto=format&fit=crop" alt="${app.name} 背景" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                        <div class="absolute bottom-0 left-0 p-4 text-white">
-                            <img src="${app.icon}" alt="${app.name} 图标" class="w-12 h-12 mb-2 rounded-lg bg-white p-1 object-contain">
-                            <h4 class="font-bold text-lg">${app.name}</h4>
-                            <p class="text-sm text-gray-300">${app.category}</p>
-                        </div>
-                        ${typeBadge}
-                    `;
+                    card.innerHTML = `<img src="https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=2670&auto=format&fit=crop" alt="${app.name} 背景" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"><div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div><div class="absolute bottom-0 left-0 p-4 text-white"><img src="${app.icon}" alt="${app.name} 图标" class="w-12 h-12 mb-2 rounded-lg bg-white p-1 object-contain"><h4 class="font-bold text-lg">${app.name}</h4><p class="text-sm text-gray-300">${app.category}</p></div>${typeBadge}`;
                 } else if (size === 'medium') {
                     card.classList.add('col-span-2', 'rounded-2xl', 'bg-white', 'dark:bg-gray-800', 'p-4', 'flex', 'items-center', 'gap-4', 'shadow-md', 'hover:shadow-xl', 'hover:-translate-y-1', 'relative');
-                    card.innerHTML = `
-                        <img src="${app.icon}" alt="${app.name} 图标" class="app-icon-medium rounded-lg flex-shrink-0">
-                        <div class="overflow-hidden">
-                            <h4 class="font-semibold truncate">${app.name}</h4>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">${app.category}</p>
-                        </div>
-                        ${typeBadge}
-                    `;
-                } else { // small
+                    card.innerHTML = `<img src="${app.icon}" alt="${app.name} 图标" class="app-icon-medium rounded-lg flex-shrink-0"><div class="overflow-hidden"><h4 class="font-semibold truncate">${app.name}</h4><p class="text-xs text-gray-500 dark:text-gray-400">${app.category}</p></div>${typeBadge}`;
+                } else {
                     card.classList.add('rounded-2xl', 'bg-white', 'dark:bg-gray-800', 'p-4', 'flex', 'flex-col', 'items-center', 'justify-center', 'text-center', 'shadow-md', 'hover:shadow-xl', 'hover:-translate-y-1', 'relative');
-                    card.innerHTML = `
-                        <img src="${app.icon}" alt="${app.name} 图标" class="app-icon-small mb-3">
-                        <h4 class="font-semibold w-full truncate">${app.name}</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">${app.category}</p>
-                        ${typeBadge}
-                    `;
+                    card.innerHTML = `<img src="${app.icon}" alt="${app.name} 图标" class="app-icon-small mb-3"><h4 class="font-semibold w-full truncate">${app.name}</h4><p class="text-xs text-gray-500 dark:text-gray-400">${app.category}</p>${typeBadge}`;
                 }
-
-                Object.keys(app).forEach(key => {
-                    if (key === 'features') card.dataset[key] = app[key].join('|');
-                    else card.dataset[key] = app[key];
+                
+                // 将数据绑定到卡片上
+                Object.entries(app).forEach(([key, value]) => {
+                    if (typeof value === 'object' && value !== null) {
+                        card.dataset[key] = JSON.stringify(value);
+                    } else {
+                        card.dataset[key] = value;
+                    }
                 });
+                
                 card.addEventListener('click', () => openModal(card));
                 return card;
             };
@@ -220,7 +185,7 @@
                     link.addEventListener('click', (e) => {
                         e.preventDefault();
                         currentCategory = cat.id;
-                        searchInput.value = ''; // 清空搜索框
+                        searchInput.value = '';
                         renderApps(allAppsData[currentCategory]);
                         updateNavActiveState();
                     });
@@ -239,80 +204,76 @@
                 });
             };
 
-            // --- 搜索功能 ---
             searchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
-                if (searchTerm.length > 0) {
-                    const filteredApps = allAppsList.filter(app => 
-                        app.name.toLowerCase().includes(searchTerm) || 
-                        app.category.toLowerCase().includes(searchTerm)
-                    );
+                if (searchTerm) {
+                    const filteredApps = allAppsList.filter(app => app.name.toLowerCase().includes(searchTerm) || app.category.toLowerCase().includes(searchTerm));
                     renderApps(filteredApps);
                 } else {
-                    // 如果清空搜索框，则返回当前选中的分类
                     renderApps(allAppsData[currentCategory]);
                 }
             });
 
-            // --- 初始化流程 ---
-            renderNav();
-            await loadAllData();
-            renderApps(allAppsData[currentCategory]);
-            updateNavActiveState();
-
-
-            // --- Modal 逻辑 (无需修改) ---
-            const modal = document.getElementById('app-detail-modal');
-            const modalContent = document.getElementById('modal-content');
-            const modalBackdrop = document.getElementById('modal-backdrop');
-            const closeBtn = document.getElementById('modal-close-btn');
-            const modalAppName = document.getElementById('modal-app-name');
-            const modalAppIcon = document.getElementById('modal-app-icon');
-            const modalAppRating = document.getElementById('modal-app-rating');
-            const modalAppDesc = document.getElementById('modal-app-desc');
-            const modalAppFeatures = document.getElementById('modal-app-features');
-            const modalAppPlatform = document.getElementById('modal-app-platform');
-
+            // --- Modal 逻辑 ---
+            const modal = document.getElementById('app-detail-modal'), modalContent = document.getElementById('modal-content'), modalBackdrop = document.getElementById('modal-backdrop'), closeBtn = document.getElementById('modal-close-btn'), modalAppName = document.getElementById('modal-app-name'), modalAppIcon = document.getElementById('modal-app-icon'), modalAppRating = document.getElementById('modal-app-rating'), modalAppDesc = document.getElementById('modal-app-desc'), modalAppFeatures = document.getElementById('modal-app-features'), modalAppPlatform = document.getElementById('modal-app-platform'), modalDownloadLinks = document.getElementById('modal-download-links');
+            
             const openModal = (card) => {
-                modalAppName.textContent = card.dataset.name;
-                modalAppIcon.src = card.dataset.icon;
-                modalAppRating.textContent = card.dataset.rating;
-                modalAppDesc.textContent = card.dataset.description;
-                modalAppPlatform.textContent = `支持平台: ${card.dataset.platform}`;
+                const appData = card.dataset;
+                modalAppName.textContent = appData.name;
+                modalAppIcon.src = appData.icon;
+                modalAppRating.textContent = appData.rating;
+                modalAppDesc.textContent = appData.description;
+                modalAppPlatform.textContent = `支持平台: ${appData.platform}`;
                 
                 modalAppFeatures.innerHTML = '';
-                if (card.dataset.features) {
-                    card.dataset.features.split('|').forEach(feature => {
-                        const featureEl = document.createElement('div');
-                        featureEl.className = 'flex items-center gap-3 bg-white/50 dark:bg-gray-700/50 p-3 rounded-lg';
-                        const icon = `<svg class="w-5 h-5 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-                        featureEl.innerHTML = `${icon}<span>${feature}</span>`;
-                        modalAppFeatures.appendChild(featureEl);
-                    });
+                const features = JSON.parse(appData.features || '[]');
+                features.forEach(feature => {
+                    const featureEl = document.createElement('div');
+                    featureEl.className = 'flex items-center gap-3 bg-white/50 dark:bg-gray-700/50 p-3 rounded-lg';
+                    featureEl.innerHTML = `<svg class="w-5 h-5 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${feature}</span>`;
+                    modalAppFeatures.appendChild(featureEl);
+                });
+
+                // --- 渲染下载按钮 ---
+                modalDownloadLinks.innerHTML = '';
+                const downloads = JSON.parse(appData.downloads || '{}');
+                const downloadTypes = [
+                    { key: 'appStore', text: '应用商店', icon: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3v9m0 0l-3-3m3 3l3-3m-3 12a9 9 0 110-18 9 9 0 010 18z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, color: 'bg-blue-600 hover:bg-blue-700' },
+                    { key: 'github', text: 'Github', icon: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>`, color: 'bg-gray-800 hover:bg-gray-900 dark:bg-gray-600 dark:hover:bg-gray-700' },
+                    { key: 'official', text: '官网下载', icon: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.72" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.72-1.72" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, color: 'bg-green-600 hover:bg-green-700' },
+                    { key: 'alternative', text: '备用下载', icon: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m14-7l-5-5-5 5m5-5v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, color: 'bg-gray-500 hover:bg-gray-600' },
+                ];
+
+                downloadTypes.forEach(type => {
+                    if (downloads[type.key]) {
+                        const link = document.createElement('a');
+                        link.href = downloads[type.key];
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        link.className = `flex items-center justify-center gap-2 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 shadow-lg transform hover:-translate-y-0.5 ${type.color}`;
+                        link.innerHTML = `${type.icon}<span>${type.text}</span>`;
+                        modalDownloadLinks.appendChild(link);
+                    }
+                });
+                if(modalDownloadLinks.innerHTML === '') {
+                    modalDownloadLinks.innerHTML = `<p class="text-center text-gray-500 col-span-full">暂无可用下载链接</p>`;
                 }
 
                 modal.classList.remove('hidden');
-                setTimeout(() => {
-                    modal.classList.add('opacity-100');
-                    modalContent.classList.remove('scale-95', 'opacity-0');
-                }, 10);
+                setTimeout(() => { modal.classList.add('opacity-100'); modalContent.classList.remove('scale-95', 'opacity-0'); }, 10);
             };
-
             const closeModal = () => {
                 modalContent.classList.add('scale-95', 'opacity-0');
                 modal.classList.remove('opacity-100');
                 setTimeout(() => modal.classList.add('hidden'), 300);
             };
-
             closeBtn.addEventListener('click', closeModal);
             modalBackdrop.addEventListener('click', closeModal);
             document.addEventListener('keydown', (e) => e.key === 'Escape' && !modal.classList.contains('hidden') && closeModal());
 
-            // --- UI 控制 (无需修改) ---
-            const themeToggle = document.getElementById('theme-toggle');
-            const lightIcon = document.getElementById('theme-icon-light');
-            const darkIcon = document.getElementById('theme-icon-dark');
-            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            // --- UI 控制 ---
+            const themeToggle = document.getElementById('theme-toggle'), lightIcon = document.getElementById('theme-icon-light'), darkIcon = document.getElementById('theme-icon-dark');
+            if (localStorage.getItem('theme') === 'dark') {
                 document.documentElement.classList.add('dark');
                 lightIcon.classList.add('hidden');
                 darkIcon.classList.remove('hidden');
@@ -324,10 +285,15 @@
                 darkIcon.classList.toggle('hidden');
             });
 
-            const menuToggle = document.getElementById('menu-toggle');
-            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menu-toggle'), sidebar = document.getElementById('sidebar');
             menuToggle.addEventListener('click', (e) => { e.stopPropagation(); sidebar.classList.toggle('-translate-x-full'); });
             document.addEventListener('click', (e) => { if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) { sidebar.classList.add('-translate-x-full'); } });
+            
+            // --- 初始化流程 ---
+            renderNav();
+            await loadAllData();
+            renderApps(allAppsData[currentCategory]);
+            updateNavActiveState();
         });
     </script>
 </body>
