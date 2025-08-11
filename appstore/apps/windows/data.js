@@ -164,26 +164,27 @@ export const windowsApps = [
   {
     name: "ClashN",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://clashn.org/images/logo.png",
     size: "small",
     rating: "4.0",
     platform: "Windows",
     description: "空间占用较小，zip 解压安装；注意需额外安装 .NET Runtime 才能运行。",
-    features: [],
+    features: ["界面整洁", "自定义高"],
     downloads: {
       github: "https://github.com/2dust/clashN/releases",
+      official: "https://clashn.org/official.html",
       alternative: "https://dotnet.microsoft.com/en-us/download/dotnet/6.0/runtime"
     }
   },
   {
     name: "v2ray-plugin",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://pp.myapp.com/ma_icon/0/icon_53508470_1558506304/256",
     size: "small",
     rating: "4.0",
     platform: "Windows",
-    description: "shadowsocks 插件。",
-    features: [],
+    description: "老牌软件，shadowsocks 插件。",
+    features: ["老牌软件"],
     downloads: {
       github: "https://github.com/shadowsocks/v2ray-plugin"
     }
@@ -191,12 +192,12 @@ export const windowsApps = [
   {
     name: "v2RayN(32位)",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://pp.myapp.com/ma_icon/0/icon_53508470_1558506304/256",
     size: "small",
     rating: "4.0",
     platform: "Windows (32-bit)",
     description: "32 位版本，兼容性更好，适合老机器，zip 解压安装，无需汉化。",
-    features: [],
+    features: ["老牌软件", "老设备专用"],
     downloads: {
       official: "https://download.sakura-cat.club/directlink/1/v2rayN-v5.9.zip",
       alternative: "https://download.oneok.cloud/v2rayN-v5.9.zip"
@@ -205,12 +206,12 @@ export const windowsApps = [
   {
     name: "Qv2ray",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://dashboard.snapcraft.io/site_media/appmedia/2020/07/qv2ray.png",
     size: "small",
     rating: "4.0",
     platform: "Windows",
     description: "目前已停止维护，听说对 Win7 支持比较好。",
-    features: [],
+    features: ["停止维护", "老设备专用"],
     downloads: {
       github: "https://github.com/Qv2ray/Qv2ray/releases"
     }
@@ -218,12 +219,12 @@ export const windowsApps = [
   {
     name: "v2rayW",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://vpsgongyi.com/wp-content/uploads/2019/12/v2rayw-logo-150x150.jpg?v=1596264812",
     size: "small",
     rating: "4.0",
     platform: "Windows",
     description: "",
-    features: [],
+    features: ["老牌软件"],
     downloads: {
       github: "https://github.com/Cenmrev/V2RayW/releases",
       official: "https://clash-n.com/"
@@ -232,12 +233,12 @@ export const windowsApps = [
   {
     name: "Shadowsocks",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://hailbytes.com/wp-content/uploads/2022/07/shadowsocks-logo.png",
     size: "small",
     rating: "4.0",
     platform: "Windows",
     description: "支持 ss 插件的客户端（协议/软件同名）。",
-    features: [],
+    features: ["先驱软件"],
     downloads: {
       github: "https://github.com/shadowsocks/shadowsocks-windows"
     }
@@ -245,12 +246,12 @@ export const windowsApps = [
   {
     name: "Netch",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: ".https://ts4.tc.mm.bing.net/th/id/OIP-C.-u9KdY-qwW99dSy_ZcXDYQHaHa?rs=1&pid=ImgDetMain&o=7&rm=3",
     size: "small",
     rating: "4.0",
     platform: "Windows",
     description: "体积小，全局代理效果好。",
-    features: [],
+    features: ["游戏加速"],
     downloads: {
       github: "https://github.com/NetchX/Netch/releases",
       alternative: "https://d2.netfiles.pw/v2/windows/Netch-v1.9.2.7z"
@@ -259,12 +260,12 @@ export const windowsApps = [
   {
     name: "nekoray",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://en.nekoray.org/wp-content/uploads/2024/01/NekoRay.png",
     size: "small",
     rating: "4.0",
     platform: "全平台",
     description: "全平台支持，有插件可选；不支持 32 位，Win7 以下可能不可用。",
-    features: [],
+    features: ["性能强悍", "bug少"],
     downloads: {
       github: "https://github.com/MatsuriDayo/nekoray/releases",
       official: "https://matsuridayo.github.io/download/"
@@ -273,12 +274,12 @@ export const windowsApps = [
   {
     name: "karing",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://karing.app/img/logo.png",
     size: "small",
     rating: "4.0",
     platform: "多平台",
     description: "多平台，新软件。",
-    features: [],
+    features: ["其他软件"],
     downloads: {
       github: "https://github.com/KaringX/karing"
     }
@@ -286,17 +287,18 @@ export const windowsApps = [
   {
     name: "ClashPro",
     category: "代理工具",
-    icon: "./src/img/logo.png",
+    icon: "https://en.clashop.org/wp-content/uploads/2024/10/logo-2.png",
     size: "small",
     rating: "4.0",
     platform: "Windows",
     description: "新软件。",
-    features: [],
+    features: ["老牌软件"],
     downloads: {
       github: "https://github.com/KaringX/ClashPro/releases"
     }
   }
 ];
+
 
 
 
