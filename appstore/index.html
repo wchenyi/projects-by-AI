@@ -25,28 +25,33 @@
         ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
         html.dark ::-webkit-scrollbar-thumb { background: #475569; }
         
-        /* 激活状态的主题色 */
+        /* 主题色系统 */
         .theme-bg-active { background-color: rgb(var(--theme-color-rgb)); }
         .theme-text { color: rgb(var(--theme-color-rgb)); }
         .theme-bg-subtle { background-color: rgba(var(--theme-color-rgb), 0.1); }
+        .theme-border-subtle { border-color: rgba(var(--theme-color-rgb), 0.2); }
+        .theme-gradient-subtle { background-image: linear-gradient(to top right, rgba(var(--theme-color-rgb), 0.05), rgba(var(--theme-color-rgb), 0.15)); }
         html.dark .theme-bg-subtle { background-color: rgba(var(--theme-color-rgb), 0.15); }
+        html.dark .theme-gradient-subtle { background-image: linear-gradient(to top right, rgba(var(--theme-color-rgb), 0.1), rgba(var(--theme-color-rgb), 0.2)); }
 
         /* 卡片网格布局 */
-        .card-grid-large { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-        .card-grid-medium { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
-        .card-grid-small { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+        .card-grid { display: grid; gap: 1.5rem; }
+        .card-grid.large { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+        .card-grid.medium { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+        .card-grid.small { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
         
-        @media (min-width: 768px) { /* sm */
-            .card-grid-small { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+        @media (min-width: 768px) { /* md */
+            .card-grid.small { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
         }
         @media (min-width: 1280px) { /* xl */
-            .card-grid-large { grid-template-columns: repeat(4, 1fr); }
-            .card-grid-medium { grid-template-columns: repeat(5, 1fr); }
-            .card-grid-small { grid-template-columns: repeat(6, 1fr); }
+            .card-grid.large { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+            .card-grid.medium { grid-template-columns: repeat(5, 1fr); }
+            .card-grid.small { grid-template-columns: repeat(8, 1fr); }
         }
-        @media (max-width: 640px) { /* 移动端 */
-            .card-grid-medium { grid-template-columns: 1fr; }
-            .card-grid-small { grid-template-columns: repeat(2, 1fr); }
+        @media (max-width: 640px) { /* mobile */
+            .card-grid { gap: 0.75rem; }
+            .card-grid.medium { grid-template-columns: 1fr; }
+            .card-grid.small { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -55,10 +60,10 @@
     <div class="flex h-screen overflow-hidden">
         <!-- 侧边栏 -->
         <aside id="sidebar" class="w-64 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg p-4 flex-col flex-shrink-0 fixed lg:relative h-full z-30 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out border-r border-gray-200 dark:border-slate-800">
-            <div class="flex items-center gap-3 mb-6 px-2">
+            <a href="#" id="sidebar-logo-link" class="flex items-center gap-3 mb-6 px-2">
                 <img id="site-logo" src="" alt="Site Logo" class="w-8 h-8 object-contain">
                 <h1 id="site-name-sidebar" class="text-xl font-bold text-slate-800 dark:text-slate-200"></h1>
-            </div>
+            </a>
             <nav id="category-nav" class="flex-1 space-y-1">
                 <!-- 分类导航会由JS动态生成 -->
             </nav>
@@ -71,10 +76,10 @@
                 <div class="flex items-center gap-2">
                     <button id="menu-toggle" class="lg:hidden p-2 rounded-md text-slate-600 hover:bg-gray-200 dark:text-slate-400 dark:hover:bg-slate-800"><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                     <div id="search-container" class="relative flex items-center">
-                        <input type="text" id="search-input" placeholder="搜索应用..." class="w-0 sm:w-48 md:w-64 lg:w-96 bg-gray-100 dark:bg-slate-800 border border-transparent focus:ring-2 focus:ring-[rgb(var(--theme-color-rgb))] focus:border-transparent rounded-lg py-2 pl-10 pr-4 transition-all duration-300 opacity-0 sm:opacity-100">
-                        <button id="search-icon-btn" class="absolute left-0 sm:left-3 p-2 text-slate-400">
+                         <div class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        </button>
+                        </div>
+                        <input type="text" id="search-input" placeholder="搜索应用..." class="w-full sm:w-48 md:w-64 lg:w-96 bg-gray-100 dark:bg-slate-800 border border-transparent focus:ring-2 focus:ring-[rgb(var(--theme-color-rgb))] focus:border-transparent rounded-lg py-2 pl-10 pr-4 transition-all duration-300">
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
@@ -83,7 +88,11 @@
                 </div>
             </header>
 
-            <main id="main-content" class="p-4 sm:p-6 lg:p-8 space-y-10"></main>
+            <main id="main-content" class="p-4 sm:p-6 lg:p-8 space-y-10 flex-grow"></main>
+            
+            <footer id="main-footer" class="p-8 mt-10 border-t border-gray-200 dark:border-slate-800 text-center text-sm text-slate-500 dark:text-slate-400 space-y-2">
+                <!-- 页脚内容由JS动态生成 -->
+            </footer>
         </div>
     </div>
 
@@ -125,6 +134,11 @@
             siteName: "应用商店",
             siteLogo: "./src/img/logo.png",
             defaultLogoSVG: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 7L12 12L22 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+            footer: {
+                creationYear: 2023,
+                author: "Your Name",
+                version: "4.0.0"
+            },
             disclaimer: `
                 <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">必看</h3>
                 <ul class="space-y-3 list-disc list-inside text-gray-700 dark:text-gray-300">
@@ -157,7 +171,6 @@
         const mainContent = doc.getElementById('main-content');
         const categoryNav = doc.getElementById('category-nav');
         const searchInput = doc.getElementById('search-input');
-        const searchIconBtn = doc.getElementById('search-icon-btn');
         const backToTopBtn = doc.getElementById('back-to-top');
 
         let allAppsData = {};
@@ -166,7 +179,7 @@
 
         const hexToRgb = (hex) => {
             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
+            return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '107, 114, 128';
         };
 
         const loadAllData = async () => {
@@ -187,7 +200,7 @@
 
             doc.documentElement.style.setProperty('--theme-color-rgb', hexToRgb(category.themeColor));
             
-            const bannerText = appsToRender ? `搜索结果` : (categoryId === 'home' ? CONFIG.siteName : category.bannerText);
+            const bannerText = appsToRender ? `搜索: "${searchInput.value}"` : (categoryId === 'home' ? CONFIG.siteName : category.bannerText);
             mainContent.appendChild(createBanner(bannerText, category.gradient));
 
             if (categoryId === 'home' && !appsToRender) {
@@ -235,32 +248,22 @@
                 mainContent.insertAdjacentHTML('beforeend', `<div class="text-center py-16"><p class="text-gray-500">${isSearchResult ? '没有找到相关应用。' : '这个分类下还没有应用。'}</p></div>`);
                 return;
             }
+            const appGroups = {
+                large: apps.filter(app => app.size === 'large'),
+                medium: apps.filter(app => app.size === 'medium'),
+                small: apps.filter(app => app.size === 'small'),
+            };
+            const sectionTitles = { large: '推荐应用', medium: '常用软件', small: '更多工具' };
 
-            const largeApps = apps.filter(app => app.size === 'large');
-            const mediumApps = apps.filter(app => app.size === 'medium');
-            const smallApps = apps.filter(app => app.size === 'small');
-
-            if (largeApps.length > 0) {
-                if(!isSearchResult) mainContent.appendChild(createSectionTitle('推荐应用'));
-                const grid = doc.createElement('div');
-                grid.className = 'card-grid-large';
-                largeApps.forEach(app => grid.appendChild(createAppCard(app, isSearchResult)));
-                mainContent.appendChild(grid);
-            }
-            if (mediumApps.length > 0) {
-                if(!isSearchResult) mainContent.appendChild(createSectionTitle('常用软件'));
-                const grid = doc.createElement('div');
-                grid.className = 'card-grid-medium';
-                mediumApps.forEach(app => grid.appendChild(createAppCard(app, isSearchResult)));
-                mainContent.appendChild(grid);
-            }
-            if (smallApps.length > 0) {
-                 if(!isSearchResult) mainContent.appendChild(createSectionTitle('更多工具'));
-                const grid = doc.createElement('div');
-                grid.className = 'card-grid-small';
-                smallApps.forEach(app => grid.appendChild(createAppCard(app, isSearchResult)));
-                mainContent.appendChild(grid);
-            }
+            Object.entries(appGroups).forEach(([size, appList]) => {
+                if(appList.length > 0) {
+                    if(!isSearchResult) mainContent.appendChild(createSectionTitle(sectionTitles[size]));
+                    const grid = doc.createElement('div');
+                    grid.className = `card-grid ${size}`;
+                    appList.forEach(app => grid.appendChild(createAppCard(app, isSearchResult)));
+                    mainContent.appendChild(grid);
+                }
+            });
         };
 
         const createSectionTitle = (title) => {
@@ -274,51 +277,65 @@
             const card = doc.createElement('div');
             card.className = 'app-card group cursor-pointer transition-all duration-300 rounded-2xl shadow-lg relative overflow-hidden';
             
-            let typeBadge = app.type ? `<span class="absolute top-3 right-3 text-xs font-semibold text-white ${app.type.toLowerCase() === 'desktop' ? 'bg-sky-500' : 'bg-green-500'} px-2 py-0.5 rounded-full z-10">${app.type.toLowerCase() === 'desktop' ? '桌面' : '移动'}</span>` : '';
-            let categoryBadge = isSearchResult ? `<span class="absolute top-3 left-3 text-xs font-semibold text-white bg-indigo-500 px-2 py-0.5 rounded-full z-10">${CONFIG.categories.find(c=>c.id===app.categoryId)?.name || ''}</span>` : '';
+            const categoryBadge = isSearchResult ? `<span class="absolute top-3 left-3 text-xs font-semibold text-white bg-indigo-500 px-2 py-0.5 rounded-full z-10">${CONFIG.categories.find(c=>c.id===app.categoryId)?.name || ''}</span>` : '';
 
             if (app.size === 'large') {
                 const features = (app.features || []).slice(0, 2).map(f => `<div class="flex items-center gap-2 text-xs backdrop-blur-sm bg-white/20 rounded-full px-3 py-1"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>${f}</div>`).join('');
                 const downloads = app.downloads || {};
-                const dlButtons = ['appStore', 'official'].map(key => {
+                const dlButtons = ['github', 'appStore', 'official'].map(key => {
                     if (!downloads[key]) return '';
-                    const icon = key === 'appStore' ? `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3v9m0 0l-3-3m3 3l3-3m-3 12a9 9 0 110-18 9 9 0 010 18z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m14-7l-5-5-5 5m5-5v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-                    return `<a href="${downloads[key]}" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/40 transition-colors" onclick="event.stopPropagation();">${icon}</a>`;
-                }).join('');
+                    const text = { github: 'GitHub', appStore: '商店', official: '官网'}[key];
+                    return `<a href="${downloads[key]}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 hover:bg-white/40 transition-colors" onclick="event.stopPropagation();">${text}下载</a>`;
+                }).filter(Boolean).join('');
 
-                card.className += ` aspect-[4/3] flex flex-col justify-between p-4 text-white bg-slate-800`;
+                card.className += ` aspect-[16/10] flex flex-col justify-between p-4 text-white bg-slate-800`;
                 card.innerHTML = `
                     <div style="background-image: url(${app.icon});" class="absolute inset-0 bg-cover bg-center opacity-20 blur-md scale-125"></div>
                     <div class="relative z-10 flex justify-between items-start">
-                        <div class="flex flex-col gap-2">${features}</div>
-                        <div class="flex flex-col gap-2">${dlButtons}</div>
+                        <img src="${app.icon}" alt="${app.name} icon" class="w-20 h-20 object-contain rounded-xl bg-white/10 p-1.5 shadow-md">
+                        <div class="flex flex-col items-end gap-2 text-right">
+                             <div class="flex items-center gap-1.5 text-lg font-bold">
+                                <span>${app.rating}</span>
+                                <svg class="w-5 h-5 text-yellow-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z"/></svg>
+                            </div>
+                            <div class="flex flex-col items-end gap-2">${features}</div>
+                        </div>
                     </div>
-                    <div class="relative z-10">
-                        <img src="${app.icon}" alt="${app.name} icon" class="w-16 h-16 object-contain rounded-xl bg-white/10 p-1 shadow-md mb-2">
-                        <h4 class="font-bold text-xl">${app.name}</h4>
-                        <p class="text-sm text-white/80">${app.category}</p>
+                    <div class="relative z-10 flex justify-between items-end">
+                        <div>
+                            <h4 class="font-bold text-xl">${app.name}</h4>
+                            <p class="text-sm text-white/70">${app.description || app.category}</p>
+                        </div>
+                        <div class="flex gap-2">${dlButtons}</div>
                     </div>
                     ${categoryBadge}
                 `;
             } else if (app.size === 'medium') {
-                card.className += ' bg-white dark:bg-slate-800/50 p-4 flex items-center gap-4 hover:-translate-y-1';
+                card.className += ' bg-white dark:bg-slate-800/50 p-4 flex flex-col justify-between hover:-translate-y-1';
+                const primaryDownload = app.downloads?.official || app.downloads?.github || app.downloads?.appStore || app.downloads?.alternative;
+                const downloadButton = primaryDownload ? `<a href="${primaryDownload}" target="_blank" rel="noopener noreferrer" class="w-full text-center mt-3 text-sm font-semibold rounded-lg px-4 py-2 theme-bg-active text-white shadow-sm hover:opacity-90 transition-opacity" onclick="event.stopPropagation();">点击下载</a>` : '';
                 card.innerHTML = `
-                    <img src="${app.icon}" alt="${app.name} icon" class="w-12 h-12 object-contain rounded-lg flex-shrink-0">
-                    <div class="overflow-hidden">
-                        <h4 class="font-semibold text-slate-700 dark:text-slate-300 truncate">${app.name}</h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">${app.category}</p>
+                    <div class="flex items-start gap-4">
+                        <img src="${app.icon}" alt="${app.name} icon" class="w-12 h-12 object-contain rounded-lg flex-shrink-0">
+                        <div class="overflow-hidden">
+                            <h4 class="font-semibold text-slate-700 dark:text-slate-300 truncate">${app.name}</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">${app.platform || app.category}</p>
+                        </div>
                     </div>
+                    ${downloadButton}
                     ${categoryBadge}
                 `;
             } else { // small
-                card.className += ' bg-white dark:bg-slate-800/50 hover:-translate-y-1';
+                card.className += ' bg-white dark:bg-slate-800/50 hover:-translate-y-1 flex flex-col';
+                const primaryDownload = app.downloads?.official || app.downloads?.github || app.downloads?.appStore || app.downloads?.alternative;
+                const downloadButton = primaryDownload ? `<a href="${primaryDownload}" target="_blank" rel="noopener noreferrer" class="w-full text-center mt-2 text-xs font-semibold rounded-md px-2 py-1.5 theme-bg-subtle theme-text hover:opacity-80 transition-opacity" onclick="event.stopPropagation();">点击下载</a>` : '';
                 card.innerHTML = `
-                    <div class="h-24 flex items-center justify-center rounded-t-2xl theme-bg-subtle">
+                    <div class="flex-grow h-24 flex items-center justify-center rounded-t-2xl theme-gradient-subtle">
                         <img src="${app.icon}" alt="${app.name} icon" class="w-12 h-12 object-contain">
                     </div>
                     <div class="p-3 text-center">
                         <h4 class="font-semibold text-sm text-slate-700 dark:text-slate-300 truncate">${app.name}</h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">${app.category}</p>
+                        ${downloadButton}
                     </div>
                     ${categoryBadge}
                 `;
@@ -345,6 +362,16 @@
             });
         };
 
+        const renderFooter = () => {
+            const footer = doc.getElementById('main-footer');
+            const currentYear = new Date().getFullYear();
+            const yearString = CONFIG.footer.creationYear === currentYear ? currentYear : `${CONFIG.footer.creationYear} - ${currentYear}`;
+            footer.innerHTML = `
+                <p>&copy; ${yearString} ❤️ ${CONFIG.footer.author}. All Rights Reserved.</p>
+                <p>Version ${CONFIG.footer.version}</p>
+            `;
+        };
+        
         const switchCategory = (categoryId) => {
             currentCategory = categoryId;
             searchInput.value = '';
@@ -355,9 +382,9 @@
 
         const updateNavActiveState = () => {
             doc.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('text-white', 'shadow', 'theme-bg-active');
+                link.classList.remove('text-white', 'shadow-md', 'theme-bg-active');
                 if (link.dataset.category === currentCategory) {
-                    link.classList.add('text-white', 'shadow', 'theme-bg-active');
+                    link.classList.add('text-white', 'shadow-md', 'theme-bg-active');
                 }
             });
         };
@@ -368,17 +395,16 @@
             const logoImg = doc.getElementById('site-logo');
             logoImg.onerror = () => { logoImg.outerHTML = `<div class="w-8 h-8 text-blue-500">${CONFIG.defaultLogoSVG}</div>`; };
             logoImg.src = CONFIG.siteLogo;
+            doc.getElementById('sidebar-logo-link').addEventListener('click', (e) => { e.preventDefault(); switchCategory('home'); });
 
-            // FIX: Only register service worker in secure contexts (HTTPS or localhost)
             if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname.endsWith('.local'))) {
                 try {
                     navigator.serviceWorker.register('./sw.js').catch(err => console.error('Service worker registration failed:', err));
-                } catch (e) {
-                    console.error('An exception occurred during service worker registration:', e);
-                }
+                } catch (e) { console.error('An exception occurred during service worker registration:', e); }
             }
 
             renderNav();
+            renderFooter();
             await loadAllData();
             switchCategory('home');
         };
@@ -390,16 +416,6 @@
         });
         backToTopBtn.addEventListener('click', () => mainScrollArea.scrollTo({ top: 0, behavior: 'smooth' }));
 
-        searchIconBtn.addEventListener('click', () => {
-            searchInput.classList.toggle('w-0');
-            searchInput.classList.toggle('opacity-0');
-            searchInput.classList.toggle('sm:w-48');
-            searchInput.classList.toggle('md:w-64');
-            searchInput.classList.toggle('lg:w-96');
-            if (!searchInput.classList.contains('w-0')) {
-                searchInput.focus();
-            }
-        });
         searchInput.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             if (searchTerm) {
@@ -411,16 +427,26 @@
         });
 
         const themeToggle = doc.getElementById('theme-toggle'), lightIcon = doc.getElementById('theme-icon-light'), darkIcon = doc.getElementById('theme-icon-dark');
-        if (localStorage.getItem('theme') === 'dark') {
-            doc.documentElement.classList.add('dark');
-            lightIcon.classList.add('hidden');
-            darkIcon.classList.remove('hidden');
+        const applyTheme = (theme) => {
+            if (theme === 'dark') {
+                doc.documentElement.classList.add('dark');
+                lightIcon.classList.add('hidden');
+                darkIcon.classList.remove('hidden');
+            } else {
+                doc.documentElement.classList.remove('dark');
+                lightIcon.classList.remove('hidden');
+                darkIcon.classList.add('hidden');
+            }
+        };
+        if (localStorage.theme === 'dark') {
+            applyTheme('dark');
+        } else {
+            applyTheme('light');
         }
         themeToggle.addEventListener('click', () => {
-            const isDark = doc.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            lightIcon.classList.toggle('hidden');
-            darkIcon.classList.toggle('hidden');
+            const theme = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', theme);
+            applyTheme(theme);
         });
 
         const menuToggle = doc.getElementById('menu-toggle'), sidebar = doc.getElementById('sidebar');
