@@ -8,14 +8,23 @@
 
 ```
 应用商店/
-├── 📂 apps/
-│   └── ... (各分类文件夹)
-├── 📂 src/
-│   └── 📂 img/
-│       └── 📄 logo.png
-├── 📄 index.html
-├── 📄 manifest.json
-└── 📄 sw.js
+apps/
+├── home/
+│   └── content.md        (主页内容)
+├── windows/
+│   ├── data.js
+│   └── content.md        (PC端内容)
+├── android/
+│   ├── data.js  
+│   └── content.md        (安卓端内容)
+├── apple/
+│   ├── data.js
+│   └── content.md        (苹果端内容)
+├── other/
+│   ├── data.js
+│   └── content.md        (其他端内容)
+└── linux/
+    └── data.js
 ```
 
 ### 二、 核心配置 (在 ```index.html``` 中)
@@ -114,4 +123,5 @@ const CONFIG = {
   - 自动添加下载按钮: 会自动寻找 ```downloads``` 对象中的任意一个可用链接（优先级：```official > github > appStore > alternative```），并生成“点击下载”按钮。
 
 这意味着您只需专注于维护 ```data.js``` 文件的准确性，网页的视觉表现会由代码自动完成，无需您进行额外操作
+
 
