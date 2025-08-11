@@ -1,136 +1,62 @@
-## 应用商店配置与管理指南 (V2.0)
-您好！欢迎使用功能全面升级的V2.0版应用商店。此版本引入了主页、PWA支持、自定义主题等强大功能。请按照本指南进行配置与管理。
+## 应用商店配置与管理指南 (V3.0)
 
-### 一、 文件目录结构
+您好！欢迎来到V3.0版应用商店。此版本专注于提升视觉精致度、信息密度和移动端体验，并对所有卡片样式进行了重新设计。
 
-为了支持新功能，目录结构有少量调整：
+### 一、 文件目录结构 (无变化)
+
+文件结构保持不变，您可以继续沿用此前的项目结构。
 
 ```
 应用商店/
-├── 📂 apps/               <-- 应用数据文件夹 (无变化)
-│   ├── 📂 android/
-│   │   └── 📄 data.js
-│   ├── 📂 apple/
-│   │   └── 📄 data.js
-│   │   // ... 其他分类
-│
-├── 📂 src/                <-- (新增) 资源文件夹
+├── 📂 apps/
+│   └── ... (各分类文件夹)
+├── 📂 src/
 │   └── 📂 img/
-│       └── 📄 logo.png     <-- (可选) 在此放置您的网站Logo
-│
-├── 📄 index.html           <-- 网站核心文件 (已更新)
-├── 📄 manifest.json        <-- (新增) PWA 配置文件
-└── 📄 sw.js                <-- (新增) PWA Service Worker
+│       └── 📄 logo.png
+├── 📄 index.html
+├── 📄 manifest.json
+└── 📄 sw.js
 ```
 
-- ```src/img/logo.png```: 这是您网站的自定义Logo。如果此文件存在，网站左上角将显示它；如果不存在，则显示默认图标。
+### 二、 核心配置 (在 ```index.html``` 中)
 
-- ```manifest.json``` **和** ```sw.js```: 这两个是实现PWA（渐进式网络应用）功能的文件，能让您的网站被“添加到主屏幕”，像App一样使用。
+所有核心配置依然集中在 ```index.html``` 文件底部的 ```CONFIG``` 对象中。大部分配置保持不变，但请注意以下几点：
 
-### 核心配置 (在 ```index.html``` 中修改)
+- 主题色系统已升级：您仍然只需要在 ```CONFIG.categories``` 中为每个分类设置一个 ```themeColor``` (十六进制颜色码，如 ```'#0ea5e9'```)。新版代码会自动根据这个主色调，智能地生成不同深浅、不同饱和度的颜色，用于 Banner、侧边栏选中状态、卡片背景等，实现了您要求的“同色系但有区分”的视觉效果。
 
-为了让您轻松修改网站的关键信息，我将所有配置项都集中到了 ```index.html``` 文件底部的 ```<script>``` 标签内一个名为 ```CONFIG``` 的对象中。
+- 卡片布局自动化：
 
-打开 ```index.html```，滚动到最下方，您会看到：
+    - l```arge``` **卡片**：新版 ```large``` 卡片会自动从应用的 ```features``` 数组中提取前两个特色功能，并将其展示在卡片上。它还会自动寻找 ```appStore``` 和 ```official``` 类型的下载链接，如果存在，则会以小图标按钮的形式直接显示在卡片上。您无需任何额外配置。
 
-``` javascript
-// ===================================================================================
-// 网站核心配置中心
-// 在这里修改您网站的所有关键信息
-// ===================================================================================
-const CONFIG = {
-  // 1. 网站基础信息
-  siteName: "应用商店", // 会显示在主页Banner和浏览器标签页上
-  siteLogo: "./src/img/logo.png", // 您的自定义Logo路径
+    - ```medium``` **和** ```small``` **卡片**：已根据您提供的参考图完全重制，布局和响应式行为（桌面/移动端显示数量）已内建，您只需在 ```data.js``` 中指定 ```size: "medium"``` 或 ```size: "small"``` 即可。
 
-  // 2. 主页免责声明内容 (支持HTML标签)
-  disclaimer: `
-    <h3 class="text-xl font-bold mb-4">必看</h3>
-    <ul class="space-y-3 list-disc list-inside text-gray-600 dark:text-gray-400">
-      <li>出于学习与交流目的设立本站，本站所有内容与本人无任何关联。</li>
-      <li>本站不提供任何形式的下载，仅为公开信息的搬运及整理。所有跳转链接均来自互联网。</li>
-      <li><strong>请您自觉遵守我国相关法律规定，利用本站提供的信息进行任何操作，所带来的一切后果由您本人承担。</strong></li>
-      <li>严禁在国内社交平台传播本站，请低调使用。</li>
-    </ul>
-    <h3 class="text-xl font-bold mt-8 mb-4">相关法律条列</h3>
-    <p class="text-sm text-gray-500">根据《计算机信息网络国际联网安全保护管理办法》规定，任何单位和个人不得利用国际联网制作、复制、查阅和传播下列信息...</p>
-  `,
+### 三、 数据文件 (```data.js```)
 
-  // 3. 分类信息与主题配置
-  categories: [
-    // 您可以在这里修改名称、data.js路径、图标，以及每个分类的主题色
-    { 
-      id: 'home', 
-      name: '主页', 
-      icon: `...`, // SVG图标代码
-      themeColor: 'bg-gray-500', // 侧边栏选中颜色
-      gradient: 'from-gray-500 to-gray-700' // Banner渐变色
-    },
-    { 
-      id: 'windows', 
-      name: 'PC端', 
-      file: './apps/windows/data.js', 
-      dataKey: 'windowsApps',
-      bannerText: 'Windows 微软',
-      icon: `...`,
-      themeColor: 'bg-sky-500',
-      gradient: 'from-sky-500 to-sky-700'
-    },
-    // ... 其他分类
-  ]
-};
-```
+您的 ```data.js``` 文件结构完全无需改动。新版网页会自动适应您现有的数据结构，并以全新的、更美观的方式将其呈现出来。
 
-- ```siteName```: 修改为您想要的网站名称。
-- ```disclaimer```: 在这里编辑您的主页免责声明，您可以使用 ```<p>```, ```<li>```, ```<strong>``` 等HTML标签来排版。
-- ```categories```: 这是最重要的配置区域。
-    - ```id```: 每个分类的唯一标识，请勿修改。
-    - ```name```: 显示在侧边栏的名称。
-    - ```bannerText```: 显示在该分类页顶部Banner的文字。
-    - ```themeColor```: 侧边栏项目被选中时的背景色。
-    - ```gradient```: 该分类页Banner的渐变背景色。
+例如，一个 ```large``` 卡片的应用数据：
 
-### 三、PWA配置 (```manifest.json```)
-
-为了让网站能被添加到主屏幕，您需要创建 ```manifest.json``` 文件，并填入以下内容。请根据您的喜好修改 ```name``` 和 ```short_name```。
-
-``` javascript
+// ```data.js``` 文件中的一个应用条目
+``` java
 {
-  "name": "应用商店",
-  "short_name": "应用商店",
-  "start_url": ".",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0ea5e9",
-  "description": "一个精美的应用商店网页",
-  "icons": [
-    {
-      "src": "./src/img/logo.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "./src/img/logo.png",
-      "sizes": "512x512",
-      "type": "image/png"
+    name: "PowerToys",
+    category: "系统工具",
+    icon: "...",
+    size: "large", // 指定尺寸
+    rating: "4.8",
+    platform: "PC",
+    description: "...",
+    features: [
+      "颜色选择器",  // <- 会被自动显示在卡片上
+      "窗口置顶",    // <- 会被自动显示在卡片上
+      "批量图像大小调整器" // (这个不会显示在卡片上，但详情页可见)
+    ],
+    downloads: {
+      official: "https://...", // <- 会被自动渲染为卡片上的下载按钮
+      appStore: "ms-windows-store://...", // <- 也会被渲染
+      github: "https://..." // (这个不会显示在卡片上，但详情页可见)
     }
-  ]
 }
 ```
 
-### 四、 Service Worker配置 (```sw.js```)
-
-这是实现离线缓存等PWA功能的脚本。创建 ```sw.js``` 文件，填入以下代码即可，通常无需修改。
-
-``` javascript
-// sw.js
-self.addEventListener('install', (event) => {
-  console.log('Service Worker installing.');
-});
-
-self.addEventListener('fetch', (event) => {
-  event.respondWith(fetch(event.request));
-});
-```
-
-按照以上指南配置后，您的网站将焕然一新，并拥有强大的自定义能力。
+新版本在最大程度上实现了“配置与表现分离”，让您能更专注于内容本身。祝您使用愉快！
