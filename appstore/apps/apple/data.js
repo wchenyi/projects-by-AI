@@ -15,7 +15,7 @@ export const windowsApps = [
     
     // --- 详情页信息 ---
     rating: "4.9", // 推荐指数/评分
-    platform: "Mac, IOS, iPadOS, visionOS, TVOS", // 支持的平台
+    platform: "PC, Linux", // 支持的平台
     type: "mobile", //  在这里注明是桌面端还是移动端
     description: "一个类似于v2ray的代理软件，调整单个节点非常方便。", // 应用简介
     features: [ // 特色功能列表，每个功能占一行
@@ -35,7 +35,6 @@ export const windowsApps = [
     name: "Stash", // 1. 修改应用名称
     category: "工具", // 2. 修改分类
     icon: "https://stash.ws/images/logo.png", // 3. 修改图标路径    
-    type: "desktop", //  在这里注明是桌面端还是移动端
     size: "large", // 4. 决定卡片大小
     rating: "5.0", // 5. 填写评分
     platform: "Mac, IOS, iPadOS, visionOS, TVOS", // 6. 填写支持平台
@@ -88,6 +87,8 @@ export const windowsApps = [
    downloads: {
       official: "https://quantumultx.org/", // 官网链接
       appStore: "https://apps.apple.com/us/app/quantumult-x/id1443988620?l=zh", // 应用商店链接 (例如 Microsoft Store)
+      github: "https://github.com/microsoft/PowerToys/", // Github 链接
+      alternative: "https://.../powertoys.zip" // 备用下载链接
         }
   },
   {
@@ -147,4 +148,5 @@ export const windowsApps = [
         }
   },
 ];
+
 
