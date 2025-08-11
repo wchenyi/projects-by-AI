@@ -279,7 +279,7 @@ export const windowsApps = [
     rating: "4.0",
     platform: "多平台",
     description: "多平台，新软件。",
-    features: ["其他软件"],
+    features: ["新起之秀", "多平台支持", "界面美观"],
     downloads: {
       github: "https://github.com/KaringX/karing"
     }
@@ -298,6 +298,7 @@ export const windowsApps = [
     }
   }
 ];
+
 
 
 
