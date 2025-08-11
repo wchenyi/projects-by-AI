@@ -27,7 +27,7 @@ export const appleApps = [
     size: "large",
     rating: "5.0",
     platform: "Mac, IOS, iPadOS, visionOS, TVOS",
-    type: "desktop",
+    type: "mobile",
     description: "一个类似于clash的应用。",
     features: ["轻松上手", "界面美观", "可玩性高", "分流强大"],
     downloads: {
@@ -72,48 +72,58 @@ export const appleApps = [
   {
     name: "OneClick",
     category: "工具",
-    icon: "apps/apple/img/OneClick.png",
+    icon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHMAAAA0CAMAAACOwPcAAAAAV1BMVEUAAAAwMDAwMDAyMjIwMDAyMjIwMDAzMzMzMzMyMjIzMzMzMzMyMjIyMjIyMjIzMzMyMjIyMjIyMjIyMjIzMzMyMjIyMjIzMzMzMzMzMzMxMTEwMDAzMzM6ye9sAAAAHHRSTlMAEDBgQO8g8L/QoM+Qn+BQwIBwj6/ff29fsD9P0jF5gwAAAt9JREFUeF6l2Omy4ygMBeAjwOB9i53ljt7/OcfVlbQKbKy47/czZeqgIAIx9n4eXbnyZi3vP/gn5rE0vCnK5f5DUDwXjhSdw0X+tnKkeXhk0b3gvfWJC1zJBzqTq1EStVQ9MdUR9qjkvMZBB19yXjEgZQo+1REUdOdzNyVSn2fKrKxZSIlUhqTurONSiex5p3DIMA3vBN7r8EHxiGpyhA25Ng2+49CQzvllPTZw88iRAW8tC649BIZkTEnYu3GktwRBU2BRvMc7FqNHwsWpq1E2WbBIUMuixh9N8knKhrh/T5eyJexZFi75YMIhekWVPPId3zscMiHu3SZbpRjCcffB6kWmz3nASL8Ssnx1uFMfLDgMyKtlYoAssAfOB4mGsEHHgqvz8f37qdkAq/rNSiOIaRdZkz68mj02XitTOFnUeRc5Q/OafTr7ChrpPptuy2BxQStLq6NKIhsWweCKMfkl1EODSyP7a5GyOwnfoDGY9CCqCNfwB77kL0f+PlON1Cltq2xUNVKv83pkDZWe+ftIXa9k6pHmhovG6CxV3XaRQ5G7++rHxQRNepDYv3U310JnfhuhouUwctN4XGD4g6CgJhO5KQw0T5lX4Lfpyi9BcMnqFhbnHHNzN8mCFoQzNoo0n2NGKO1b8obXmwEw8EenNGwaCdCo3LeFjbq91896+DJz86nTq6++MA7AJIMMvvk/MlJy5osbqe3XY0MhagStSK4RsayXaiSS7W7UQ32xYQ9vSWLxSLmC4zI3FYv1eZoYXO6+LTp/8l7jM95HM23kTdR/XcGsn5ZUc2x5fp4zjyiR22RNRFGWy30pOdUiwwZONOWtK8uVY1XcCLreIctUrONAEJhY1RLOTKwKBhF7vUi9VK0ZXOATE0E3B05of6L8K/+4x1eo5Zx+wCE3Kok6X/ORMCHL1YFjfetxCc0VJ17q2TqNPb+Nk8F18PMYPlMe2wHfMW5D+AVyG4Mj/wNAbPJj5VpeAgAAAABJRU5ErkJggg==",
     size: "medium",
     rating: "4.5",
     platform: "iOS, iPadOS",
     type: "mobile",
     description: "苹果端免费软件，安卓端也有此软件，覆盖基础功能，可单独开热点。",
+    features: ["功能强大", "界面美观", "自定义程度高"],
     downloads: {
-      official: "https://oneclick.earth/#/"
+      official: "https://oneclick.earth/#/",
+      appstore: "https://apps.apple.com/us/app/oneclick-safe-easy-fast/id1545555197"
     }
   },
   {
     name: "Kitsunebi",
     category: "工具",
-    icon: "apps/apple/img/Kitsunebi.png",
+    icon: "https://img.jiaochengzhijia.com/uploadfile/2023/0104/20230104115032397.jpg@crop@150x150.jpg",
     size: "medium",
     rating: "4.5",
     platform: "iOS, iPadOS",
     type: "mobile",
+    description: "苹果端免费软件，覆盖基础功能，可单独开热点。",
+    features: ["功能强大", "界面美观", "自定义程度高"],
     downloads: {
       appStore: "https://apps.apple.com/us/app/kitsunebi-proxy-utility/id1446584073"
+      
     }
   },
   {
     name: "Egern",
     category: "工具",
-    icon: "apps/apple/img/Egern.png",
+    icon: "https://egernapp.com/zh-CN/img/logo.svg",
     size: "medium",
     rating: "4.5",
     platform: "iOS, iPadOS",
     type: "mobile",
+    description: "苹果端免费软件，覆盖基础功能。",
+    features: ["功能强大", "界面美观", "自定义程度高"],
     downloads: {
-      appStore: "https://apps.apple.com/hk/app/egern/id1616105820"
+      appStore: "https://apps.apple.com/hk/app/egern/id1616105820",
+      official: "https://egernapp.com/zh-CN/"
     }
   },
   {
     name: "LanceX",
     category: "工具",
-    icon: "apps/apple/img/LanceX.png",
+    icon: "https://shadowboat.app/lancex/doc/apple-touch-icon.png",
     size: "medium",
     rating: "4.5",
     platform: "iOS, iPadOS",
     type: "mobile",
+    description: "苹果端免费软件，覆盖基础功能。",
+    features: ["功能强大", "界面美观", "自定义程度高"],
     downloads: {
       appStore: "https://apps.apple.com/hk/app/lancex/id1536754048"
     }
@@ -127,7 +137,8 @@ export const appleApps = [
     platform: "iOS, iPadOS",
     type: "mobile",
     downloads: {
-      appStore: "https://apps.apple.com/hk/app/puff-glide/id6463709890"
+      appStore: "https://apps.apple.com/hk/app/puff-glide/id6463709890",
+      official: "https://shadowboat.app/lancexapp/"
     }
   },
   {
@@ -650,5 +661,6 @@ export const appleApps = [
   }
 },
 ];
+
 
 
