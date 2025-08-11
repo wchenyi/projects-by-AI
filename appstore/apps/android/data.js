@@ -5,7 +5,7 @@ export const androidApps = [
   {
     name: "Clash For Android",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://clashe.org/wp-content/uploads/2024/10/logo-2.png", // Placeholder icon
     size: "large",
     rating: "5.0",
     platform: "Android",
@@ -21,7 +21,7 @@ export const androidApps = [
   {
     name: "v2RayNG",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://ts2.tc.mm.bing.net/th/id/OIP-C.bvgPvhC-0YJnoR_lkJT2sAAAAA?rs=1&pid=ImgDetMain&o=7&rm=3", // Placeholder icon
     size: "large",
     rating: "5.0",
     platform: "Android",
@@ -37,7 +37,7 @@ export const androidApps = [
   {
     name: "ClashMeta",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://mogua.co/download/99b5fb7dda6fe114e45fdc3b6d170358-icon.png", // Placeholder icon
     size: "large",
     rating: "5.0",
     platform: "多平台",
@@ -51,9 +51,9 @@ export const androidApps = [
     }
   },
   {
-    name: "F1Clash",
+    name: "FIClash",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://www.clashis.com/wp-content/uploads/2024/11/cropped-Clash-logo.png", // Placeholder icon
     size: "large",
     rating: "5.0",
     platform: "全平台",
@@ -113,12 +113,12 @@ export const androidApps = [
   {
     name: "Hiddify",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://hiddify.com/assets/ic_hiddify_wiki.png", // Placeholder icon
     size: "medium",
     rating: "4.5",
     platform: "Android",
-    description: "",
-    features: [],
+    description: "简单易用，多平台支持",
+    features: ["使用便捷", "多平台", "功能简约"],
     downloads: {
       official: "https://hiddify.com",
       appStore: "https://play.google.com/store/apps/details?id=ang.hiddify.com"
@@ -127,12 +127,12 @@ export const androidApps = [
   {
     name: "Hiddify-next",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://hiddifynext.org/wp-content/uploads/2024/06/1717385658-favicon.png", // Placeholder icon
     size: "medium",
     rating: "4.5",
     platform: "Android",
-    description: "",
-    features: [],
+    description: "简单易用，多平台支持，轻量版",
+    features: ["使用便捷", "多平台", "功能简约", "轻量版"],
     downloads: {
       github: "https://github.com/hiddify/hiddify-next/releases",
       appStore: "https://play.google.com/store/apps/details?id=app.hiddify.com"
@@ -141,12 +141,12 @@ export const androidApps = [
   {
     name: "sing-box",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://en.faridsguide.com/wp-content/uploads/2023/09/sing-box.jpg", // Placeholder icon
     size: "medium",
     rating: "4.5",
     platform: "Android, Win, iOS, Apple TV",
     description: "少有的免费，支持安卓、Win、iOS、Apple TV的软件。",
-    features: [],
+    features: ["免费使用", "配置独特", "界面清爽"],
     downloads: {
       github: "https://github.com/SagerNet/sing-box"
     }
@@ -154,12 +154,12 @@ export const androidApps = [
   {
     name: "karing",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://karing.app/img/logo.png", // Placeholder icon
     size: "medium",
     rating: "4.5",
     platform: "多平台",
     description: "多平台，新软件。",
-    features: [],
+    features: ["新起之秀", "多平台支持", "界面美观"],
     downloads: {
       github: "https://github.com/KaringX/karing"
     }
@@ -167,12 +167,12 @@ export const androidApps = [
   {
     name: "Clash MultuPlatform",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://ts2.tc.mm.bing.net/th/id/OIP-C.IisKG27ugAKDyVq-fDkjFwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3", // Placeholder icon
     size: "medium",
     rating: "4.5",
     platform: "多平台",
     description: "cfa作者在cfa之后的多平台代理软件，目前删库。",
-    features: [],
+    features: ["多平台", "已删库"],
     downloads: {
       official: "https://t.me/c/1834195052/42",
       alternative: "https://musetransfer.com/s/q5ot9fud0"
@@ -181,12 +181,12 @@ export const androidApps = [
   {
     name: "Clash You",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://ts2.tc.mm.bing.net/th/id/OIP-C.IisKG27ugAKDyVq-fDkjFwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3", // Placeholder icon
     size: "medium",
     rating: "4.5",
     platform: "Android",
     description: "于2023年停止更新，MD3设计风格的Clash。",
-    features: [],
+    features: ["新起之秀", "界面美观"],
     downloads: {
       github: "https://github.com/Yos-X/ClashYou/releases"
     }
@@ -440,3 +440,4 @@ export const androidApps = [
     }
   }
 ];
+
