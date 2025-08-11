@@ -1,77 +1,442 @@
+// apps/android/data.js
+
 export const androidApps = [
+  // --- Large Cards ---
   {
-    // --- 基础信息 ---
-    name: "Visual Studio Code", // 应用名称
-    category: "开发", // 应用的分类，会显示在卡片上
-    icon: "https://s1.aigei.com/src/img/png/37/371e854770f44605a1a3f1fa72e4323b.png?e=2051020800&token=P7S2Xpzfz11vAkASLTkfHN7Fw-oOZBecqeJaxypL:vIDeR8QCV-VkxHrq1c-XTnld5-s=", // 图标路径。本地图标请以 "apps/" 开头。也可以是网络链接 "https://..."
-    
-    // --- 卡片样式 ---
-    size: "medium", // 卡片大小: 'small', 'medium', 'large' (large会占据更多空间，用于主推应用)
-    
-    // --- 详情页信息 ---
-    rating: "4.9", // 推荐指数/评分
-    platform: "PC, Linux", // 支持的平台
-    description: "一个轻量级但功能强大的源代码编辑器，支持几乎所有主流的开发语言。", // 应用简介
-    features: [ // 特色功能列表，每个功能占一行
-      "智能感知",
-      "代码调试",
-      "Git集成",
-      "海量插件"
-    ],
-  downloads: {
-      github: "https://github.com/microsoft/PowerToys/", // Github 链接
-      official: "https://learn.microsoft.com/zh-cn/windows/powertoys/install", // 官网链接
-      appStore: "ms-windows-store://pdp/?productid=9MT60BCXJ3TT", // 应用商店链接 (例如 Microsoft Store)
-      alternative: "https://.../powertoys.zip" // 备用下载链接
-    }
-  },
-  {
-    // --- 基础信息 ---
-    name: "PowerToys",
-    category: "系统工具",
-    icon: "https://img.netzwelt.de/dw160_dh160_sw0_sh0_sx0_sy0_sr1x1_nu1/picture/original/2020/05/microsoft-powertoys-logo-277453.png",
-    size: "medium",
-    
-    // --- 详情页信息 ---
-    rating: "4.8",
-    platform: "PC",
-    description: "Microsoft PowerToys 是一组实用工具...",
-    features: [
-      "颜色选择器",
-      "窗口置顶",
-      "批量图像大小调整器"
-    ],
-
-    // --- 下载链接 (新增) ---
-    // 这是一个对象，您可以按需提供以下四种链接中的任意几种。
-    // 如果某个应用没有某种下载方式，直接省略那一行即可。
+    name: "Clash For Android",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "large",
+    rating: "5.0",
+    platform: "Android",
+    description: "资源占用较低（参考值：27.58MB）。高阶操作需配置代码，可单独开热点，不可单独混淆。",
+    features: ["低资源占用", "配置灵活", "支持热点"],
     downloads: {
-      github: "https://github.com/microsoft/PowerToys/", // Github 链接
-      official: "https://learn.microsoft.com/zh-cn/windows/powertoys/install", // 官网链接
-      appStore: "ms-windows-store://pdp/?productid=9MT60BCXJ3TT", // 应用商店链接 (例如 Microsoft Store)
-      alternative: "https://.../powertoys.zip" // 备用下载链接
+      github: "https://github.com/Kr328/ClashForAndroid/releases",
+      alternative: "https://musetransfer.com/s/25jgukrue",
+      appStore: "https://play.google.com/store/search?q=clash&c=apps&hl=zh_CN",
+      official: "https://d3.netfiles.pw/v2/android/ClashForAndroid-v2.5.4.apk"
     }
   },
   {
-    name: "MyCoolApp", // 1. 修改应用名称
-    category: "工具", // 2. 修改分类
-    icon: "apps/windows/img/MyCoolApp.png", // 3. 修改图标路径
-    size: "large", // 4. 决定卡片大小
-    rating: "5.0", // 5. 填写评分
-    platform: "PC", // 6. 填写支持平台
-    description: "这是我的超酷应用，它能做很多很棒的事情。", // 7. 填写简介
-    features: [ // 8. 填写特色功能
-      "一键完成任务",
-      "界面美观",
-      "运行速度快"
-    ],
-        downloads: {
-      github: "https://github.com/microsoft/PowerToys/", // Github 链接
-      official: "https://learn.microsoft.com/zh-cn/windows/powertoys/install", // 官网链接
-      appStore: "ms-windows-store://pdp/?productid=9MT60BCXJ3TT", // 应用商店链接 (例如 Microsoft Store)
-      alternative: "https://.../powertoys.zip" // 备用下载链接
-        }
+    name: "v2RayNG",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "large",
+    rating: "5.0",
+    platform: "Android",
+    description: "资源占用较高（参考值：60.23MB）。高阶操作无需代码，可单独开热点（鸿蒙系统热点可能有Bug），可单独混淆。",
+    features: ["图形化操作", "支持热点", "支持混淆"],
+    downloads: {
+      github: "https://github.com/2dust/v2rayNG/releases",
+      alternative: "https://musetransfer.com/s/0z1ny21fc",
+      appStore: "https://play.google.com/store/search?q=v2ray&c=apps&hl=zh_CN",
+      official: "https://d3.netfiles.pw/v2/android/v2rayNG-v1.7.3.apk"
+    }
   },
+  {
+    name: "ClashMeta",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "large",
+    rating: "5.0",
+    platform: "多平台",
+    description: "多平台支持，详情可查阅Wiki。",
+    features: ["多平台", "Meta核心", "文档齐全"],
+    downloads: {
+      github: "https://github.com/MetaCubeX/ClashMetaForAndroid/",
+      alternative: "https://musetransfer.com/s/y43osk4bw",
+      appStore: "https://play.google.com/store/apps/details?id=com.github.metacubex.clash.meta",
+      official: "https://clashmeta.xyz/"
+    }
+  },
+  {
+    name: "F1Clash",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "large",
+    rating: "5.0",
+    platform: "全平台",
+    description: "基于ClashMeta，Material You设计风格，全平台，资源占用较大。",
+    features: ["ClashMeta内核", "Material You", "全平台"],
+    downloads: {
+      github: "https://github.com/chen08209/FlClash"
+    }
+  },
+
+  // --- Medium Cards ---
+  {
+    name: "OneClick",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "medium",
+    rating: "4.5",
+    platform: "Android, iOS",
+    description: "资源占用较低（参考值：57.45MB）。苹果和安卓端都有此软件、免费，可单独开热点。",
+    features: [],
+    downloads: {
+      official: "https://oneclick.earth/#/",
+      appStore: "https://play.google.com/store/apps/details?id=earth.oneclick"
+    }
+  },
+  {
+    name: "NekoBoxForAndroid",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "medium",
+    rating: "4.5",
+    platform: "全平台",
+    description: "资源占用较低（参考值：50.89MB）。全平台覆盖，使用sing-box内核，有插件可选，功能实用，比较推荐。",
+    features: [],
+    downloads: {
+      github: "https://github.com/MatsuriDayo/NekoBoxForAndroid",
+      alternative: "https://musetransfer.com/s/vnfu2gpto",
+      appStore: "https://play.google.com/store/apps/details?id=moe.nb4a",
+      official: "https://matsuridayo.github.io/"
+    }
+  },
+  {
+    name: "Matsuri",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "medium",
+    rating: "4.5",
+    platform: "Android",
+    description: "资源占用较低（参考值：50.64MB）。和NB4A一个作者，为长期版本，可将节点添加到桌面。",
+    features: [],
+    downloads: {
+      github: "https://github.com/MatsuriDayo/Matsuri",
+      alternative: "https://musetransfer.com/s/qusu1bsni",
+      appStore: "https://play.google.com/store/apps/details?id=moe.matsuri.lite"
+    }
+  },
+  {
+    name: "Hiddify",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "medium",
+    rating: "4.5",
+    platform: "Android",
+    description: "",
+    features: [],
+    downloads: {
+      official: "https://hiddify.com",
+      appStore: "https://play.google.com/store/apps/details?id=ang.hiddify.com"
+    }
+  },
+  {
+    name: "Hiddify-next",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "medium",
+    rating: "4.5",
+    platform: "Android",
+    description: "",
+    features: [],
+    downloads: {
+      github: "https://github.com/hiddify/hiddify-next/releases",
+      appStore: "https://play.google.com/store/apps/details?id=app.hiddify.com"
+    }
+  },
+  {
+    name: "sing-box",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "medium",
+    rating: "4.5",
+    platform: "Android, Win, iOS, Apple TV",
+    description: "少有的免费，支持安卓、Win、iOS、Apple TV的软件。",
+    features: [],
+    downloads: {
+      github: "https://github.com/SagerNet/sing-box"
+    }
+  },
+  {
+    name: "karing",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "medium",
+    rating: "4.5",
+    platform: "多平台",
+    description: "多平台，新软件。",
+    features: [],
+    downloads: {
+      github: "https://github.com/KaringX/karing"
+    }
+  },
+  {
+    name: "Clash MultuPlatform",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "medium",
+    rating: "4.5",
+    platform: "多平台",
+    description: "cfa作者在cfa之后的多平台代理软件，目前删库。",
+    features: [],
+    downloads: {
+      official: "https://t.me/c/1834195052/42",
+      alternative: "https://musetransfer.com/s/q5ot9fud0"
+    }
+  },
+  {
+    name: "Clash You",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "medium",
+    rating: "4.5",
+    platform: "Android",
+    description: "于2023年停止更新，MD3设计风格的Clash。",
+    features: [],
+    downloads: {
+      github: "https://github.com/Yos-X/ClashYou/releases"
+    }
+  },
+
+  // --- Small Cards ---
+  {
+    name: "Shadowrocket",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "资源占用较高（参考值：98.24MB）。自带免费节点，可单独开热点，可单独用混淆。",
+    features: [],
+    downloads: {
+      appStore: "https://play.google.com/store/apps/details?id=com.v2cross.shadowrocket"
+    }
+  },
+  {
+    name: "Kitsunebi",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "",
+    features: [],
+    downloads: {
+      github: "https://github.com/eycorsican/kitsunebi-android/releases",
+      alternative: "https://apkpure.com/kitsunebi/fun.kitsunebi.kitsunebi4android",
+      appStore: "https://play.google.com/store/apps/details?id=fun.kitsunebi.kitsunebi4android&hl=zh_CN"
+    }
+  },
+  {
+    name: "BifrostV",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "",
+    features: [],
+    downloads: {
+      official: "https://apkpure.com/cn/bifrostv/com.github.dawndiy.bifrostv",
+      alternative: "https://github.com/wchenyi/wall/raw/gh-pages/%E5%AE%89%E5%8D%93/BifrostV.apk",
+      appStore: "https://play.google.com/store/apps/details?id=com.github.dawndiy.bifrostv"
+    }
+  },
+  {
+    name: "SagerNet",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "类似v2rayng的软件，但是支持的协议比较多。",
+    features: [],
+    downloads: {
+      github: "https://github.com/SagerNet/SagerNet/releases/",
+      appStore: "https://play.google.com/store/apps/details?id=io.nekohasekai.sagernet"
+    }
+  },
+  {
+    name: "Tinyproxy",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "资源占用较高（参考值：98.24MB）。需代码，可单独用混淆，可单独开热点。",
+    features: [],
+    downloads: {
+      official: "https://tinyproxy.github.io",
+      alternative: "https://github.com/wchenyi/wall/raw/gh-pages/%E5%AE%89%E5%8D%93/TinyProxy.apk"
+    }
+  },
+  {
+    name: "Pharos Pro",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "",
+    features: [],
+    downloads: {
+      github: "https://github.com/PharosVip/Pharos-Android-Test/releases"
+    }
+  },
+  {
+    name: "ssrray",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "对免流设置和检测页面友好，资源占用较高（参考值：116MB）。",
+    features: [],
+    downloads: {
+      github: "https://github.com/xxf098/shadowsocksr-v2ray-trojan-android/releases"
+    }
+  },
+  {
+    name: "ClashA",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "已停止更新，已有各版本仍可使用。",
+    features: [],
+    downloads: {
+      official: "https://github.com/ccg2018/ClashA/releases"
+    }
+  },
+  {
+    name: "ClashAR",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "",
+    features: [],
+    downloads: {
+      github: "https://github.com/Qv2ray/Qv2ray"
+    }
+  },
+  {
+    name: "ClashR",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "",
+    features: [],
+    downloads: {
+      github: "https://github.com/naicfeng/ClashRForAndroid/releases"
+    }
+  },
+  {
+    name: "Shadowsocksr",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "可单独用混淆，是协议，也有同名网站。",
+    features: [],
+    downloads: {
+      github: "https://github.com/shadowsocksr-backup/shadowsocksr-android/releases",
+      appStore: "https://play.google.com/store/apps/details?id=com.hdev.shadowsocksr"
+    }
+  },
+  {
+    name: "Shadowsocks",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "是协议，也有同名软件。",
+    features: [],
+    downloads: {
+      github: "https://github.com/shadowsocks/shadowsocks-android/releases",
+      appStore: "https://play.google.com/store/search?q=Shadowsocks&c=apps"
+    }
+  },
+  {
+    name: "igniter",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "专为Trojan协议的客户端。",
+    features: [],
+    downloads: {
+      github: "https://github.com/trojan-gfw/igniter/releases",
+      appStore: "https://play.google.com/store/search?q=igniter&c=apps"
+    }
+  },
+  {
+    name: "v2flyNG",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "和v2rayNG是同一个作者，是v2rayNG的付费版本。",
+    features: [],
+    downloads: {
+      github: "https://github.com/2dust/v2flyNG/releases",
+      appStore: "https://play.google.com/store/apps/details?id=com.v2ray.v2fly"
+    }
+  },
+  {
+    name: "Trojan",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "是协议，也有同名软件。",
+    features: [],
+    downloads: {
+      appStore: "https://play.google.com/store/apps/details?id=com.crosserr.trojan"
+    }
+  },
+  {
+    name: "AnXray",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "Android系统Trojan客户端，GitHub已经删库。",
+    features: [],
+    downloads: {
+      official: "https://itlanyan.com/download.php?filename=/v2/android/AnXray-v0.4rc06.apk"
+    }
+  },
+  {
+    name: "Outline",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "多平台",
+    description: "多平台，谷歌团队神秘加成。",
+    features: [],
+    downloads: {
+      official: "https://getoutline.org/zh-CN/",
+      github: "https://github.com/Jigsaw-Code/outline-client/releases/tag/v1.10.0-2",
+      appStore: "https://play.google.com/store/apps/details?id=org.outline.android.client"
+    }
+  },
+  {
+    name: "clash-rev",
+    category: "代理工具",
+    icon: "./src/img/logo.png", // Placeholder icon
+    size: "small",
+    rating: "4.0",
+    platform: "Android",
+    description: "clash删库后继承的项目，目前为了不必要的竞争，已经存档。",
+    features: [],
+    downloads: {
+      github: "https://github.com/MerlinKodo/clash-rev"
+    }
+  }
 ];
-
-
