@@ -123,57 +123,67 @@ export const appleApps = [
     platform: "iOS, iPadOS",
     type: "mobile",
     description: "苹果端免费软件，覆盖基础功能。",
-    features: ["功能强大", "界面美观", "自定义程度高"],
+    features: ["功能强大", "界面美观", "简易便捷"],
     downloads: {
-      appStore: "https://apps.apple.com/hk/app/lancex/id1536754048"
+      appStore: "https://apps.apple.com/hk/app/lancex/id1536754048",
+      official: "https://shadowboat.app/lancexapp/"
     }
   },
   {
     name: "PuffGlide",
     category: "工具",
-    icon: "apps/apple/img/PuffGlide.png",
+    icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple126/v4/42/c3/0a/42c30acc-b3d0-8279-f1b2-e77be1a725fd/AppIcon-0-0-1x_U007epad-0-85-220.png/1200x1200mv.webp",
     size: "medium",
     rating: "4.5",
     platform: "iOS, iPadOS",
     type: "mobile",
+    description: "苹果端免费软件，覆盖基础功能。",
+    features: ["功能强大", "界面美观", "简易便捷"],
     downloads: {
       appStore: "https://apps.apple.com/hk/app/puff-glide/id6463709890",
-      official: "https://shadowboat.app/lancexapp/"
+      
     }
   },
   {
     name: "Loon",
     category: "工具",
-    icon: "apps/apple/img/Loon.png",
+    icon: "https://nsloon.uk/logo.webp",
     size: "medium",
     rating: "4.5",
     platform: "iOS, iPadOS",
     type: "mobile",
+    description: " iOS 平台上功能最强大、最灵活的网络代理工具之一。",
+    features: ["功能强大", "界面美观", "简易便捷"],
     downloads: {
-      appStore: "https://apps.apple.com/hk/app/loon/id1373567447"
+      appStore: "https://apps.apple.com/hk/app/loon/id1373567447",
+      official: "https://nsloon.uk/    "
     }
   },
   {
     name: "Loon-lite",
     category: "工具",
-    icon: "apps/apple/img/Loon-lite.png",
+    icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple116/v4/e2/a8/1f/e2a81f83-7fa7-34cc-6779-648955d2a159/AppIcon-0-1x_U007emarketing-0-7-0-85-220-0.png/180x180bb.png",
     size: "medium",
     rating: "4.5",
     platform: "iOS, iPadOS",
     type: "mobile",
+    description: " Loon的轻量版，更低价格",
+    features: ["功能强大", "界面美观", "简易便捷"],
     downloads: {
-      appStore: "https://apps.apple.com/hk/app/loon-lite/id6444029612"
+      appStore: "https://apps.apple.com/hk/app/loon-lite/id6444029612",
+      official: "https://nsloon.uk/"
     }
   },
   {
     name: "Hiddify-next",
     category: "工具",
-    icon: "apps/apple/img/Hiddify-next.png",
+    icon: "https://hiddifynext.org/wp-content/uploads/2024/06/1717385658-favicon.png",
     size: "medium",
     rating: "4.5",
     platform: "多平台",
     type: "mobile",
-    description: "多平台",
+    description: "苹果端免费软件，覆盖基础功能。",
+    features: ["功能强大", "界面美观", "简易便捷"],
     downloads: {
       official: "https://hiddify.com"
     }
@@ -181,39 +191,46 @@ export const appleApps = [
   {
     name: "Choc",
     category: "工具",
-    icon: "apps/apple/img/Choc.png",
+    icon: "https://choc.watfaq.com/~gitbook/image?url=https%3A%2F%2F1265905731-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FE8jwTAUjXK597fB3tJQ5%252Ficon%252FWn6Ik9v9MZi3wvczJmsa%252F389FEE9C-4316-4863-95EC-B5A1D3057587.png%3Falt%3Dmedia%26token%3D64841706-23d9-4b69-bec5-8fdcf1a9708d&width=32&dpr=4&quality=100&sign=c9fe395d&sv=2",
     size: "medium",
     rating: "4.5",
     platform: "iOS, iPadOS",
     type: "mobile",
+    description: "苹果端clash同源软件。",
+    features: ["界面美观", "简易便捷"],
     downloads: {
-      appStore: "https://apps.apple.com/hk/app/choc/id1582542227"
+      appStore: "https://apps.apple.com/hk/app/choc/id1582542227",
+      official: "https://choc.watfaq.com/"
     }
   },
   {
     name: "ClashX",
     category: "工具",
-    icon: "apps/apple/img/ClashX.png",
+    icon: "https://www.mtmup.com/wp-content/uploads/2024/04/ClashX-Pro-150x150.png",
     size: "medium",
     rating: "4.5",
     platform: "iOS, iPadOS",
     type: "mobile",
-    description: "大陆ID即可",
+    description: "苹果端免费软件，覆盖基础功能。",
+    features: ["功能强大", "界面美观", "简易便捷"],
     downloads: {
-      appStore: "https://apps.apple.com/hk/app/clashx-服务监控面板/id6444824570"
+      appStore: "https://apps.apple.com/hk/app/clashx-服务监控面板/id6444824570",
+      official: "https://clashx.wiki/official/"
     }
   },
   {
     name: "Clash Dash",
     category: "工具",
-    icon: "apps/apple/img/ClashDash.png",
+    icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/ef/cc/12/efcc12f1-aad5-2057-8698-55be787334bc/AppIcon-0-0-1x_U007epad-0-1-85-220.png/1200x1200mv.webp",
     size: "medium",
     rating: "4.5",
     platform: "iOS, iPadOS",
     type: "mobile",
-    description: "大陆ID即可",
+    description: "苹果端软件，大陆ID即可。",
+    features: ["功能强大", "界面美观", "简易便捷"],
     downloads: {
-      appStore: "https://apps.apple.com/cn/app/clash-dash/id6738882561"
+      appStore: "https://apps.apple.com/cn/app/clash-dash/id6738882561?platform=iphone",
+      github: "https://github.com/bin64/Clash-Dash"
     }
   },
 
@@ -439,48 +456,59 @@ export const appleApps = [
 {
   name: "ClashX",
   category: "工具",
-  icon: "apps/apple/img/ClashX.png",
+  icon: "https://clashx.wiki/wp-content/uploads/2025/01/ClashX.png",
   size: "large",
   rating: "5.0",
   platform: "MacOS",
   type: "desktop",
+  description: "苹果端免费软件，多平台。",
+    features: ["功能强大", "界面美观", "简易便捷"],
   downloads: {
-    official: "https://clashx.org/",
-    alternative: "https://d2.netfiles.pw/v2/macos/ClashX-Pro-v1.70.0.2.dmg"
+    official: "https://clashx.wiki/official/",
+    alternative: "https://d2.netfiles.pw/v2/macos/ClashX-Pro-v1.70.0.2.dmg",
+    github: "https://github.com/bannedbook/ClashX/releases"
   }
 },
 {
   name: "ClashXMeta",
   category: "工具",
-  icon: "apps/apple/img/ClashXMeta.png",
+  icon: "https://mogua.co/download/99b5fb7dda6fe114e45fdc3b6d170358-icon.png",
   size: "large",
   rating: "5.0",
   platform: "MacOS",
   type: "desktop",
+  description: "苹果端免费软件，多平台。",
+    features: ["功能强大", "界面美观", "简易便捷"],
   downloads: {
-    github: "https://github.com/MetaCubeX/ClashX.Meta"
+    github: "https://github.com/MetaCubeX/ClashX.Meta",
+    official: "https://clashmetacn.com/"
   }
 },
 {
   name: "Stash",
   category: "工具",
-  icon: "apps/apple/img/Stash.png",
+  icon: "https://stashapp.uk/assets/logo.png",
   size: "large",
   rating: "5.0",
   platform: "MacOS",
   type: "desktop",
+  description: "苹果端多系统软件。",
+    features: ["功能强大", "界面美观", "简易便捷"],
   downloads: {
-    official: "https://stash.ws"
+    official: "https://stash.ws",
+    appstore: "https://apps.apple.com/us/app/stash-rule-based-proxy/id1596063349?platform=iphone"
   }
 },
 {
   name: "Surge for Mac",
   category: "工具",
-  icon: "apps/apple/img/SurgeMac.png",
+  icon: "https://i.altapps.net/icons/surge-for-mac-53ae1.png",
   size: "large",
   rating: "5.0",
   platform: "MacOS",
   type: "desktop",
+  description: "苹果端多系统软件。",
+    features: ["功能强大", "界面美观", "简易便捷"],
   downloads: {
     official: "https://nssurge.com"
   }
@@ -488,47 +516,58 @@ export const appleApps = [
 {
   name: "Clash Verge",
   category: "工具",
-  icon: "apps/apple/img/ClashVerge.png",
+  icon: "https://zh.opensuse.org/images/6/67/Clash-verge.png",
   size: "large",
   rating: "5.0",
   platform: "MacOS",
   type: "desktop",
+  description: "苹果端多系统软件，多平台。",
+    features: ["功能强大", "界面美观", "简易便捷"],
   downloads: {
-    github: "https://github.com/zzzgydi/clash-verge/releases"
+    github: "https://github.com/zzzgydi/clash-verge/releases",
+    official: "https://clash-verge.com/download/"
   }
 },
 {
   name: "clash-verge-rev",
   category: "工具",
-  icon: "apps/apple/img/clash-verge-rev.png",
+  icon: "https://clash-verge-rev.org/assets/logo.png",
   size: "large",
   rating: "5.0",
   platform: "MacOS",
   type: "desktop",
+   description: "Clash Verge 的延续。",
+    features: ["功能强大", "界面美观", "简易便捷"],
   downloads: {
-    github: "https://github.com/clash-verge-rev/clash-verge-rev"
+    github: "https://github.com/clash-verge-rev/clash-verge-rev",
+    official: "https://clash-verge-rev.org/"
   }
 },
 {
   name: "Mihomo Party",
   category: "工具",
-  icon: "apps/apple/img/MihomoParty.png",
+  icon: "https://mihomo.party/logo.png",
   size: "large",
   rating: "5.0",
   platform: "MacOS",
   type: "desktop",
+  description: "一个更易用的代理客户端。",
+    features: ["功能强大", "界面美观", "简易便捷"],
   downloads: {
-    github: "https://github.com/pompurin404/mihomo-party/releases"
+    github: "https://github.com/pompurin404/mihomo-party/releases",
+    official: "https://mihomo.party/"
   }
 },
 {
-  name: "F1Clash",
+  name: "FIClash",
   category: "工具",
-  icon: "apps/apple/img/F1Clash.png",
+  icon: "https://mihomo.party/logo.png",
   size: "large",
   rating: "5.0",
   platform: "MacOS",
   type: "desktop",
+  description: "material you设计风格，类surfboard。",
+    features: ["功能强大", "界面美观", "简易便捷"],
   downloads: {
     github: "https://github.com/chen08209/FlClash"
   }
@@ -538,11 +577,13 @@ export const appleApps = [
 {
   name: "Qv2ray",
   category: "工具",
-  icon: "apps/apple/img/Qv2ray.png",
+  icon: "https://dashboard.snapcraft.io/site_media/appmedia/2020/07/qv2ray.png",
   size: "medium",
   rating: "4.5",
   platform: "MacOS",
   type: "desktop",
+  description: "苹果端免费软件，多平台支持",
+    features: ["功能强大", "界面美观", "先驱软件"],
   downloads: {
     github: "https://github.com/Qv2ray/Qv2ray/releases"
   }
@@ -550,11 +591,13 @@ export const appleApps = [
 {
   name: "v2rayU",
   category: "工具",
-  icon: "apps/apple/img/v2rayU.png",
+  icon: "https://v2rayudl.org/wp-content/uploads/2023/11/cropped-v2rayu-logo.png",
   size: "medium",
   rating: "4.5",
   platform: "MacOS",
   type: "desktop",
+  description: "苹果端免费软件，多平台支持",
+    features: ["功能强大", "界面美观", "先驱软件"],
   downloads: {
     github: "https://github.com/yanue/V2rayU/releases"
   }
@@ -562,11 +605,13 @@ export const appleApps = [
 {
   name: "V2rayX",
   category: "工具",
-  icon: "apps/apple/img/V2rayX.png",
+  icon: "https://moqingtk.com/wp-content/uploads/2024/04/1713602716-463357.png",
   size: "medium",
   rating: "4.5",
   platform: "MacOS",
   type: "desktop",
+  description: "苹果端免费软件，多平台支持",
+    features: ["功能强大", "界面美观", "先驱软件"],
   downloads: {
     github: "https://github.com/yanue/V2rayU/releases"
   }
@@ -574,11 +619,13 @@ export const appleApps = [
 {
   name: "ShadowsocksX-NG",
   category: "工具",
-  icon: "apps/apple/img/ShadowsocksX-NG.png",
+  icon: "https://www.mac668.com/wp-content/uploads/2021/05/7166f289360d0868932598bc6d783651.png",
   size: "medium",
   rating: "4.5",
   platform: "MacOS",
   type: "desktop",
+  description: "苹果端免费软件，多平台支持",
+    features: ["功能强大", "界面美观", "先驱软件"],
   downloads: {
     github: "https://github.com/shadowsocks/ShadowsocksX-NG/releases"
   }
@@ -586,11 +633,13 @@ export const appleApps = [
 {
   name: "ShadowsocksX-NG-R",
   category: "工具",
-  icon: "apps/apple/img/ShadowsocksX-NG-R.png",
+  icon: "https://www.itgeeker.net/wp-content/uploads/2016/01/Shadowsocks_logo.png",
   size: "medium",
   rating: "4.5",
   platform: "MacOS",
   type: "desktop",
+  description: "苹果端免费软件，多平台支持",
+    features: ["功能强大", "界面美观", "先驱软件"],
   downloads: {
     github: "https://github.com/qinyuhang/ShadowsocksX-NG-R/releases"
   }
@@ -598,35 +647,28 @@ export const appleApps = [
 {
   name: "Nekoray-MacOS",
   category: "工具",
-  icon: "apps/apple/img/Nekoray-MacOS.png",
+  icon: "https://nekoray123.com/wp-content/loads/2024/10/NekoRay.png",
   size: "medium",
   rating: "4.5",
   platform: "MacOS",
   type: "desktop",
+  description: "苹果端免费软件，多平台支持",
+    features: ["功能强大", "界面美观", "BUG少"],
   downloads: {
-    github: "https://github.com/aaaamirabbas/nekoray-macos/releases"
-  }
-},
-{
-  name: "ClashVerge",
-  category: "工具",
-  icon: "apps/apple/img/ClashVerge.png",
-  size: "medium",
-  rating: "4.5",
-  platform: "MacOS",
-  type: "desktop",
-  downloads: {
-    github: "https://github.com/zzzgydi/clash-verge/releases"
+    github: "https://github.com/aaaamirabbas/nekoray-macos/releases",
+    official: "https://nekoray123.com/official/"
   }
 },
 {
   name: "Hiddify-next",
   category: "工具",
-  icon: "apps/apple/img/Hiddify-next.png",
+  icon: "https://hiddifynext.org/wp-content/uploads/2024/06/1717385658-favicon.png",
   size: "medium",
   rating: "4.5",
   platform: "MacOS",
   type: "desktop",
+  description: "苹果端免费软件，多平台支持",
+    features: ["功能强大", "界面美观", "BUG少"],
   downloads: {
     official: "https://hiddify.com",
     alternative: "https://github.com/hiddify/hiddify-next/releases"
@@ -661,6 +703,7 @@ export const appleApps = [
   }
 },
 ];
+
 
 
 
