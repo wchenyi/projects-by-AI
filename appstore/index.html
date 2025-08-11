@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +13,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        // 修复深色模式切换的闪烁问题 (FOUC)
+        // 此脚本必须放在 <head> 中，且在 <body> 之前
+        (function() {
+            try {
+                const theme = localStorage.getItem('theme');
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else if (theme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                }
+                // 如果 localStorage 中没有设置，则不执行任何操作，使用系统默认或CSS默认（亮色）
+            } catch (e) {
+                console.error("Error applying initial theme:", e);
+            }
+        })();
+    </script>
+
     <style>
         :root {
             --theme-color-rgb: 14, 165, 233; /* 默认主题色 (天空蓝) */
@@ -34,24 +53,26 @@
         html.dark .theme-bg-subtle { background-color: rgba(var(--theme-color-rgb), 0.15); }
         html.dark .theme-gradient-subtle { background-image: linear-gradient(to top right, rgba(var(--theme-color-rgb), 0.1), rgba(var(--theme-color-rgb), 0.2)); }
 
-        /* 卡片网格布局 */
+        /* 卡片网格布局 (已优化) */
         .card-grid { display: grid; gap: 1.5rem; }
         .card-grid.large { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
         .card-grid.medium { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
         .card-grid.small { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
         
-        @media (min-width: 768px) { /* md */
-            .card-grid.small { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+        /* [修复] 解决只有一个大卡片时过度拉伸的问题 */
+        .card-grid.large.single-large {
+            grid-template-columns: minmax(320px, 520px);
         }
+
         @media (min-width: 1280px) { /* xl */
-            .card-grid.large { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
-            .card-grid.medium { grid-template-columns: repeat(5, 1fr); }
-            .card-grid.small { grid-template-columns: repeat(8, 1fr); }
+            .card-grid.medium { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+            .card-grid.small { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
         }
         @media (max-width: 640px) { /* mobile */
             .card-grid { gap: 0.75rem; }
             .card-grid.medium { grid-template-columns: 1fr; }
             .card-grid.small { grid-template-columns: repeat(2, 1fr); }
+            .card-grid.large.single-large { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -60,7 +81,7 @@
     <div class="flex h-screen overflow-hidden">
         <!-- 侧边栏 -->
         <aside id="sidebar" class="w-64 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg p-4 flex-col flex-shrink-0 fixed lg:relative h-full z-30 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out border-r border-gray-200 dark:border-slate-800">
-            <a href="#" id="sidebar-logo-link" class="flex items-center gap-3 mb-6 px-2">
+            <a href="#home" id="sidebar-logo-link" class="flex items-center gap-3 mb-6 px-2">
                 <img id="site-logo" src="" alt="Site Logo" class="w-8 h-8 object-contain">
                 <h1 id="site-name-sidebar" class="text-xl font-bold text-slate-800 dark:text-slate-200"></h1>
             </a>
@@ -137,7 +158,7 @@
             footer: {
                 creationYear: 2023,
                 author: "Your Name",
-                version: "4.0.0"
+                version: "4.1.0" // Version updated
             },
             disclaimer: `
                 <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">必看</h3>
@@ -175,7 +196,7 @@
 
         let allAppsData = {};
         let allAppsList = [];
-        let currentCategory = 'home';
+        let currentCategoryId = 'home';
 
         const hexToRgb = (hex) => {
             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -184,7 +205,10 @@
 
         const loadAllData = async () => {
             const dataPromises = CONFIG.categories.filter(cat => cat.file).map(cat =>
-                import(cat.file).then(m => ({ id: cat.id, data: m[cat.dataKey] || [] })).catch(e => ({ id: cat.id, data: [] }))
+                import(cat.file).then(m => ({ id: cat.id, data: m[cat.dataKey] || [] })).catch(e => {
+                    console.warn(`Could not load data for category '${cat.id}' from '${cat.file}':`, e);
+                    return { id: cat.id, data: [] };
+                })
             );
             const results = await Promise.all(dataPromises);
             results.forEach(result => {
@@ -206,7 +230,7 @@
             if (categoryId === 'home' && !appsToRender) {
                 renderHomePage();
             } else {
-                renderAppPage(appsToRender || allAppsData[categoryId], !!appsToRender);
+                renderAppPage(appsToRender || allAppsData[categoryId] || [], !!appsToRender);
             }
             mainScrollArea.scrollTop = 0;
         };
@@ -230,11 +254,9 @@
             
             CONFIG.categories.filter(c => c.id !== 'home' && c.type !=='divider').forEach(cat => {
                 const card = doc.createElement('a');
-                card.href = '#';
-                card.dataset.category = cat.id;
+                card.href = `#${cat.id}`; // [修复] 使用 hash 链接
                 card.className = `nav-card-home flex items-center gap-4 p-4 rounded-xl shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 bg-gray-50 dark:bg-slate-800`;
                 card.innerHTML = `<div class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-lg text-white" style="background-color: ${cat.themeColor};">${cat.icon}</div><span class="font-semibold text-slate-700 dark:text-slate-300">${cat.name}</span>`;
-                card.addEventListener('click', (e) => { e.preventDefault(); switchCategory(cat.id); });
                 navGrid.appendChild(card);
             });
 
@@ -260,6 +282,10 @@
                     if(!isSearchResult) mainContent.appendChild(createSectionTitle(sectionTitles[size]));
                     const grid = doc.createElement('div');
                     grid.className = `card-grid ${size}`;
+                    // [修复] 解决单一大卡片拉伸问题
+                    if (size === 'large' && appList.length === 1) {
+                        grid.classList.add('single-large');
+                    }
                     appList.forEach(app => grid.appendChild(createAppCard(app, isSearchResult)));
                     mainContent.appendChild(grid);
                 }
@@ -281,12 +307,20 @@
 
             if (app.size === 'large') {
                 const features = (app.features || []).slice(0, 2).map(f => `<div class="flex items-center gap-2 text-xs backdrop-blur-sm bg-white/20 rounded-full px-3 py-1"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>${f}</div>`).join('');
+                
+                // [修复] 只显示官网和商店下载按钮
                 const downloads = app.downloads || {};
-                const dlButtons = ['github', 'appStore', 'official'].map(key => {
-                    if (!downloads[key]) return '';
-                    const text = { github: 'GitHub', appStore: '商店', official: '官网'}[key];
-                    return `<a href="${downloads[key]}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 hover:bg-white/40 transition-colors" onclick="event.stopPropagation();">${text}下载</a>`;
-                }).filter(Boolean).join('');
+                const dlButtonsHtml = [];
+                const buttonConfig = [
+                    { key: 'official', text: '官网' },
+                    { key: 'appStore', text: '商店' }
+                ];
+                buttonConfig.forEach(btn => {
+                    if (downloads[btn.key]) {
+                        dlButtonsHtml.push(`<a href="${downloads[btn.key]}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 hover:bg-white/40 transition-colors" onclick="event.stopPropagation();">${btn.text}</a>`);
+                    }
+                });
+                const dlButtons = dlButtonsHtml.join('');
 
                 card.className += ` aspect-[16/10] flex flex-col justify-between p-4 text-white bg-slate-800`;
                 card.innerHTML = `
@@ -353,11 +387,10 @@
                     return;
                 }
                 const link = doc.createElement('a');
-                link.href = '#';
+                link.href = `#${cat.id}`; // [修复] 使用 hash 链接
                 link.dataset.category = cat.id;
                 link.className = 'nav-link flex items-center gap-3 px-4 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-800 transition-colors font-medium';
                 link.innerHTML = `${cat.icon}<span>${cat.name}</span>`;
-                link.addEventListener('click', (e) => { e.preventDefault(); switchCategory(cat.id); });
                 categoryNav.appendChild(link);
             });
         };
@@ -372,18 +405,23 @@
             `;
         };
         
-        const switchCategory = (categoryId) => {
-            currentCategory = categoryId;
+        // [修复] 使用 hash change 事件来控制页面切换
+        const handleHashChange = () => {
+            const categoryId = location.hash.substring(1) || 'home';
+            currentCategoryId = categoryId;
             searchInput.value = '';
             renderPage(categoryId);
             updateNavActiveState();
-            if (window.innerWidth < 1024) doc.getElementById('sidebar').classList.add('-translate-x-full');
+            // 在移动端，切换页面后自动关闭侧边栏
+            if (window.innerWidth < 1024) {
+                doc.getElementById('sidebar').classList.add('-translate-x-full');
+            }
         };
 
         const updateNavActiveState = () => {
             doc.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.remove('text-white', 'shadow-md', 'theme-bg-active');
-                if (link.dataset.category === currentCategory) {
+                if (link.dataset.category === currentCategoryId) {
                     link.classList.add('text-white', 'shadow-md', 'theme-bg-active');
                 }
             });
@@ -395,8 +433,7 @@
             const logoImg = doc.getElementById('site-logo');
             logoImg.onerror = () => { logoImg.outerHTML = `<div class="w-8 h-8 text-blue-500">${CONFIG.defaultLogoSVG}</div>`; };
             logoImg.src = CONFIG.siteLogo;
-            doc.getElementById('sidebar-logo-link').addEventListener('click', (e) => { e.preventDefault(); switchCategory('home'); });
-
+            
             if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname.endsWith('.local'))) {
                 try {
                     navigator.serviceWorker.register('./sw.js').catch(err => console.error('Service worker registration failed:', err));
@@ -405,8 +442,12 @@
 
             renderNav();
             renderFooter();
+            initTheme(); // [修复] 初始化主题
             await loadAllData();
-            switchCategory('home');
+            
+            // [修复] 设置 hash change 监听器并立即触发一次以加载初始页面
+            window.addEventListener('hashchange', handleHashChange);
+            handleHashChange(); // Load initial page based on hash or default
         };
 
         // --- Event Listeners ---
@@ -417,16 +458,24 @@
         backToTopBtn.addEventListener('click', () => mainScrollArea.scrollTo({ top: 0, behavior: 'smooth' }));
 
         searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
+            const searchTerm = e.target.value.toLowerCase().trim();
             if (searchTerm) {
-                const filteredApps = allAppsList.filter(app => app.name.toLowerCase().includes(searchTerm) || app.category.toLowerCase().includes(searchTerm));
-                renderPage(currentCategory, filteredApps);
+                const filteredApps = allAppsList.filter(app => 
+                    app.name.toLowerCase().includes(searchTerm) || 
+                    (app.description && app.description.toLowerCase().includes(searchTerm)) ||
+                    (app.category && app.category.toLowerCase().includes(searchTerm))
+                );
+                renderPage(currentCategoryId, filteredApps);
             } else {
-                renderPage(currentCategory);
+                renderPage(currentCategoryId);
             }
         });
 
-        const themeToggle = doc.getElementById('theme-toggle'), lightIcon = doc.getElementById('theme-icon-light'), darkIcon = doc.getElementById('theme-icon-dark');
+        // --- [修复] 深色模式切换逻辑 ---
+        const themeToggle = doc.getElementById('theme-toggle');
+        const lightIcon = doc.getElementById('theme-icon-light');
+        const darkIcon = doc.getElementById('theme-icon-dark');
+
         const applyTheme = (theme) => {
             if (theme === 'dark') {
                 doc.documentElement.classList.add('dark');
@@ -438,20 +487,26 @@
                 darkIcon.classList.add('hidden');
             }
         };
-        if (localStorage.theme === 'dark') {
-            applyTheme('dark');
-        } else {
-            applyTheme('light');
-        }
+
+        const initTheme = () => {
+            let currentTheme = localStorage.getItem('theme');
+            if (!currentTheme) {
+                currentTheme = 'light'; // 默认设置为亮色主题
+                localStorage.setItem('theme', currentTheme);
+            }
+            applyTheme(currentTheme);
+        };
+        
         themeToggle.addEventListener('click', () => {
-            const theme = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark';
-            localStorage.setItem('theme', theme);
-            applyTheme(theme);
+            const newTheme = doc.documentElement.classList.contains('dark') ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
         });
 
+        // --- 移动端侧边栏开关 ---
         const menuToggle = doc.getElementById('menu-toggle'), sidebar = doc.getElementById('sidebar');
         menuToggle.addEventListener('click', (e) => { e.stopPropagation(); sidebar.classList.toggle('-translate-x-full'); });
-        doc.addEventListener('click', (e) => { if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) { sidebar.classList.add('-translate-x-full'); } });
+        doc.addEventListener('click', (e) => { if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && !sidebar.classList.contains('-translate-x-full')) { sidebar.classList.add('-translate-x-full'); } });
 
         // --- Modal Logic ---
         const modal = doc.getElementById('app-detail-modal'), modalContent = doc.getElementById('modal-content'), modalBackdrop = doc.getElementById('modal-backdrop'), closeBtn = doc.getElementById('modal-close-btn'), modalAppName = doc.getElementById('modal-app-name'), modalAppIcon = doc.getElementById('modal-app-icon'), modalAppRating = doc.getElementById('modal-app-rating'), modalAppDesc = doc.getElementById('modal-app-desc'), modalAppFeatures = doc.getElementById('modal-app-features'), modalAppPlatform = doc.getElementById('modal-app-platform'), modalDownloadLinks = doc.getElementById('modal-download-links');
