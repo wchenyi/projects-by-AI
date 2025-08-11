@@ -95,7 +95,7 @@ export const appleApps = [
   {
     name: "Loon-Lite",
     category: "工具",
-    icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/c0/76/8c/c0768c8e-eacc-ad9c-d1e2-ea6aa30fd6ba/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/1200x1200mv.webp",
+    icon: "https://shop.tz.ci/uploads/images/3bdb237ff41831aec2e53331d761995b.png",
     type: "mobile",
     size: "medium",
     rating: "5.0",
@@ -115,7 +115,7 @@ export const appleApps = [
     name: "SingBox",
     category: "工具",
     // 修正：替换为可用的图片链接
-    icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple126/v4/9a/74/d3/9a74d3c3-3e1b-5683-4f51-2c092c23258e/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/460x0w.webp",
+    icon: "https://sing-box.org/wp-content/uploads/2023/12/1702057725-favicon.png",
     type: "mobile",
     size: "medium",
     rating: "5.0",
@@ -153,3 +153,4 @@ export const appleApps = [
     }
   },
 ];
+
