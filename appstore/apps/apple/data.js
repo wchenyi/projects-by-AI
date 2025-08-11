@@ -3,7 +3,7 @@
 // 请在这里管理您的 Windows 应用
 // 这是一个 JavaScript 数组，里面包含了多个应用对象。
 // 每个 {...} 就是一个应用。复制一份并修改内容即可添加新应用。
-export const windowsApps = [
+export const appleApps = [
   {
     // --- 基础信息 ---
     name: "Shadowrocket", // 应用名称
@@ -148,5 +148,6 @@ export const windowsApps = [
         }
   },
 ];
+
 
 
