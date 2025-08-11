@@ -68,12 +68,12 @@ export const androidApps = [
   {
     name: "OneClick",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHMAAAA0CAMAAACOwPcAAAAAV1BMVEUAAAAwMDAwMDAyMjIwMDAyMjIwMDAzMzMzMzMyMjIzMzMzMzMyMjIyMjIyMjIzMzMyMjIyMjIyMjIyMjIzMzMyMjIyMjIzMzMzMzMzMzMxMTEwMDAzMzM6ye9sAAAAHHRSTlMAEDBgQO8g8L/QoM+Qn+BQwIBwj6/ff29fsD9P0jF5gwAAAt9JREFUeF6l2Omy4ygMBeAjwOB9i53ljt7/OcfVlbQKbKy47/czZeqgIAIx9n4eXbnyZi3vP/gn5rE0vCnK5f5DUDwXjhSdw0X+tnKkeXhk0b3gvfWJC1zJBzqTq1EStVQ9MdUR9qjkvMZBB19yXjEgZQo+1REUdOdzNyVSn2fKrKxZSIlUhqTurONSiex5p3DIMA3vBN7r8EHxiGpyhA25Ng2+49CQzvllPTZw88iRAW8tC649BIZkTEnYu3GktwRBU2BRvMc7FqNHwsWpq1E2WbBIUMuixh9N8knKhrh/T5eyJexZFi75YMIhekWVPPId3zscMiHu3SZbpRjCcffB6kWmz3nASL8Ssnx1uFMfLDgMyKtlYoAssAfOB4mGsEHHgqvz8f37qdkAq/rNSiOIaRdZkz68mj02XitTOFnUeRc5Q/OafTr7ChrpPptuy2BxQStLq6NKIhsWweCKMfkl1EODSyP7a5GyOwnfoDGY9CCqCNfwB77kL0f+PlON1Cltq2xUNVKv83pkDZWe+ftIXa9k6pHmhovG6CxV3XaRQ5G7++rHxQRNepDYv3U310JnfhuhouUwctN4XGD4g6CgJhO5KQw0T5lX4Lfpyi9BcMnqFhbnHHNzN8mCFoQzNoo0n2NGKO1b8obXmwEw8EenNGwaCdCo3LeFjbq91896+DJz86nTq6++MA7AJIMMvvk/MlJy5osbqe3XY0MhagStSK4RsayXaiSS7W7UQ32xYQ9vSWLxSLmC4zI3FYv1eZoYXO6+LTp/8l7jM95HM23kTdR/XcGsn5ZUc2x5fp4zjyiR22RNRFGWy30pOdUiwwZONOWtK8uVY1XcCLreIctUrONAEJhY1RLOTKwKBhF7vUi9VK0ZXOATE0E3B05of6L8K/+4x1eo5Zx+wCE3Kok6X/ORMCHL1YFjfetxCc0VJ17q2TqNPb+Nk8F18PMYPlMe2wHfMW5D+AVyG4Mj/wNAbPJj5VpeAgAAAABJRU5ErkJggg==", // Placeholder icon
     size: "medium",
     rating: "4.5",
     platform: "Android, iOS",
     description: "资源占用较低（参考值：57.45MB）。苹果和安卓端都有此软件、免费，可单独开热点。",
-    features: [],
+    features: ["多平台支持", "类似v2", "界面美观"],
     downloads: {
       official: "https://oneclick.earth/#/",
       appStore: "https://play.google.com/store/apps/details?id=earth.oneclick"
@@ -82,12 +82,12 @@ export const androidApps = [
   {
     name: "NekoBoxForAndroid",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://getnekobox.com/wp-content/uploads/2023/11/logo.webp", // Placeholder icon
     size: "medium",
     rating: "4.5",
     platform: "全平台",
     description: "资源占用较低（参考值：50.89MB）。全平台覆盖，使用sing-box内核，有插件可选，功能实用，比较推荐。",
-    features: [],
+    features: ["多平台支持", "性能强悍", "bug少"],
     downloads: {
       github: "https://github.com/MatsuriDayo/NekoBoxForAndroid",
       alternative: "https://musetransfer.com/s/vnfu2gpto",
@@ -98,12 +98,12 @@ export const androidApps = [
   {
     name: "Matsuri",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://matsuridayo.github.io/assets/images/matsuri1.jpg", // Placeholder icon
     size: "medium",
     rating: "4.5",
     platform: "Android",
     description: "资源占用较低（参考值：50.64MB）。和NB4A一个作者，为长期版本，可将节点添加到桌面。",
-    features: [],
+    features: ["多平台支持", "性能强悍", "bug少"],
     downloads: {
       github: "https://github.com/MatsuriDayo/Matsuri",
       alternative: "https://musetransfer.com/s/qusu1bsni",
@@ -141,7 +141,7 @@ export const androidApps = [
   {
     name: "sing-box",
     category: "代理工具",
-    icon: "https://en.faridsguide.com/wp-content/uploads/2023/09/sing-box.jpg", // Placeholder icon
+    icon: "https://sing-box.org/wp-content/uploads/2023/12/1702057725-favicon.png", // Placeholder icon
     size: "medium",
     rating: "4.5",
     platform: "Android, Win, iOS, Apple TV",
@@ -440,4 +440,5 @@ export const androidApps = [
     }
   }
 ];
+
 
