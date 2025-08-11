@@ -43,8 +43,8 @@ export const windowsApps = [
     description: "界面模仿surge和stash，在win端独具一格，非常实用",
     features: ["界面美观", "功能丰富", "更新较快"],
     downloads: {
-      official: "https://mihomoparty.net/"
-      github: "https://github.com/pompurin404/mihomo-party/releases",
+      official: "https://mihomoparty.net/",
+      github: "https://github.com/pompurin404/mihomo-party/releases"
     }
   },
     {
@@ -141,8 +141,8 @@ export const windowsApps = [
     description: "多平台支持，使用便捷，高效顺滑",
     features: ["多平台", "页面简洁"],
     downloads: {
-      github: "https://github.com/hiddify/hiddify-next/releases"
-      official: "https://hiddify.me/",
+      github: "https://github.com/hiddify/hiddify-next/releases",
+      official: "https://hiddify.me/"
     }
   },
   {
@@ -155,8 +155,8 @@ export const windowsApps = [
     description: "少有的免费，支持多平台（Win/Android/iOS/Apple TV）。",
     features: ["风格独特", "配置特殊", "全端免费"],
     downloads: {
-      github: "https://github.com/SagerNet/sing-box"
-      official: "https://singbox.app/official/",
+      github: "https://github.com/SagerNet/sing-box",
+      official: "https://singbox.app/official/"
     }
   },
 
@@ -297,6 +297,7 @@ export const windowsApps = [
     }
   }
 ];
+
 
 
 
