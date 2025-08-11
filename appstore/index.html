@@ -26,6 +26,135 @@
                 }
             } catch (e) { console.error("Error applying initial theme:", e); }
         })();
+        // 添加这些函数到 index.html 的 script 部分
+
+// 简单的 Markdown 转 HTML 解析器
+const parseMarkdown = (markdown) => {
+    let html = markdown;
+    
+    // 标题处理
+    html = html.replace(/^### (.*$)/gm, '<h3 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">$1</h3>');
+    html = html.replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">$1</h2>');
+    html = html.replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">$1</h1>');
+    
+    // 加粗处理
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // 斜体处理
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // 代码块处理
+    html = html.replace(/`([^`]+)`/g, '<code class="bg-gray-200 dark:bg-slate-700 rounded-md px-1.5 py-1 text-sm font-mono">$1</code>');
+    
+    // 无序列表处理
+    html = html.replace(/^\s*-\s+(.*$)/gm, '<li class="mb-2">$1</li>');
+    html = html.replace(/(<li.*<\/li>)/s, '<ul class="list-disc list-inside space-y-2 ml-4">$1</ul>');
+    
+    // 引用处理
+    html = html.replace(/^>\s+(.*$)/gm, '<blockquote class="border-l-4 border-current pl-4 italic text-gray-600 dark:text-gray-400">$1</blockquote>');
+    
+    // 段落处理
+    html = html.replace(/\n\n/g, '</p><p class="mb-4">');
+    html = '<p class="mb-4">' + html + '</p>';
+    
+    // 清理空段落
+    html = html.replace(/<p class="mb-4"><\/p>/g, '');
+    
+    return html;
+};
+
+// 加载页面内容
+const loadPageContent = async (contentFile) => {
+    try {
+        const response = await fetch(contentFile);
+        if (!response.ok) {
+            throw new Error(`Failed to load content: ${response.status}`);
+        }
+        const markdown = await response.text();
+        return parseMarkdown(markdown);
+    } catch (error) {
+        console.warn(`Could not load content from ${contentFile}:`, error);
+        return null;
+    }
+};
+
+// 修改 renderPage 函数，在合适的位置添加内容渲染
+const renderPage = async (categoryId, appsToRender = null) => {
+    mainContent.innerHTML = '';
+    const category = CONFIG.categories.find(c => c.id === categoryId);
+    if (!category) { location.hash = 'home'; return; }
+
+    doc.documentElement.style.setProperty('--theme-color-rgb', hexToRgb(category.themeColor));
+    
+    const isSearchResult = appsToRender !== null;
+    const bannerText = isSearchResult ? `搜索: "${searchInput.value}"` : (categoryId === 'home' ? CONFIG.siteName : category.bannerText);
+    mainContent.appendChild(createBanner(bannerText, category.gradient));
+
+    // 渲染设备类型切换器
+    if (category.hasDeviceTypes && !isSearchResult) {
+        mainContent.appendChild(createDeviceTypeToggle(category));
+    }
+    
+    // 加载并渲染页面内容
+    if (category.contentFile && !isSearchResult) {
+        const content = await loadPageContent(category.contentFile);
+        if (content) {
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'page-extra-content';
+            contentDiv.innerHTML = content;
+            mainContent.appendChild(contentDiv);
+        }
+    }
+
+    if (categoryId === 'home' && !isSearchResult) {
+        renderHomePage();
+    } else {
+        renderAppPage(appsToRender || allAppsData[categoryId] || [], isSearchResult);
+    }
+    mainScrollArea.scrollTop = 0;
+};
+
+// 修改主页渲染函数，移除硬编码的免责声明
+const renderHomePage = () => {
+    const homeContainer = doc.createElement('div');
+    homeContainer.className = 'bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-2xl shadow-md';
+    
+    // 如果有赞助商，渲染赞助商模块
+    if (CONFIG.sponsors && CONFIG.sponsors.length > 0) {
+        const sponsorSection = doc.createElement('div');
+        sponsorSection.innerHTML = `<h3 class="text-2xl font-bold mt-6 mb-4 text-gray-800 dark:text-gray-200">赞助商</h3>`;
+        const sponsorGrid = doc.createElement('div');
+        sponsorGrid.className = 'flex justify-center gap-8';
+        CONFIG.sponsors.forEach(sponsor => {
+            const sponsorCard = doc.createElement('div');
+            sponsorCard.className = 'text-center';
+            sponsorCard.innerHTML = `
+                <img src="${sponsor.logo}" alt="${sponsor.title}" class="w-32 h-32 rounded-lg shadow-md mx-auto cursor-pointer" onclick="showQrCode()">
+                <p class="mt-2 text-sm font-medium text-slate-600 dark:text-slate-400">${sponsor.title}</p>
+            `;
+            sponsorGrid.appendChild(sponsorCard);
+        });
+        sponsorSection.appendChild(sponsorGrid);
+        homeContainer.appendChild(sponsorSection);
+    }
+
+    const navSection = doc.createElement('div');
+    navSection.innerHTML = `<h3 class="text-2xl font-bold mt-10 mb-4 text-gray-800 dark:text-gray-200">分类导航</h3>`;
+    const navGrid = doc.createElement('div');
+    navGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
+    
+    CONFIG.categories.filter(c => c.id !== 'home' && c.type !=='divider').forEach(cat => {
+        const card = doc.createElement('a');
+        card.href = `#${cat.id}`;
+        card.className = `nav-card-home flex items-center gap-4 p-4 rounded-xl shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 bg-gray-50 dark:bg-slate-800`;
+        card.innerHTML = `<div class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-lg text-white" style="background-color: ${cat.themeColor};">${cat.icon}</div><span class="font-semibold text-slate-700 dark:text-slate-300">${cat.name}</span>`;
+        navGrid.appendChild(card);
+    });
+
+    navSection.appendChild(navGrid);
+    homeContainer.appendChild(navSection);
+    mainContent.appendChild(homeContainer);
+};
     </script>
 
     <style>
