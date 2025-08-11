@@ -6,20 +6,6 @@
 export const windowsApps = [
   // --- Large Cards ---
   {
-    name: "Clash For Windows",
-    category: "代理工具",
-    icon: "https://pic1.zhimg.com/v2-ab67026231c772c19b923846e6cd65ee_720w.jpg?source=172ae18b",
-    size: "large",
-    rating: "5.0",
-    platform: "Windows",
-    description: "界面美观操作简便，占用空间较大，官网下载需自行安装汉化。",
-    features: ["轻松上手", "分流强大", "界面美观"],
-    downloads: {
-      github: "https://github.com/Fndroid/clash_for_windows_pkg/releases",
-      alternative: "https://d3.netfiles.pw/v2/windows/Clash.for.Windows.Setup.0.19.15.exe"
-    }
-  },
-  {
     name: "v2RayN-Core",
     category: "代理工具",
     icon: "https://ts1.tc.mm.bing.net/th/id/R-C.1d8eb1af33a92865f0255eab4deb3ab6?rik=R1Bz36MCoDSLGw&riu=http%3a%2f%2fwww.clash1688.com%2fassets%2fimg%2fblog%2fV2rayN.jpg&ehk=i6is759Vcwn4WsS%2f3ur4xc5YlvWb2TSqjNfaptdFySQ%3d&risl=&pid=ImgRaw&r=0",
@@ -33,8 +19,63 @@ export const windowsApps = [
       alternative: "https://d2.netfiles.pw/v2/windows/v2rayN-v5.9.zip"
     }
   },
+  {
+    name: "ClashMeta",
+    category: "代理工具",
+    icon: "https://mogua.co/download/99b5fb7dda6fe114e45fdc3b6d170358-icon.png",
+    size: "large",
+    rating: "4.5",
+    platform: "多平台",
+    description: "操作同CFA，界面也高度相似便于上手，又有很多实用升级",
+    features: ["流量监测", "上手容易", "资源丰富", "界面美观"],
+    downloads: {
+      github: "https://github.com/MetaCubeX/Clash.Meta/releases",
+      official: "https://clashmeta.xyz/"
+    }
+  },
+  {
+    name: "Mihomo Party",
+    category: "代理工具",
+    icon: "https://mihomoparty.net/wp-content/uploads/2024/09/icon-150x150.png",
+    size: "large",
+    rating: "4.5",
+    platform: "Windows",
+    description: "界面模仿surge和stash，在win端独具一格，非常实用",
+    features: ["界面美观", "功能丰富", "更新较快"],
+    downloads: {
+      official: "https://mihomoparty.net/"
+      github: "https://github.com/pompurin404/mihomo-party/releases",
+    }
+  },
+    {
+    name: "FIClash",
+    category: "代理工具",
+    icon: "https://doc.clashforwindows.app/logo_64.png",
+    size: "large",
+    rating: "4.5",
+    platform: "全平台",
+    description: "基于 ClashMeta，Material You 设计风格，全平台支持，模仿surfboard。",
+    features: ["全平台支持", "使用方便", "界面美观"],
+    downloads: {
+      github: "https://github.com/chen08209/FlClash"
+    }
+  },
 
   // --- Medium Cards ---
+  {
+    name: "Clash For Windows",
+    category: "代理工具",
+    icon: "https://pic1.zhimg.com/v2-ab67026231c772c19b923846e6cd65ee_720w.jpg?source=172ae18b",
+    size: "medium",
+    rating: "5.0",
+    platform: "Windows",
+    description: "界面美观操作简便，占用空间较大，官网下载需自行安装汉化。",
+    features: ["轻松上手", "分流强大", "界面美观"],
+    downloads: {
+      github: "https://github.com/Fndroid/clash_for_windows_pkg/releases",
+      alternative: "https://d3.netfiles.pw/v2/windows/Clash.for.Windows.Setup.0.19.15.exe"
+    }
+  },
   {
     name: "Clash Verge",
     category: "代理工具",
@@ -90,35 +131,7 @@ export const windowsApps = [
       alternative: "https://musetransfer.com/s/ukmtdumku"
     }
   },
-  {
-    name: "ClashMeta",
-    category: "代理工具",
-    icon: "https://mogua.co/download/99b5fb7dda6fe114e45fdc3b6d170358-icon.png",
-    size: "medium",
-    rating: "4.5",
-    platform: "多平台",
-    description: "操作同CFA，界面也高度相似便于上手，又有很多实用升级",
-    features: ["流量监测", "上手容易", "资源丰富", "界面美观"],
-    downloads: {
-      github: "https://github.com/MetaCubeX/Clash.Meta/releases",
-      official: "https://clashmeta.xyz/"
-    }
-  },
-  {
-    name: "Mihomo Party",
-    category: "代理工具",
-    icon: "https://mihomoparty.net/wp-content/uploads/2024/09/icon-150x150.png",
-    size: "medium",
-    rating: "4.5",
-    platform: "Windows",
-    description: "界面模仿surge和stash，在win端独具一格，非常实用",
-    features: ["界面美观", "功能丰富", "更新较快"],
-    downloads: {
-      official: "https://mihomoparty.net/"
-      github: "https://github.com/pompurin404/mihomo-party/releases",
-    }
-  },
-  {
+    {
     name: "Hiddify-next",
     category: "代理工具",
     icon: "https://store-images.s-microsoft.com/image/apps.11245.14155126203361258.5bed0304-dfff-4ff6-8d04-2e8186b86297.04f73a7e-fb28-451a-9e5a-3bc55ebe67bf",
@@ -144,19 +157,6 @@ export const windowsApps = [
     downloads: {
       github: "https://github.com/SagerNet/sing-box"
       official: "https://singbox.app/official/",
-    }
-  },
-  {
-    name: "FIClash",
-    category: "代理工具",
-    icon: "https://doc.clashforwindows.app/logo_64.png",
-    size: "medium",
-    rating: "4.5",
-    platform: "全平台",
-    description: "基于 ClashMeta，Material You 设计风格，全平台支持，模仿surfboard。",
-    features: ["全平台支持", "使用方便", "界面美观"],
-    downloads: {
-      github: "https://github.com/chen08209/FlClash"
     }
   },
 
@@ -297,6 +297,7 @@ export const windowsApps = [
     }
   }
 ];
+
 
 
 
