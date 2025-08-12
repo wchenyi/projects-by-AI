@@ -679,11 +679,13 @@ export const appleApps = [
 {
   name: "Trojan-Qt5",
   category: "工具",
-  icon: "apps/apple/img/Trojan-Qt5.png",
+  icon: "https://ts4.tc.mm.bing.net/th/id/OIP-C.HMYQE__TFlW-jhYbx2uc0gHaIG?rs=1&pid=ImgDetMain&o=7&rm=3",
   size: "small",
   rating: "4.0",
   platform: "MacOS",
   type: "desktop",
+  description: "苹果端免费软件",
+  features: ["老牌软件"],
   downloads: {
     official: "https://itlanyan.com/download.php?filename=/trojan/Trojan-Qt5-v1.4.0.dmg",
     alternative: "https://itlanyan.com/go.php?key=trojan-qt5-config"
@@ -692,17 +694,20 @@ export const appleApps = [
 {
   name: "Trojan-MacOS",
   category: "工具",
-  icon: "apps/apple/img/Trojan-MacOS.png",
+  icon: "https://img.88icon.com/download/jpg/202007/d5ebeeec84ac3ab2e0e87e7c477c978d_256_256.jpg!bg",
   size: "small",
   rating: "4.0",
   platform: "MacOS",
   type: "desktop",
+  description: "苹果端免费软件",
+  features: ["老牌软件"],
   downloads: {
     github: "https://github.com/trojan-gfw/trojan/releases",
     alternative: "https://itlanyan.com/go.php?key=trojan-mac-config"
   }
 },
 ];
+
 
 
 
