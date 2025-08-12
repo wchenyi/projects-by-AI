@@ -34,8 +34,9 @@ export const CUSTOM_CONFIG = {
     // 2. 视觉特效
     // 将值改为 false 即可禁用某个特效
     effects: {
-        sakura: true,      // 樱花飘落特效
+        sakura: false,      // 樱花飘落特效
         clickEffect: true  // 鼠标点击爱心特效
     }
 
 };
+
