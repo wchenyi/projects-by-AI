@@ -395,8 +395,6 @@ export const appleApps = [
   }
 },
 {
-
-{
   name: "ForXray",
   category: "工具",
   icon: "https://image.winudf.com/v2/image1/Y29tLmdpdGh1Yi5mb3hyYXlfaWNvbl8xNjk0MDI3Njg0XzAyNg/icon.webp?w=360&fakeurl=1&type=.webp",
@@ -462,6 +460,8 @@ export const appleApps = [
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端免费软件，覆盖基础功能，软件美观，支持多平台。",
+  features: ["界面美观", "简单易用", "多平台支持"],
   downloads: {
     appStore: "https://apps.apple.com/hk/app/v2box-v2ray-client/id6446814690"
   }
@@ -478,7 +478,7 @@ export const appleApps = [
   features: ["界面美观", "简单易用", "内置节点"],
   downloads: {
     appStore: "https://apps.apple.com/app/id6450534064",
-    officialL "https://www.telescope.name/"
+    officialL: "https://www.telescope.name/"
   }
 },
 
@@ -749,6 +749,7 @@ export const appleApps = [
   }
 },
 ];
+
 
 
 
