@@ -5,7 +5,7 @@ export const androidApps = [
   {
     name: "Clash For Android",
     category: "代理工具",
-    icon: "https://clashe.org/wp-content/uploads/2024/10/logo-2.png", // Placeholder icon
+    icon: "https://ts2.tc.mm.bing.net/th/id/OIP-C.IisKG27ugAKDyVq-fDkjFwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3.png", // Placeholder icon
     size: "large",
     rating: "5.0",
     platform: "Android",
@@ -440,5 +440,6 @@ export const androidApps = [
     }
   }
 ];
+
 
 
