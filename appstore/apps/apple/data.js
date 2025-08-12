@@ -221,18 +221,33 @@ export const appleApps = [
   {
     name: "Clash Dash",
     category: "工具",
-    icon: "hhttps://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/2a/e7/93/2ae793d7-6517-9810-7828-2475e7918e1a/AppIcon-0-0-1x_U007epad-0-1-85-220.png/246x0w.webp",
+    icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/09/74/b5/0974b5a4-ba7b-90a5-9967-e5924b7b0bf9/AppIcon-0-0-1x_U007epad-0-1-85-220.png/300x300bb.png",
     size: "medium",
     rating: "4.5",
     platform: "iOS, iPadOS",
     type: "mobile",
-    description: "苹果端软件，大陆ID即可。",
+    description: "苹果端软件，原生开发。",
     features: ["功能强大", "界面美观", "简易便捷"],
     downloads: {
       appStore: "https://apps.apple.com/cn/app/clash-dash/id6738882561?platform=iphone",
       github: "https://github.com/bin64/Clash-Dash"
     }
   },
+   {
+   name: "sing-box",
+  category: "工具",
+  icon: "https://sing-box.org/wp-content/uploads/2023/12/1702057725-favicon.png",
+  size: "medium",
+  rating: "4.0",
+  platform: "iOS, iPadOS",
+  type: "mobile",
+  description: "苹果端免费软件，多平台支持。",
+  features: ["独特配置", "界面简约", "多平台支持"],
+  downloads: {
+    appStore: "https://apps.apple.com/us/app/sing-box/id6451272673",
+    official: "https://sing-box.sagernet.org/zh/"
+  }
+},
 
   // --- 移动端 Small ---
   {
@@ -369,7 +384,7 @@ export const appleApps = [
 {
   name: "Kitsunebi",
   category: "工具",
-  icon: "https://projects.wangcy.site/appstore/#apple",
+  icon: "https://img.jiaochengzhijia.com/uploadfile/2023/0104/20230104115032397.jpg@crop@150x150.jpg",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
@@ -463,13 +478,14 @@ export const appleApps = [
   description: "苹果端免费软件，覆盖基础功能，软件美观，支持多平台。",
   features: ["界面美观", "简单易用", "多平台支持"],
   downloads: {
-    appStore: "https://apps.apple.com/hk/app/v2box-v2ray-client/id6446814690"
+    appStore: "https://apps.apple.com/hk/app/v2box-v2ray-client/id6446814690",
+    officialL: "https://www.telescope.name/"
   }
 },
 {
   name: "Streisand",
   category: "工具",
-  icon: "apps/apple/img/Streisand.png",
+  icon: "https://streisandapp.com/_astro/favicon.Cmt8UfjC.svg",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
@@ -478,7 +494,7 @@ export const appleApps = [
   features: ["界面美观", "简单易用", "内置节点"],
   downloads: {
     appStore: "https://apps.apple.com/app/id6450534064",
-    officialL: "https://www.telescope.name/"
+    official: "https://streisandapp.com/      "    
   }
 },
 
@@ -704,18 +720,7 @@ export const appleApps = [
     alternative: "https://github.com/hiddify/hiddify-next/releases"
   }
 },
-  {
-   name: "sing-box",
-  category: "工具",
-  icon: "apps/apple/img/sing-box.png",
-  size: "small",
-  rating: "4.0",
-  platform: "iOS, iPadOS",
-  type: "mobile",
-  downloads: {
-    appStore: "https://apps.apple.com/us/app/sing-box/id6451272673"
-  }
-},
+
 
 // --- 桌面端 MacOS Small ---
 {
@@ -749,6 +754,7 @@ export const appleApps = [
   }
 },
 ];
+
 
 
 
