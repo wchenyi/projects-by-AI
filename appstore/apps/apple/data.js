@@ -497,6 +497,20 @@ export const appleApps = [
     official: "https://streisandapp.com/      "    
   }
 },
+{
+  name: "Pharos Pro",
+  category: "工具",
+  icon: "https://tse4-mm.cn.bing.net/th/id/OIP-C.emffyBe1BPQSKAE8Tfo87AHaHa?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3.png",
+  size: "small",
+  rating: "4.0",
+  platform: "iOS, iPadOS",
+  type: "mobile",
+  description: "苹果端软件，使用便捷，页面简洁，多平台支持。",
+  features: ["界面美观", "简单易用", "多平台支持"],
+  downloads: {
+    appStore: "https://apps.apple.com/hk/app/pharos-pro/id1456610173",
+  }
+},
 
 // --- 桌面端 MacOS Large ---
 {
@@ -754,6 +768,7 @@ export const appleApps = [
   }
 },
 ];
+
 
 
 
