@@ -87,12 +87,12 @@ export const appleApps = [
   {
     name: "Kitsunebi",
     category: "工具",
-    icon: "https://img.jiaochengzhijia.com/uploadfile/2023/0104/20230104115032397.jpg@crop@150x150.jpg",
+    icon: "https://img.utdstc.com/icon/c09/f99/c09f99296cfde493bb718927dd8ffdb2d76a5e8594eb92a6905ea60aaf6a56df:200",
     size: "medium",
     rating: "4.5",
     platform: "iOS, iPadOS",
     type: "mobile",
-    description: "苹果端免费软件，覆盖基础功能，可单独开热点。",
+    description: "苹果端免费软件，覆盖基础功能，可单独开热点，多平台支持。",
     features: ["功能强大", "界面美观", "自定义程度高"],
     downloads: {
       appStore: "https://apps.apple.com/us/app/kitsunebi-proxy-utility/id1446584073"
@@ -221,7 +221,7 @@ export const appleApps = [
   {
     name: "Clash Dash",
     category: "工具",
-    icon: "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/ef/cc/12/efcc12f1-aad5-2057-8698-55be787334bc/AppIcon-0-0-1x_U007epad-0-1-85-220.png/1200x1200mv.webp",
+    icon: "hhttps://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/2a/e7/93/2ae793d7-6517-9810-7828-2475e7918e1a/AppIcon-0-0-1x_U007epad-0-1-85-220.png/246x0w.webp",
     size: "medium",
     rating: "4.5",
     platform: "iOS, iPadOS",
@@ -238,35 +238,43 @@ export const appleApps = [
   {
     name: "Leaf VPN",
     category: "工具",
-    icon: "apps/apple/img/LeafVPN.png",
+    icon: "https://img.samsungapps.com/productNew/000005892052/IconImage_20240812091247736_NEW_WAP_ICON_512_512.png",
     size: "small",
     rating: "4.0",
     platform: "iOS, iPadOS",
     type: "mobile",
+    description: "苹果端软件，本质是VPN。",
+    features: [ "界面美观", "上手容易"],
     downloads: {
-      appStore: "https://apps.apple.com/us/app/leaf-vpn/id1534109007"
+      appStore: "https://apps.apple.com/us/app/leaf-vpn/id1534109007",
+      official: "https://leaf-vpn.net/"
     }
   },
   {
     name: "i2Ray",
     category: "工具",
-    icon: "apps/apple/img/i2Ray.png",
+    icon: "https://i2ray.com/i2Ray_files/logo.png",
     size: "small",
     rating: "4.0",
     platform: "iOS, iPadOS",
     type: "mobile",
+    description: "苹果端软件，软件免费，v2内核。",
+    features: [ "界面美观", "上手容易"],
     downloads: {
-      appStore: "https://apps.apple.com/us/app/i2ray/id1445270056"
+      appStore: "https://apps.apple.com/us/app/i2ray/id1445270056",
+      official: "https://i2ray.com/"
     }
   },
 {
   name: "Brook",
   category: "工具",
-  icon: "apps/apple/img/Brook.png",
+  icon: "https://raw.githubusercontent.com/zhaoolee/GraphBed/master/images/e5e30a212910b3b180dfb36f7737325a.png",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端软件，软件免费。",
+    features: [ "小众软件", "上手容易", "老牌软件"],
   downloads: {
     appStore: "https://apps.apple.com/us/app/brook-not-just-proxy/id1216002642"
   }
@@ -274,23 +282,28 @@ export const appleApps = [
 {
   name: "ShadowLink",
   category: "工具",
-  icon: "apps/apple/img/ShadowLink.png",
+  icon: "https://ts2.tc.mm.bing.net/th/id/OIP-C.pyzQgbjdT_mWX31gkokpXgAAAA?rs=1&pid=ImgDetMain&o=7&rm=3",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端软件，软件免费，内置节点。",
+    features: [ "套壳代理", "上手容易", "老牌软件"],
   downloads: {
-    appStore: "https://apps.apple.com/us/app/shadowlink-shadowsocks-proxy/id1439686518"
+    appStore: "https://apps.apple.com/us/app/shadowlink-shadowsocks-proxy/id1439686518",
+    official: "https://docs.shadowlink.vip/"
   }
 },
 {
   name: "ConnectSPro",
   category: "工具",
-  icon: "apps/apple/img/ConnectSPro.png",
+  icon: "https://images.dwncdn.net/images/t_app-icon-s/p/be267d1d-42b1-4a56-9301-c91d80e8077a/2705836743/2094_4-78500211-logo",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端软件，软件免费。",
+    features: [ "软件免费", "上手容易", "老牌软件"],
   downloads: {
     appStore: "https://apps.apple.com/us/app/connectspro/id1442910378"
   }
@@ -298,11 +311,13 @@ export const appleApps = [
 {
   name: "Mume",
   category: "工具",
-  icon: "apps/apple/img/Mume.png",
+  icon: "https://pic.psp99.com/psp99/imgfile/20240718/18143259lvzd.png",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端软件，软件免费。",
+    features: [ "软件免费", "软件开源", "老牌软件"],
   downloads: {
     appStore: "https://apps.apple.com/us/app/mume-vpn/id1144787928"
   }
@@ -310,11 +325,13 @@ export const appleApps = [
 {
   name: "FlyRouter",
   category: "工具",
-  icon: "apps/apple/img/FlyRouter.png",
+  icon: "https://ts4.tc.mm.bing.net/th/id/OIP-C.XzOwOIPf-1nN_n6C4hs6zgHaD4",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端软件，软件免费。",
+    features: [ "软件免费", "老牌软件"],
   downloads: {
     appStore: "https://apps.apple.com/us/app/flyrouter/id1354248771"
   }
@@ -322,35 +339,43 @@ export const appleApps = [
 {
   name: "Potatso",
   category: "工具",
-  icon: "apps/apple/img/Potatso.png",
+  icon: "https://potatso.net/wp-content/uploads/2025/05/cropped-potatso-logo.png",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端软件，软件免费。",
+    features: [ "软件免费", "老牌软件"],
   downloads: {
-    appStore: "https://apps.apple.com/us/app/potatso/id1239860606"
+    appStore: "https://apps.apple.com/us/app/potatso/id1239860606",
+    official: "https://potatso.net"
   }
 },
 {
   name: "Outline",
   category: "工具",
-  icon: "apps/apple/img/Outline.png",
+  icon: "https://outline-vpn.com/img/outline-logo.png",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端软件，软件免费。",
+    features: [ "软件免费", "老牌软件", "简洁易用"],
   downloads: {
-    appStore: "https://apps.apple.com/us/app/outline-app/id1356177741"
+    appStore: "https://apps.apple.com/us/app/outline-app/id1356177741",
+    official: "https://outline-vpn.com/img/outline-logo.png"
   }
 },
 {
   name: "Kitsunebi",
   category: "工具",
-  icon: "apps/apple/img/Kitsunebi.png",
+  icon: "https://projects.wangcy.site/appstore/#apple",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端免费软件，覆盖基础功能，可单独开热点，多平台支持。",
+    features: ["功能强大", "界面美观", "自定义程度高"],
   downloads: {
     appStore: "https://apps.apple.com/us/app/outline-app/id1356177741"
   }
@@ -358,35 +383,29 @@ export const appleApps = [
 {
   name: "Xurge",
   category: "工具",
-  icon: "apps/apple/img/Xurge.png",
+  icon: "https://is2-ssl.mzstatic.com/image/thumb/Purple122/v4/d7/89/04/d789044a-19b6-3704-a0b0-cea13665178c/AppIcon-1x_U007emarketing-0-7-0-85-220.png/512x512bb.jpg",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端免费软件，覆盖基础功能，多平台支持。",
+    features: ["功能强大", "界面美观", "自定义程度高"],
   downloads: {
     appStore: "https://apps.apple.com/hk/app/xurge-unofficial-surge-helper/id1525585898"
   }
 },
 {
-  name: "sing-box",
-  category: "工具",
-  icon: "apps/apple/img/sing-box.png",
-  size: "small",
-  rating: "4.0",
-  platform: "iOS, iPadOS",
-  type: "mobile",
-  downloads: {
-    appStore: "https://apps.apple.com/us/app/sing-box/id6451272673"
-  }
-},
+
 {
   name: "ForXray",
   category: "工具",
-  icon: "apps/apple/img/ForXray.png",
+  icon: "https://image.winudf.com/v2/image1/Y29tLmdpdGh1Yi5mb3hyYXlfaWNvbl8xNjk0MDI3Njg0XzAyNg/icon.webp?w=360&fakeurl=1&type=.webp",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端免费软件，覆盖基础功能，软件美观。",
+    features: ["功能强大", "界面美观"],
   downloads: {
     appStore: "https://apps.apple.com/hk/app/foxray/id6448898396"
   }
@@ -394,23 +413,28 @@ export const appleApps = [
 {
   name: "Chute",
   category: "工具",
-  icon: "apps/apple/img/Chute.png",
+  icon: "https://www.chute.life/images/icon.png",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端免费软件，覆盖基础功能，软件美观。",
+  features: ["内置节点", "界面美观", "简单易用"],
   downloads: {
-    appStore: "https://apps.apple.com/hk/app/chute-network-toolbox/id1515248945"
+    appStore: "https://apps.apple.com/hk/app/chute-network-toolbox/id1515248945",
+    official: "https://www.chute.life/"
   }
 },
 {
   name: "Spectre",
   category: "工具",
-  icon: "apps/apple/img/Spectre.png",
+  icon: "https://clashkit.com/wp-content/uploads/2024/05/Spectre-app.webp",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端免费软件，覆盖基础功能，软件美观。",
+  features: ["界面美观", "简单易用"],
   downloads: {
     appStore: "https://apps.apple.com/hk/app/spectre-vpn/id1508712998"
   }
@@ -418,19 +442,22 @@ export const appleApps = [
 {
   name: "v2Box",
   category: "工具",
-  icon: "apps/apple/img/v2Box.png",
+  icon: "https://play-lh.googleusercontent.com/kVeisXWkT4oRMDsZbFrY7XXJvnxHJ7PnQFE71XCcCWAoeOAg5G3HJRDp4Ro3Xbc3WA=w0",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端免费软件，覆盖基础功能，软件美观，支持多平台。",
+  features: ["界面美观", "简单易用", "多平台支持"],
   downloads: {
-    appStore: "https://apps.apple.com/app/id6446814690"
+    appStore: "https://apps.apple.com/app/id6446814690",
+    official: "https://v2box.pro/zh/"
   }
 },
 {
   name: "Telescope",
   category: "工具",
-  icon: "apps/apple/img/Telescope.png",
+  icon: "https://www.telescope.name/bundles/starhome/home/telescope/pc-img/logo2.svg",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
@@ -447,8 +474,11 @@ export const appleApps = [
   rating: "4.0",
   platform: "iOS, iPadOS",
   type: "mobile",
+  description: "苹果端软件，内置节点，软件美观。",
+  features: ["界面美观", "简单易用", "内置节点"],
   downloads: {
-    appStore: "https://apps.apple.com/app/id6450534064"
+    appStore: "https://apps.apple.com/app/id6450534064",
+    officialL "https://www.telescope.name/"
   }
 },
 
@@ -655,7 +685,7 @@ export const appleApps = [
   description: "苹果端免费软件，多平台支持",
     features: ["功能强大", "界面美观", "BUG少"],
   downloads: {
-    github: "https://github.com/aaaamirabbas/nekoray-macos/releases",
+    github: "https://sing-box.org/wp-content/uploads/2023/12/1702057725-favicon-150x150.png",
     official: "https://nekoray123.com/official/"
   }
 },
@@ -672,6 +702,18 @@ export const appleApps = [
   downloads: {
     official: "https://hiddify.com",
     alternative: "https://github.com/hiddify/hiddify-next/releases"
+  }
+},
+  {
+   name: "sing-box",
+  category: "工具",
+  icon: "apps/apple/img/sing-box.png",
+  size: "small",
+  rating: "4.0",
+  platform: "iOS, iPadOS",
+  type: "mobile",
+  downloads: {
+    appStore: "https://apps.apple.com/us/app/sing-box/id6451272673"
   }
 },
 
@@ -707,6 +749,7 @@ export const appleApps = [
   }
 },
 ];
+
 
 
 
