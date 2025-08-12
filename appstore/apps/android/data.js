@@ -196,11 +196,11 @@ export const androidApps = [
   {
     name: "Shadowrocket",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://tse2-mm.cn.bing.net/th/id/OIP-C.40By2FzjfROxeyc5iNfDKQHaHa?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3.png", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
-    description: "资源占用较高（参考值：98.24MB）。自带免费节点，可单独开热点，可单独用混淆。",
+    description: "资源占用较高（参考值：98.24MB）。自带免费节点，和苹果端不是同一个软件。",
     features: [],
     downloads: {
       appStore: "https://play.google.com/store/apps/details?id=com.v2cross.shadowrocket"
@@ -209,12 +209,12 @@ export const androidApps = [
   {
     name: "Kitsunebi",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://wiki.fbi.company/~gitbook/image?url=https%3A%2F%2F1006315213-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-legacy-files%2Fo%2Fassets%252F-M0AxUKb5Wx76XNkBuNG%252F-M0ISft7jSr6hlWTE_du%252F-M0ITvcxNE_KMlqJXfZ_%252Funnamed.webp.jpg%3Falt%3Dmedia%26token%3D75ed23ba-4a72-4467-9ce6-9a7cda47cafe&width=768&dpr=1&quality=100&sign=1650d327&sv=2", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
-    description: "",
-    features: [],
+    description: "多平台软件，操作便捷",
+    features: ["界面简洁", "操作便捷", "多平台支持"],
     downloads: {
       github: "https://github.com/eycorsican/kitsunebi-android/releases",
       alternative: "https://apkpure.com/kitsunebi/fun.kitsunebi.kitsunebi4android",
@@ -224,12 +224,12 @@ export const androidApps = [
   {
     name: "BifrostV",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://www.appsapk.com/wp-content/uploads/2020/01/bifrostv-0-6-8-icon.png", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
-    description: "",
-    features: [],
+    description: "界面简洁、熟悉",
+    features: ["界面简洁", "使用便捷"],
     downloads: {
       official: "https://apkpure.com/cn/bifrostv/com.github.dawndiy.bifrostv",
       alternative: "https://github.com/wchenyi/wall/raw/gh-pages/%E5%AE%89%E5%8D%93/BifrostV.apk",
@@ -239,12 +239,12 @@ export const androidApps = [
   {
     name: "SagerNet",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://tse4-mm.cn.bing.net/th/id/OIP-C.5jcbnHFbmqvZDtFSjG_3DAAAAA?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3.png", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
     description: "类似v2rayng的软件，但是支持的协议比较多。",
-    features: [],
+    features: ["老牌软件", "页面简洁", "使用便捷"],
     downloads: {
       github: "https://github.com/SagerNet/SagerNet/releases/",
       appStore: "https://play.google.com/store/apps/details?id=io.nekohasekai.sagernet"
@@ -253,12 +253,12 @@ export const androidApps = [
   {
     name: "Tinyproxy",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2IgQVS0JKa0YHewQKU9vSSjWb1ctI2mRM4Q&s.png", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
     description: "资源占用较高（参考值：98.24MB）。需代码，可单独用混淆，可单独开热点。",
-    features: [],
+    features: ["配置多样", "轻量级", "页面简洁"],
     downloads: {
       official: "https://tinyproxy.github.io",
       alternative: "https://github.com/wchenyi/wall/raw/gh-pages/%E5%AE%89%E5%8D%93/TinyProxy.apk"
@@ -267,12 +267,12 @@ export const androidApps = [
   {
     name: "Pharos Pro",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://tse4-mm.cn.bing.net/th/id/OIP-C.emffyBe1BPQSKAE8Tfo87AHaHa?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
-    description: "",
-    features: [],
+    description: "多平台代理工具，使用便捷、界面美观",
+    features: ["多平台支持", "页面美观", "使用便捷"],
     downloads: {
       github: "https://github.com/PharosVip/Pharos-Android-Test/releases"
     }
@@ -280,12 +280,12 @@ export const androidApps = [
   {
     name: "ssrray",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://tse3-mm.cn.bing.net/th/id/OIP-C.pyfuxMw5hwEvRHIzU_k0GQHaFj?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3.png", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
     description: "对免流设置和检测页面友好，资源占用较高（参考值：116MB）。",
-    features: [],
+    features: ["老牌软件", "界面简洁"],
     downloads: {
       github: "https://github.com/xxf098/shadowsocksr-v2ray-trojan-android/releases"
     }
@@ -293,12 +293,12 @@ export const androidApps = [
   {
     name: "ClashA",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://tse1-mm.cn.bing.net/th/id/OIP-C.1k0QjpSDJnYkObR_YWPO8gHaHa?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3.png", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
     description: "已停止更新，已有各版本仍可使用。",
-    features: [],
+    features: ["老牌软件"，"界面简洁"],
     downloads: {
       official: "https://github.com/ccg2018/ClashA/releases"
     }
@@ -306,12 +306,12 @@ export const androidApps = [
   {
     name: "ClashAR",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://tse1-mm.cn.bing.net/th/id/OIP-C.1k0QjpSDJnYkObR_YWPO8gHaHa?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3.png", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
-    description: "",
-    features: [],
+    description: "已停止更新，已有各版本仍可使用。",
+    features: ["老牌软件"，"界面简洁"],
     downloads: {
       github: "https://github.com/Qv2ray/Qv2ray"
     }
@@ -319,12 +319,12 @@ export const androidApps = [
   {
     name: "ClashR",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://tse1-mm.cn.bing.net/th/id/OIP-C.1k0QjpSDJnYkObR_YWPO8gHaHa?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3.png", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
-    description: "",
-    features: [],
+    description: "已停止更新，已有各版本仍可使用。",
+    features: ["老牌软件"，"界面简洁"],
     downloads: {
       github: "https://github.com/naicfeng/ClashRForAndroid/releases"
     }
@@ -332,12 +332,12 @@ export const androidApps = [
   {
     name: "Shadowsocksr",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://tse4-mm.cn.bing.net/th/id/OIP-C.Jb1P1cv4WwRyg5lMHvSrHAAAAA?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3.png", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
-    description: "可单独用混淆，是协议，也有同名网站。",
-    features: [],
+    description: "已停止更新，已有各版本仍可使用。",
+    features: ["老牌软件"，"界面简洁", "先驱软件"],
     downloads: {
       github: "https://github.com/shadowsocksr-backup/shadowsocksr-android/releases",
       appStore: "https://play.google.com/store/apps/details?id=com.hdev.shadowsocksr"
@@ -346,12 +346,12 @@ export const androidApps = [
   {
     name: "Shadowsocks",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://creazilla-store.fra1.digitaloceanspaces.com/vectors/7918025/shadowsocks-logo-vector-md.jpeg", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
     description: "是协议，也有同名软件。",
-    features: [],
+    features: ["老牌软件"，"界面简洁", "先驱软件"],
     downloads: {
       github: "https://github.com/shadowsocks/shadowsocks-android/releases",
       appStore: "https://play.google.com/store/search?q=Shadowsocks&c=apps"
@@ -360,12 +360,12 @@ export const androidApps = [
   {
     name: "igniter",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://ts4.tc.mm.bing.net/th/id/OIP-C.HMYQE__TFlW-jhYbx2uc0gHaIG?rs=1&pid=ImgDetMain&o=7&rm=3", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
-    description: "专为Trojan协议的客户端。",
-    features: [],
+    description: "已停止更新，已有各版本仍可使用。",
+    features: ["老牌软件"，"界面简洁", "先驱软件"],
     downloads: {
       github: "https://github.com/trojan-gfw/igniter/releases",
       appStore: "https://play.google.com/store/search?q=igniter&c=apps"
@@ -374,7 +374,7 @@ export const androidApps = [
   {
     name: "v2flyNG",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://image.winudf.com/v2/image1/Y29tLnYycmF5LnYyZmx5X2ljb25fMTU4NzU3NTA3OV8wNzc/icon.png?w=156&fakeurl=1", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
@@ -382,18 +382,19 @@ export const androidApps = [
     features: [],
     downloads: {
       github: "https://github.com/2dust/v2flyNG/releases",
-      appStore: "https://play.google.com/store/apps/details?id=com.v2ray.v2fly"
+      appStore: "https://play.google.com/store/apps/details?id=com.v2ray.v2fly",
+      alternative: "https://apkpure.net/cn/v2flyng/com.v2ray.v2fly/download"
     }
   },
   {
     name: "Trojan",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://ts4.tc.mm.bing.net/th/id/OIP-C.HMYQE__TFlW-jhYbx2uc0gHaIG?rs=1&pid=ImgDetMain&o=7&rm=3", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
     description: "是协议，也有同名软件。",
-    features: [],
+    features: ["老牌软件", "先驱软件", "多平台支持", "页面简洁"],
     downloads: {
       appStore: "https://play.google.com/store/apps/details?id=com.crosserr.trojan"
     }
@@ -405,10 +406,11 @@ export const androidApps = [
     size: "small",
     rating: "4.0",
     platform: "Android",
-    description: "Android系统Trojan客户端，GitHub已经删库。",
-    features: [],
+    description: "Android系统Trojan客户端，类早期v2，已停止更新。",
+    features: ["先驱软件"， "已停止更新"],
     downloads: {
-      official: "https://itlanyan.com/download.php?filename=/v2/android/AnXray-v0.4rc06.apk"
+      official: "https://itlanyan.com/download.php?filename=/v2/android/AnXray-v0.4rc06.apk",
+      github: "https://github.com/zeromake/AnXray"
     }
   },
   {
@@ -419,7 +421,7 @@ export const androidApps = [
     rating: "4.0",
     platform: "多平台",
     description: "多平台，谷歌团队神秘加成。",
-    features: [],
+    features: ["小众软件"],
     downloads: {
       official: "https://getoutline.org/zh-CN/",
       github: "https://github.com/Jigsaw-Code/outline-client/releases/tag/v1.10.0-2",
@@ -429,17 +431,18 @@ export const androidApps = [
   {
     name: "clash-rev",
     category: "代理工具",
-    icon: "./src/img/logo.png", // Placeholder icon
+    icon: "https://pp.myapp.com/ma_icon/0/icon_54397632_1724394093/256", // Placeholder icon
     size: "small",
     rating: "4.0",
     platform: "Android",
     description: "clash删库后继承的项目，目前为了不必要的竞争，已经存档。",
-    features: [],
+    features: ["界面美观"，"新起之秀"， "多平台支持"],
     downloads: {
       github: "https://github.com/MerlinKodo/clash-rev"
     }
   }
 ];
+
 
 
 
