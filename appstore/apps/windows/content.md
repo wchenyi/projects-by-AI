@@ -1,7 +1,7 @@
-- Windows平台也是一个比较大的操作平台了，内部的软件也很多，普遍免费，自定义选项多。推荐大家下载开源版本，安全可靠有保障；如果你现在处于内网，建议下载1年版本。
-
+- Windows平台也是一个比较大的操作平台了，内部的软件也很多，普遍免费、自定义选项多。推荐大家下载开源版本，安全可靠有保障；如果你现在处于内网，建议下载1年版本。
 - 微软平台就是以开源、免费以及强大而著称，且不存在像安卓那样定制化UI过多导致的生态混乱。但是相比较于高度一体化的苹果来说在代理权线上似乎不是特别优秀。
-
 - 微软平台几乎都支持从压缩包直接解压使用，而不需要安装。
 
-> 适用于Windows&微软平台
+[LINKS_GRID]
+Clash Verge | https://github.com/zzzgydi/clash-verge | Clash Meta 内核的 GUI 工具
+Clash Nyanpasu | https://github.com/keiko233/clash-nyanpasu | 另一个高颜值的 Clash Meta 客户端
