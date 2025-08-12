@@ -6,7 +6,6 @@
     <title>应用商店</title>
     <meta name="description" content="一个精美的应用商店网页，发现新应用，激发新灵感。">
     <meta name="theme-color" content="#0ea5e9">
-    <!-- [修改] manifest.json 路径已更新 -->
     <link rel="manifest" href="./js/manifest.json">
     <link rel="icon" href="./src/img/logo.png" type="image/png">
     <link rel="apple-touch-icon" href="./src/img/logo.png">
@@ -16,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <script>
-        // 修复深色模式切换的闪烁问题 (FOUC)
+        // [修复] 立即执行的深色模式脚本，防止页面加载时闪烁
         (function() {
             try {
                 if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -137,12 +136,12 @@
         // ===================================================================================
         // 模块导入
         // ===================================================================================
-        import { fetchAndRenderMarkdown } from './js/markdown-renderer.js';
+        // 导入自定义配置和特效模块
         import { CUSTOM_CONFIG } from './conf/custom.js';
         import { initClickEffect, initSakuraEffect } from './js/effects.js';
 
         // ===================================================================================
-        // 网站核心配置 (现在与自定义配置合并)
+        // 网站核心配置
         // ===================================================================================
         const CONFIG = {
             siteName: "应用商店",
@@ -151,22 +150,39 @@
             footer: {
                 creationYear: 2024,
                 author: "Your Name",
-                version: "6.0.0"
+                version: "7.0.0"
+            },
+            // 主页内容现在由此处管理
+            homePageContent: {
+                disclaimer: `
+                    <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">必看</h3>
+                    <ul class="space-y-3 list-disc list-inside text-gray-700 dark:text-gray-300">
+                        <li>出于学习与交流目的设立本站，本站所有内容与本人无任何关联 ❗</li>
+                        <li>本站不提供任何形式的下载，仅为公开信息的搬运及整理。所有跳转链接均来自互联网，本站无法保证其安全性与可用性。</li>
+                        <li><strong>请您自觉遵守我国相关法律规定，利用本站提供的信息进行任何操作，所带来的一切后果由您本人承担。</strong></li>
+                        <li>严禁在国内社交平台、公开场合传播本站，请低调使用。</li>
+                        <li>所有软件请于下载后的24小时内删除，如果您喜欢，请支持正版。</li>
+                    </ul>
+                `,
+                sponsors: [
+                    { title: '赞助商A', logo: 'https://placehold.co/128x128/0ea5e9/ffffff?text=QR-A' },
+                    { title: '赞助商B', logo: 'https://placehold.co/128x128/334155/ffffff?text=QR-B' }
+                ]
             },
             categories: [
-                { id: 'home', name: '主页', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, themeColor: '#6b7280', gradient: 'from-gray-500 to-gray-700', contentFile: './apps/home/content.md' },
+                { id: 'home', name: '主页', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, themeColor: '#6b7280', gradient: 'from-gray-500 to-gray-700' },
                 { type: 'divider' },
-                { id: 'windows', name: 'PC端', file: './apps/windows/data.js', dataKey: 'windowsApps', bannerText: 'Windows 微软', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 20h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`, themeColor: '#0ea5e9', gradient: 'from-sky-500 to-sky-700', contentFile: './apps/windows/content.md' },
-                { id: 'apple', name: '苹果端', file: './apps/apple/data.js', dataKey: 'appleApps', bannerText: 'Apple 生态', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15.225 3.525c-1.425 0-2.55 1.125-3.225 2.25-.825-1.5-2.325-2.25-3.825-2.25-2.475 0-4.725 2.025-4.725 5.175 0 3.375 2.925 6.375 5.925 8.325 1.2.75 2.55 1.575 2.85 1.575.3 0 1.65-.825 2.85-1.575 3-1.95 5.925-4.95 5.925-8.325 0-3.15-2.25-5.175-4.725-5.175z"/><path d="M15.225 3.525c.9-.075 1.875.3 2.625 1.2.75.9.975 2.1.75 3.15"/></svg>`, themeColor: '#334155', gradient: 'from-slate-600 to-slate-800', contentFile: './apps/apple/content.md' },
-                { id: 'android', name: '安卓端', file: './apps/android/data.js', dataKey: 'androidApps', bannerText: 'Android 安卓', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="6" width="16" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 4V2M16 4V2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`, themeColor: '#22c55e', gradient: 'from-green-500 to-emerald-600', contentFile: './apps/android/content.md' },
+                { id: 'windows', name: 'PC端', file: './apps/windows/data.js', dataKey: 'windowsApps', bannerText: 'Windows 微软', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 20h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`, themeColor: '#0ea5e9', gradient: 'from-sky-500 to-sky-700' },
+                { id: 'apple', name: '苹果端', file: './apps/apple/data.js', dataKey: 'appleApps', bannerText: 'Apple 生态', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15.225 3.525c-1.425 0-2.55 1.125-3.225 2.25-.825-1.5-2.325-2.25-3.825-2.25-2.475 0-4.725 2.025-4.725 5.175 0 3.375 2.925 6.375 5.925 8.325 1.2.75 2.55 1.575 2.85 1.575.3 0 1.65-.825 2.85-1.575 3-1.95 5.925-4.95 5.925-8.325 0-3.15-2.25-5.175-4.725-5.175z"/><path d="M15.225 3.525c.9-.075 1.875.3 2.625 1.2.75.9.975 2.1.75 3.15"/></svg>`, themeColor: '#334155', gradient: 'from-slate-600 to-slate-800' },
+                { id: 'android', name: '安卓端', file: './apps/android/data.js', dataKey: 'androidApps', bannerText: 'Android 安卓', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="6" width="16" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 4V2M16 4V2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`, themeColor: '#22c55e', gradient: 'from-green-500 to-emerald-600' },
                 { id: 'linux', name: 'Linux', file: './apps/linux/data.js', dataKey: 'linuxApps', bannerText: 'Linux', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.4 12.76a1 1 0 00-.8 0c-2 1-3.9 2.4-5.2 4.44a1 1 0 00.1 1.4 8.6 8.6 0 0011 0 1 1 0 00.2-1.4c-1.3-2.03-3.2-3.43-5.3-4.44z" stroke="currentColor" stroke-width="2"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M12 2a3.5 3.5 0 00-3.5 3.5V10h7V5.5A3.5 3.5 0 0012 2z" stroke="currentColor" stroke-width="2"/></svg>`, themeColor: '#f97316', gradient: 'from-orange-500 to-amber-600' },
                 { type: 'divider' },
-                { id: 'other', name: '其他', file: './apps/other/data.js', dataKey: 'otherApps', bannerText: '其他工具', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12a2 2 0 100-4 2 2 0 000 4zM6 12a2 2 0 100-4 2 2 0 000 4zm12 0a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, themeColor: '#6366f1', gradient: 'from-indigo-500 to-violet-600', contentFile: './apps/other/content.md' }
+                { id: 'other', name: '其他', file: './apps/other/data.js', dataKey: 'otherApps', bannerText: '其他工具', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12a2 2 0 100-4 2 2 0 000 4zM6 12a2 2 0 100-4 2 2 0 000 4zm12 0a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, themeColor: '#6366f1', gradient: 'from-indigo-500 to-violet-600' }
             ]
         };
 
         // ===================================================================================
-        // 主应用逻辑 (已精简并添加注释)
+        // 主应用逻辑
         // ===================================================================================
         const doc = document;
         const mainScrollArea = doc.getElementById('main-scroll-area');
@@ -179,15 +195,11 @@
         let allAppsList = [];
         let currentCategoryId = 'home';
 
-        // --- 核心渲染与数据处理 ---
-
-        // 将十六进制颜色码转换为RGB字符串，用于CSS变量
         const hexToRgb = (hex) => {
             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
             return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '107, 114, 128';
         };
 
-        // 异步加载所有分类的 data.js 文件
         const loadAllData = async () => {
             const dataPromises = CONFIG.categories.filter(cat => cat.file).map(cat =>
                 import(cat.file).then(m => ({ id: cat.id, data: m[cat.dataKey] || [] })).catch(e => ({ id: cat.id, data: [] }))
@@ -199,7 +211,6 @@
             });
         };
 
-        // 渲染整个页面（Banner + 内容 + 应用卡片）
         const renderPage = (categoryId, appsToRender = null) => {
             mainContent.innerHTML = '';
             const category = CONFIG.categories.find(c => c.id === categoryId);
@@ -211,16 +222,15 @@
             const bannerText = isSearchResult ? `搜索: "${searchInput.value}"` : (categoryId === 'home' ? CONFIG.siteName : category.bannerText);
             mainContent.appendChild(createBanner(bannerText, category.gradient));
 
-            const contentContainer = doc.createElement('div');
-            mainContent.appendChild(contentContainer);
-            fetchAndRenderMarkdown(category.contentFile, contentContainer);
-            
-            renderAppPage(appsToRender || allAppsData[categoryId] || [], isSearchResult);
-            
+            if (categoryId === 'home' && !isSearchResult) {
+                renderHomePage();
+            } else {
+                renderAppPage(appsToRender || allAppsData[categoryId] || [], isSearchResult);
+                mainContent.appendChild(createOtherCategoriesNav(categoryId));
+            }
             mainScrollArea.scrollTop = 0;
         };
         
-        // 创建顶部的 Banner
         const createBanner = (text, gradient) => {
             const banner = doc.createElement('div');
             banner.className = `w-full h-40 sm:h-48 md:h-56 p-8 rounded-2xl flex items-center justify-center text-white bg-gradient-to-br ${gradient} shadow-lg`;
@@ -228,7 +238,47 @@
             return banner;
         };
 
-        // 渲染应用卡片区域
+        const renderHomePage = () => {
+            const homeContainer = doc.createElement('div');
+            homeContainer.className = 'bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-2xl shadow-md';
+            homeContainer.innerHTML = CONFIG.homePageContent.disclaimer;
+
+            if (CONFIG.homePageContent.sponsors && CONFIG.homePageContent.sponsors.length > 0) {
+                const sponsorSection = doc.createElement('div');
+                sponsorSection.innerHTML = `<h3 class="text-2xl font-bold mt-10 mb-4 text-gray-800 dark:text-gray-200">赞助商</h3>`;
+                const sponsorGrid = doc.createElement('div');
+                sponsorGrid.className = 'flex flex-wrap justify-center items-center gap-8';
+                CONFIG.homePageContent.sponsors.forEach(sponsor => {
+                    const sponsorCard = doc.createElement('div');
+                    sponsorCard.className = 'text-center';
+                    sponsorCard.innerHTML = `<img src="${sponsor.logo}" alt="${sponsor.title}" class="w-32 h-32 rounded-lg shadow-md mx-auto"><p class="mt-2 text-sm font-medium text-slate-600 dark:text-slate-400">${sponsor.title}</p>`;
+                    sponsorGrid.appendChild(sponsorCard);
+                });
+                sponsorSection.appendChild(sponsorGrid);
+                homeContainer.appendChild(sponsorSection);
+            }
+
+            homeContainer.appendChild(createOtherCategoriesNav('home'));
+            mainContent.appendChild(homeContainer);
+        };
+        
+        const createOtherCategoriesNav = (currentId) => {
+            const navSection = doc.createElement('div');
+            navSection.innerHTML = `<h3 class="text-2xl font-bold mt-10 mb-4 text-gray-800 dark:text-gray-200">探索其他分类</h3>`;
+            const navGrid = doc.createElement('div');
+            navGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
+            
+            CONFIG.categories.filter(c => c.id !== currentId && c.type !== 'divider').forEach(cat => {
+                const card = doc.createElement('a');
+                card.href = `#${cat.id}`;
+                card.className = `nav-card-home flex items-center gap-4 p-4 rounded-xl shadow-sm transition-all hover:shadow-lg hover:-translate-y-1 bg-gray-50 dark:bg-slate-800`;
+                card.innerHTML = `<div class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-lg text-white" style="background-color: ${cat.themeColor};">${cat.icon}</div><span class="font-semibold text-slate-700 dark:text-slate-300">${cat.name}</span>`;
+                navGrid.appendChild(card);
+            });
+            navSection.appendChild(navGrid);
+            return navSection;
+        };
+
         const renderAppPage = (apps, isSearchResult = false) => {
             if (!apps || apps.length === 0) {
                 if (!isSearchResult) mainContent.insertAdjacentHTML('beforeend', `<div class="text-center py-16"><p class="text-gray-500">这个分类下还没有应用。</p></div>`);
@@ -252,7 +302,6 @@
             });
         };
 
-        // 创建区域标题 (如 "推荐应用")
         const createSectionTitle = (title) => {
             const titleEl = doc.createElement('h3');
             titleEl.className = 'text-2xl font-bold border-b-2 border-gray-200 dark:border-slate-800 pb-2 mb-6 text-slate-800 dark:text-slate-200';
@@ -260,7 +309,6 @@
             return titleEl;
         };
 
-        // 创建单个应用卡片
         const createAppCard = (app, isSearchResult = false) => {
             const card = doc.createElement('div');
             card.className = 'app-card group cursor-pointer transition-all duration-300 rounded-2xl shadow-lg relative overflow-hidden';
@@ -339,9 +387,6 @@
             return card;
         };
         
-        // --- 导航与路由 ---
-
-        // 渲染侧边栏导航
         const renderNav = () => {
             categoryNav.innerHTML = '';
             CONFIG.categories.forEach(cat => {
@@ -357,7 +402,6 @@
             });
         };
 
-        // 渲染页脚
         const renderFooter = () => {
             const footer = doc.getElementById('main-footer');
             const currentYear = new Date().getFullYear();
@@ -377,7 +421,6 @@
             `;
         };
         
-        // URL Hash 变化时的处理器，用于页面切换
         const handleHashChange = () => {
             const categoryId = location.hash.substring(1) || 'home';
             currentCategoryId = categoryId;
@@ -385,7 +428,6 @@
             updateNavActiveState();
         };
 
-        // 更新侧边栏导航的激活状态
         const updateNavActiveState = () => {
             doc.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.remove('text-white', 'shadow-md', 'theme-bg-active');
@@ -395,49 +437,37 @@
             });
         };
         
-        // --- 初始化与事件监听 ---
-
-        // 页面总初始化函数
         const init = async () => {
-            // 1. 设置网站标题和Logo
             doc.title = CONFIG.siteName;
             doc.getElementById('site-name-sidebar').textContent = CONFIG.siteName;
             const logoImg = doc.getElementById('site-logo');
             logoImg.onerror = () => { logoImg.outerHTML = `<div class="w-8 h-8 theme-text">${CONFIG.defaultLogoSVG}</div>`; };
             logoImg.src = CONFIG.siteLogo;
 
-            // 2. 注册 PWA Service Worker
             if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname.endsWith('.local'))) {
                 try {
                     navigator.serviceWorker.register('./sw.js').catch(err => console.error('Service worker registration failed:', err));
                 } catch (e) { console.error('An exception occurred during service worker registration:', e); }
             }
 
-            // 3. 渲染静态UI部分
             renderNav();
             renderFooter();
             initTheme();
-
-            // 4. 加载所有应用数据
             await loadAllData();
             
-            // 5. 监听URL变化并加载初始页面
             window.addEventListener('hashchange', handleHashChange);
             handleHashChange();
 
-            // 6. 初始化自定义特效
             if(CUSTOM_CONFIG.effects.sakura) initSakuraEffect();
             if(CUSTOM_CONFIG.effects.clickEffect) initClickEffect();
         };
 
-        // 滚动到顶部按钮的显示/隐藏
         mainScrollArea.addEventListener('scroll', () => {
             backToTopBtn.classList.toggle('opacity-0', mainScrollArea.scrollTop <= 200);
             backToTopBtn.classList.toggle('translate-y-4', mainScrollArea.scrollTop <= 200);
         });
         backToTopBtn.addEventListener('click', () => mainScrollArea.scrollTo({ top: 0, behavior: 'smooth' }));
 
-        // 搜索框输入事件
         searchInput.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase().trim();
             if (searchTerm) {
@@ -452,7 +482,6 @@
             }
         });
 
-        // [修复] 深色模式切换逻辑
         const themeToggle = doc.getElementById('theme-toggle');
         const applyTheme = (theme) => {
             if (theme === 'dark') {
@@ -476,12 +505,10 @@
             applyTheme(newTheme);
         });
 
-        // 移动端侧边栏开关
         const menuToggle = doc.getElementById('menu-toggle'), sidebar = doc.getElementById('sidebar');
         menuToggle.addEventListener('click', (e) => { e.stopPropagation(); sidebar.classList.toggle('-translate-x-full'); });
         doc.addEventListener('click', (e) => { if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && !sidebar.classList.contains('-translate-x-full')) { sidebar.classList.add('-translate-x-full'); } });
         
-        // --- Modal 弹窗逻辑 ---
         const modal = doc.getElementById('app-detail-modal'), modalContent = doc.getElementById('modal-content'), modalBackdrop = doc.getElementById('modal-backdrop'), closeBtn = doc.getElementById('modal-close-btn'), modalAppName = doc.getElementById('modal-app-name'), modalAppIcon = doc.getElementById('modal-app-icon'), modalAppRating = doc.getElementById('modal-app-rating'), modalAppDesc = doc.getElementById('modal-app-desc'), modalAppFeatures = doc.getElementById('modal-app-features'), modalAppPlatform = doc.getElementById('modal-app-platform'), modalDownloadLinks = doc.getElementById('modal-download-links');
         const openModal = (card) => {
             const appData = card.dataset;
@@ -533,7 +560,6 @@
         modalBackdrop.addEventListener('click', closeModal);
         doc.addEventListener('keydown', (e) => e.key === 'Escape' && !modal.classList.contains('hidden') && closeModal());
 
-        // 启动应用
         init();
     </script>
 </body>
