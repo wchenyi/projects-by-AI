@@ -693,7 +693,7 @@ export const appleApps = [
 {
   name: "Nekoray-MacOS",
   category: "工具",
-  icon: "https://nekoray123.com/wp-content/loads/2024/10/NekoRay.png",
+  icon: "https://nekoray123.com/wp-content/uploads/2024/10/NekoRay-150x150.png",
   size: "medium",
   rating: "4.5",
   platform: "MacOS",
@@ -754,6 +754,7 @@ export const appleApps = [
   }
 },
 ];
+
 
 
 
