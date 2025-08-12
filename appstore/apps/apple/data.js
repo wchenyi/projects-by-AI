@@ -7,8 +7,8 @@ export const appleApps = [
   // --- 移动端 Large（保留原内容） ---
   {
     name: "Shadowrocket",
-    category: "开发",
-    icon: "https://parsefiles.back4app.com/JPaQcFfEEQ1ePBxbf6wvzkPMEqKYHhPYv8boI1Rc/3ca3cb3142ee84fb7c9f901271491cea_low_res_shadowrocket.png",
+    category: "工具",
+    icon: "https://bk.luvwan.com/wp-content/uploads/2024/07/20240714152739863-2024042502101-Shadowrocket-iOS-512x512-icon001.png",
     size: "large",
     rating: "4.9",
     platform: "iOS, iPadOS",
@@ -754,6 +754,7 @@ export const appleApps = [
   }
 },
 ];
+
 
 
 
