@@ -8,7 +8,7 @@ export const appleApps = [
   {
     name: "Shadowrocket",
     category: "工具",
-    icon: "https://bk.luvwan.com/wp-content/uploads/2024/07/20240714152739863-2024042502101-Shadowrocket-iOS-512x512-icon001.png",
+    icon: "https://tse2-mm.cn.bing.net/th/id/OIP-C.40By2FzjfROxeyc5iNfDKQHaHa?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3.png",
     size: "large",
     rating: "4.9",
     platform: "iOS, iPadOS",
@@ -87,7 +87,7 @@ export const appleApps = [
   {
     name: "Kitsunebi",
     category: "工具",
-    icon: "https://img.utdstc.com/icon/c09/f99/c09f99296cfde493bb718927dd8ffdb2d76a5e8594eb92a6905ea60aaf6a56df:200",
+    icon: "https://wiki.fbi.company/~gitbook/image?url=https%3A%2F%2F1006315213-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-legacy-files%2Fo%2Fassets%252F-M0AxUKb5Wx76XNkBuNG%252F-M0ISft7jSr6hlWTE_du%252F-M0ITvcxNE_KMlqJXfZ_%252Funnamed.webp.jpg%3Falt%3Dmedia%26token%3D75ed23ba-4a72-4467-9ce6-9a7cda47cafe&width=768&dpr=1&quality=100&sign=1650d327&sv=2",
     size: "medium",
     rating: "4.5",
     platform: "iOS, iPadOS",
@@ -426,7 +426,7 @@ export const appleApps = [
 {
   name: "Chute",
   category: "工具",
-  icon: "https://www.chute.life/images/icon.png",
+  icon: ".src/img/logo.png",
   size: "small",
   rating: "4.0",
   platform: "iOS, iPadOS",
@@ -754,6 +754,7 @@ export const appleApps = [
   }
 },
 ];
+
 
 
 
