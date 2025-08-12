@@ -1,127 +1,92 @@
-## 应用商店配置与管理指南 (V3.0)
+## 应用商店配置与管理指南 (V6.0)
 
-您好！欢迎来到V3.0版应用商店。此版本专注于提升视觉精致度、信息密度和移动端体验，并对所有卡片样式进行了重新设计。
+您好！V6.0版本在修复BUG和重构代码的基础上，引入了更强大的外部配置文件系统，让您的网站个性化变得前所未有的简单。
 
-### 一、 文件目录结构 (无变化)
+### 一、 文件目录结构 (V6.0)
 
-文件结构保持不变，您可以继续沿用此前的项目结构。
+为了实现代码分离和易于配置，我们引入了新的文件夹和文件：
 
 ```
+
 应用商店/
-apps/
-├── home/
-│   └── content.md        (主页内容)
-├── windows/
-│   ├── data.js
-│   └── content.md        (PC端内容)
-├── android/
-│   ├── data.js  
-│   └── content.md        (安卓端内容)
-├── apple/
-│   ├── data.js
-│   └── content.md        (苹果端内容)
-├── other/
-│   ├── data.js
-│   └── content.md        (其他端内容)
-└── linux/
-    └── data.js
+├── 📂 apps/
+│   ├── 📂 android/
+│   │   ├── 📄 data.js
+│   │   └── 📄 content.md  <-- (新增) 分类页面顶部内容
+│   └── ... (其他分类)
+│
+├── 📂 conf/               <-- (新增) 自定义配置文件夹
+│   └── 📄 custom.js      <-- (新增) 个性化配置文件
+│
+├── 📂 js/
+│   ├── 📄 effects.js      <-- (新增) 视觉特效脚本
+│   ├── 📄 markdown-renderer.js <-- (新增) Markdown渲染脚本
+│   └── 📄 manifest.json   <-- (移动) PWA配置文件
+│
+├── 📄 index.html           <-- 网站核心文件 (已大幅精简)
+└── 📄 sw.js                <-- PWA Service Worker (无变化)
+
 ```
 
-### 二、 核心配置 (在 ```index.html``` 中)
+- ```conf/custom.js```: 这是您的**个性化控制中心**。所有非核心的功能，如社交链接、视觉特效，都在这里配置。
 
-所有核心配置依然集中在 ```index.html``` 文件底部的 ```CONFIG``` 对象中。大部分配置保持不变，但请注意以下几点：
+- ````js/``` **文件夹**: 现在存放了所有的JavaScript模块文件，包括特效、Markdown渲染器和PWA的```manifest.json```。
 
-- 主题色系统已升级：您仍然只需要在 ```CONFIG.categories``` 中为每个分类设置一个 ```themeColor``` (十六进制颜色码，如 ```'#0ea5e9'```)。新版代码会自动根据这个主色调，智能地生成不同深浅、不同饱和度的颜色，用于 Banner、侧边栏选中状态、卡片背景等，实现了您要求的“同色系但有区分”的视觉效果。
+- ```apps/.../content.md```: 每个分类目录下新增的Markdown文件，用于定义该分类页面顶部、应用列表上方显示的图文内容。
 
-- 卡片布局自动化：
+### 二、 如何进行个性化配置 (```conf/custom.js```)
 
-    - l```arge``` **卡片**：新版 ```large``` 卡片会自动从应用的 ```features``` 数组中提取前两个特色功能，并将其展示在卡片上。它还会自动寻找 ```appStore``` 和 ```official``` 类型的下载链接，如果存在，则会以小图标按钮的形式直接显示在卡片上。您无需任何额外配置。
+打开 ```conf/custom.js``` 文件，您会看到清晰的配置选项：
 
-    - ```medium``` **和** ```small``` **卡片**：已根据您提供的参考图完全重制，布局和响应式行为（桌面/移动端显示数量）已内建，您只需在 ```data.js``` 中指定 ```size: "medium"``` 或 ```size: "small"``` 即可。
-
-### 三、 数据文件 (```data.js```)
-
-您的 ```data.js``` 文件结构完全无需改动。新版网页会自动适应您现有的数据结构，并以全新的、更美观的方式将其呈现出来。
-
-例如，一个 ```large``` 卡片的应用数据：
-
-// ```data.js``` 文件中的一个应用条目
 ``` java
-{
-    name: "PowerToys",
-    category: "系统工具",
-    icon: "...",
-    size: "large", // 指定尺寸
-    rating: "4.8",
-    platform: "PC",
-    description: "...",
-    features: [
-      "颜色选择器",  // <- 会被自动显示在卡片上
-      "窗口置顶",    // <- 会被自动显示在卡片上
-      "批量图像大小调整器" // (这个不会显示在卡片上，但详情页可见)
+export const CUSTOM_CONFIG = {
+    // 1. 社交媒体链接
+    socials: [
+        {
+            name: "Bilibili",
+            url: "https://space.bilibili.com/",
+            icon: `<svg>...</svg>`
+        },
+        // 在此添加更多...
     ],
-    downloads: {
-      official: "https://...", // <- 会被自动渲染为卡片上的下载按钮
-      appStore: "ms-windows-store://...", // <- 也会被渲染
-      github: "https://..." // (这个不会显示在卡片上，但详情页可见)
+
+    // 2. 视觉特效
+    effects: {
+        sakura: true,      // true为开启樱花特效，false为关闭
+        clickEffect: true  // true为开启鼠标点击特效，false为关闭
     }
-}
-```
-
-### 四、版权信息 (在 ```index.html``` 中)
-
-所有配置依然集中在 ```index.html``` 文件底部的 ```CONFIG``` 对象中。
-
-``` java
-const CONFIG = {
-    // 1. 网站基础信息
-    siteName: "应用商店",
-    siteLogo: "./src/img/logo.png", // 您的Logo路径
-    
-    // 2. (新增) 页脚信息
-    footer: {
-        creationYear: 2023, // 网站创建年份
-        author: "Your Name", // 您的名称
-        version: "4.0.0" // 版本号
-    },
-
-    // 3. 主页免责声明 (无变化)
-    disclaimer: `...`,
-
-    // 4. 分类信息与主题配置
-    categories: [
-        { id: 'home', name: '主页', icon: '...', themeColor: '#6b7280', ... },
-        { type: 'divider' }, // <-- 新增：用于在侧边栏生成分割线
-        { id: 'windows', name: 'PC端', ... },
-        // ...
-        { type: 'divider' },
-        { id: 'other', name: '其他', ... }
-    ]
 };
+
 ```
 
-- ```footer```: 新增的页脚配置区，您可以在此修改作者、年份和版本号。
+- **添加社交链接**: 只需复制一个 ```{...}``` 对象，修改 ```name```, ```url``` 和 ```icon``` 即可。图标代码可以从 [icones.js.org](https://icones.js.org/) 等网站轻松获取。
 
-- ```categories```:
+- **开关特效**: 直接将 ```true``` 改为 ```false``` 即可禁用不想要的特效。
 
-  - ```{ type: 'divider' }```: 在您想添加分割线的位置，插入这样一行即可。
+### 三、 如何编辑页面顶部内容 (```content.md```)
 
-  - ```themeColor```: 现在只需要提供一个十六进制颜色码，代码会自动生成配套的浅色和渐变色，使整体风格统一又富有层次。
+现在，每个分类页（包括主页）顶部的介绍性文字都由对应的 ```content.md``` 文件控制。例如，要修改PC端页面的内容，只需编辑 ```apps/windows/content.md```。
 
-### 五、卡片布局与数据联动 (自动)
+该文件支持标准的Markdown语法，以及我为您定制的两个特殊组件：
 
-新版卡片的设计是高度自动化的，它会智能地读取您的 ```data.js``` 数据并以最佳方式呈现。
+- **链接卡片网格:**
 
-- ```large``` 卡片:
+```
+[LINKS_GRID]
+Clash Verge | <https://github.com/zzzgydi/clash-verge> | Clash Meta 内核的 GUI 工具
+Clash Nyanpasu | <https://github.com/keiko233/clash-nyanpasu> | 另一个高颜值的 Clash Meta 客户端
+```
 
-  - 自动展示内容: 会自动抓取 ```features``` 数组的前两项、```rating``` 评分，并显示在卡片上。
+- **赞助商网格** (主要用于主页):
 
-  - 自动添加快捷下载: 会自动寻找 ```downloads``` 对象中的 ```official``` 和 ```appStore``` 链接，并生成快捷下载按钮。
+```
+[SPONSORS]
+赞助商A | ./src/img/qr-a.png
+赞助商B | ./src/img/qr-b.png
+```
 
-- ```medium``` / ```small``` 卡片:
+### 四、 PWA配置 (```js/manifest.json```)
 
-  - 自动添加下载按钮: 会自动寻找 ```downloads``` 对象中的任意一个可用链接（优先级：```official > github > appStore > alternative```），并生成“点击下载”按钮。
+请将您原有的 ```manifest.json``` 文件移动到 ```js/``` 文件夹内。代码已自动适配新路径。
 
-这意味着您只需专注于维护 ```data.js``` 文件的准确性，网页的视觉表现会由代码自动完成，无需您进行额外操作
-
-
+这个V6.0版本是目前为止最成熟、最易于维护的版本。希望您对这次的大升级感到满意！
