@@ -246,7 +246,7 @@ export const windowsApps = [
   {
     name: "Netch",
     category: "代理工具",
-    icon: ".https://ts4.tc.mm.bing.net/th/id/OIP-C.-u9KdY-qwW99dSy_ZcXDYQHaHa?rs=1&pid=ImgDetMain&o=7&rm=3",
+    icon: "https://tse4-mm.cn.bing.net/th/id/OIP-C.-u9KdY-qwW99dSy_ZcXDYQHaHa?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3.png",
     size: "small",
     rating: "4.0",
     platform: "Windows",
@@ -254,6 +254,7 @@ export const windowsApps = [
     features: ["游戏加速"],
     downloads: {
       github: "https://github.com/NetchX/Netch/releases",
+      official: "https://netch.info/",
       alternative: "https://d2.netfiles.pw/v2/windows/Netch-v1.9.2.7z"
     }
   },
@@ -298,6 +299,7 @@ export const windowsApps = [
     }
   }
 ];
+
 
 
 
