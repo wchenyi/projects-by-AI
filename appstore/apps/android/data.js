@@ -298,7 +298,7 @@ export const androidApps = [
     rating: "4.0",
     platform: "Android",
     description: "已停止更新，已有各版本仍可使用。",
-    features: ["老牌软件"，"界面简洁"],
+    features: ["老牌软件", "界面简洁"],
     downloads: {
       official: "https://github.com/ccg2018/ClashA/releases"
     }
@@ -311,7 +311,7 @@ export const androidApps = [
     rating: "4.0",
     platform: "Android",
     description: "已停止更新，已有各版本仍可使用。",
-    features: ["老牌软件"，"界面简洁"],
+    features: ["老牌软件", "界面简洁"],
     downloads: {
       github: "https://github.com/Qv2ray/Qv2ray"
     }
@@ -324,7 +324,7 @@ export const androidApps = [
     rating: "4.0",
     platform: "Android",
     description: "已停止更新，已有各版本仍可使用。",
-    features: ["老牌软件"，"界面简洁"],
+    features: ["老牌软件", "界面简洁"],
     downloads: {
       github: "https://github.com/naicfeng/ClashRForAndroid/releases"
     }
@@ -337,7 +337,7 @@ export const androidApps = [
     rating: "4.0",
     platform: "Android",
     description: "已停止更新，已有各版本仍可使用。",
-    features: ["老牌软件"，"界面简洁", "先驱软件"],
+    features: ["老牌软件", "界面简洁", "先驱软件"],
     downloads: {
       github: "https://github.com/shadowsocksr-backup/shadowsocksr-android/releases",
       appStore: "https://play.google.com/store/apps/details?id=com.hdev.shadowsocksr"
@@ -351,7 +351,7 @@ export const androidApps = [
     rating: "4.0",
     platform: "Android",
     description: "是协议，也有同名软件。",
-    features: ["老牌软件"，"界面简洁", "先驱软件"],
+    features: ["老牌软件", "界面简洁", "先驱软件"],
     downloads: {
       github: "https://github.com/shadowsocks/shadowsocks-android/releases",
       appStore: "https://play.google.com/store/search?q=Shadowsocks&c=apps"
@@ -365,7 +365,7 @@ export const androidApps = [
     rating: "4.0",
     platform: "Android",
     description: "已停止更新，已有各版本仍可使用。",
-    features: ["老牌软件"，"界面简洁", "先驱软件"],
+    features: ["老牌软件", "界面简洁", "先驱软件"],
     downloads: {
       github: "https://github.com/trojan-gfw/igniter/releases",
       appStore: "https://play.google.com/store/search?q=igniter&c=apps"
@@ -378,7 +378,7 @@ export const androidApps = [
     size: "small",
     rating: "4.0",
     platform: "Android",
-    description: "和v2rayNG是同一个作者，是v2rayNG的付费版本。",
+    description: "和v2rayNG是同一个作者, 是v2rayNG的付费版本。",
     features: [],
     downloads: {
       github: "https://github.com/2dust/v2flyNG/releases",
@@ -407,7 +407,7 @@ export const androidApps = [
     rating: "4.0",
     platform: "Android",
     description: "Android系统Trojan客户端，类早期v2，已停止更新。",
-    features: ["先驱软件"， "已停止更新"],
+    features: ["先驱软件", "已停止更新"],
     downloads: {
       official: "https://itlanyan.com/download.php?filename=/v2/android/AnXray-v0.4rc06.apk",
       github: "https://github.com/zeromake/AnXray"
@@ -436,13 +436,9 @@ export const androidApps = [
     rating: "4.0",
     platform: "Android",
     description: "clash删库后继承的项目，目前为了不必要的竞争，已经存档。",
-    features: ["界面美观"，"新起之秀"， "多平台支持"],
+    features: ["界面美观", "新起之秀", "多平台支持"],
     downloads: {
       github: "https://github.com/MerlinKodo/clash-rev"
     }
   }
 ];
-
-
-
-
