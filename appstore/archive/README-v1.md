@@ -184,4 +184,5 @@ export const windowsApps = [
 
 ```
 
+
 为每个分类（```apple```, ```android``` 等）都创建相应的 ```data.js``` 文件，并修改其中的 ```export const ...``` 变量名（例如 ```appleApps```, ```androidApps``` 等），您的应用商店就会自动填充内容了。
