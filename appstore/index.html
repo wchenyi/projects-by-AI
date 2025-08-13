@@ -6,7 +6,6 @@
     <title>应用商店</title>
     <meta name="description" content="一个精美的应用商店网页，发现新应用，激发新灵感。">
     <meta name="theme-color" content="#0ea5e9">
-    <!-- [修改] manifest.json 路径已更新 -->
     <link rel="manifest" href="./js/manifest.json">
     <link rel="icon" href="./src/img/logo.png" type="image/png">
     <link rel="apple-touch-icon" href="./src/img/logo.png">
@@ -23,6 +22,8 @@
                 const theme = localStorage.getItem('theme');
                 if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                     document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
                 }
             } catch (e) {}
         })();
@@ -142,7 +143,7 @@
     <div id="qr-code-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-300">
         <div id="qr-modal-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
         <div id="qr-modal-content" class="relative z-50 p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl flex flex-col items-center gap-4 transition-transform duration-300 scale-95 opacity-0">
-            <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200">扫描二维码</h3>
+            <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200">分享二维码</h3>
             <img id="qr-code-image" src="" class="w-48 h-48 rounded-lg bg-white">
             <button id="qr-modal-close-btn" class="absolute -top-2 -right-2 w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-700 rounded-full text-slate-600 dark:text-slate-300 shadow-md">&times;</button>
         </div>
@@ -150,14 +151,14 @@
     
     <!-- [新增] 复制成功提示 -->
     <div id="copy-notification" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-green-500 text-white rounded-lg shadow-lg opacity-0 transition-all duration-300 -translate-y-4">
-        已复制网址到剪切板
+        网址已复制到粘贴板
     </div>
 
     <button id="back-to-top" class="fixed bottom-6 right-6 z-30 w-12 h-12 rounded-full bg-slate-800/50 dark:bg-white/20 text-white dark:text-slate-200 backdrop-blur-sm shadow-lg flex items-center justify-center opacity-0 translate-y-4 transition-all duration-300 hover:scale-110 hover:bg-slate-900 dark:hover:bg-white/30">
         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 19V5m0 0l-4 4m4-4l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
 
-    <script>
+    <script type="module">
         // ===================================================================================
         // 网站核心配置中心
         // ===================================================================================
@@ -185,10 +186,10 @@
                     { title: '赞助商B', logo: 'https://placehold.co/128x128/334155/ffffff?text=QR-B' }
                 ]
             },
-            // [新增] 右上角功能卡片配置
+            // 右上角功能卡片配置
             optionsMenu: [
-                { text: '分享', icon: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 8a3 3 0 100-6 3 3 0 000 6zM6 15a3 3 0 100-6 3 3 0 000 6zM18 22a3 3 0 100-6 3 3 0 000 6zM8.59 13.51l6.83-4.02M15.41 16.51l-6.82-4.02" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, action: 'share' },
-                { text: '二维码', icon: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h4v4H4V4zM4 16h4v4H4v-4zM16 4h4v4h-4V4zM16 16h4v4h-4v-4zM10 4h4v4h-4V4zM4 10h4v4H4v-4zM10 16h4v4h-4v-4zM16 10h4v4h-4v-4zM10 10h4v4h-4v-4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, action: 'qrcode' },
+                { text: '分享网址', icon: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 8a3 3 0 100-6 3 3 0 000 6zM6 15a3 3 0 100-6 3 3 0 000 6zM18 22a3 3 0 100-6 3 3 0 000 6zM8.59 13.51l6.83-4.02M15.41 16.51l-6.82-4.02" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, action: 'share' },
+                { text: '分享二维码', icon: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h4v4H4V4zM4 16h4v4H4v-4zM16 4h4v4h-4V4zM16 16h4v4h-4v-4zM10 4h4v4h-4V4zM4 10h4v4H4v-4zM10 16h4v4h-4v-4zM16 10h4v4h-4v-4zM10 10h4v4h-4v-4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, action: 'qrcode' },
                 { type: 'divider' },
                 { text: '访问博客', url: 'https://example.com/blog', icon: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4.5A2.5 2.5 0 016.5 2H17.5A2.5 2.5 0 0120 4.5v15A2.5 2.5 0 0117.5 22H6.5A2.5 2.5 0 014 19.5v-15zM8 8h8M8 12h8M8 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`},
                 { text: '关于项目', url: 'https://github.com/example', icon: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/><path d="M12 12V16M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`},
@@ -201,11 +202,11 @@
                 { id: 'home', name: '主页', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, themeColor: '#6b7280', gradient: 'from-gray-500 to-gray-700' },
                 { type: 'divider' },
                 { id: 'windows', name: 'PC端', file: './apps/windows/data.js', dataKey: 'windowsApps', bannerText: 'Windows 微软', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 20h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`, themeColor: '#0ea5e9', gradient: 'from-sky-500 to-sky-700' },
-                { id: 'apple', name: '苹果端', file: './apps/apple/data.js', dataKey: 'appleApps', bannerText: 'Apple 生态', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15.225 3.525c-1.425 0-2.55 1.125-3.225 2.25-.825-1.5-2.325-2.25-3.825-2.25-2.475 0-4.725 2.025-4.725 5.175 0 3.375 2.925 6.375 5.925 8.325 1.2.75 2.55 1.575 2.85 1.575.3 0 1.65-.825 2.85-1.575 3-1.95 5.925-4.95 5.925-8.325 0-3.15-2.25-5.175-4.725-5.175z"/><path d="M15.225 3.525c.9-.075 1.875.3 2.625 1.2.75.9.975 2.1.75 3.15"/></svg>`, themeColor: '#334155', gradient: 'from-slate-600 to-slate-800' },
+                { id: 'apple', name: '苹果端', file: './apps/apple/data.js', dataKey: 'appleApps', bannerText: 'Apple 生态', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15.225 3.525c-1.425 0-2.55 1.125-3.225 2.25-.825-1.5-2.325-2.25-3.825-2.25-2.475 0-4.725 2.025-4.725 5.175 0 3.375 2.925 6.375 5.925 8.325 1.2.75 2.55 1.575 2.85 1.575.3 0 1.65-.825 2.85-1.575 3-1.95 5.925-4.95 5.925-8.325 0-3.15-2.25-5.175-4.725-5.175z"/><path d="M15.225 3.525c.9-.075 1.875.3 2.625 1.2.75.9.975 2.1.75 3.15"/></svg>`, themeColor: '#334155', gradient: 'from-slate-600 to-slate-800', hasDeviceTypes: true },
                 { id: 'android', name: '安卓端', file: './apps/android/data.js', dataKey: 'androidApps', bannerText: 'Android 安卓', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="6" width="16" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 4V2M16 4V2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`, themeColor: '#22c55e', gradient: 'from-green-500 to-emerald-600' },
                 { id: 'linux', name: 'Linux', file: './apps/linux/data.js', dataKey: 'linuxApps', bannerText: 'Linux', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.4 12.76a1 1 0 00-.8 0c-2 1-3.9 2.4-5.2 4.44a1 1 0 00.1 1.4 8.6 8.6 0 0011 0 1 1 0 00.2-1.4c-1.3-2.03-3.2-3.43-5.3-4.44z" stroke="currentColor" stroke-width="2"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M12 2a3.5 3.5 0 00-3.5 3.5V10h7V5.5A3.5 3.5 0 0012 2z" stroke="currentColor" stroke-width="2"/></svg>`, themeColor: '#f97316', gradient: 'from-orange-500 to-amber-600' },
                 { type: 'divider' },
-                { id: 'other', name: '其他', file: './apps/other/data.js', dataKey: 'otherApps', bannerText: '其他工具', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12a2 2 0 100-4 2 2 0 000 4zM6 12a2 2 0 100-4 2 2 0 000 4zm12 0a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, themeColor: '#6366f1', gradient: 'from-indigo-500 to-violet-600' }
+                { id: 'other', name: '其他', file: './apps/other/data.js', dataKey: 'otherApps', bannerText: '其他工具', icon: `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12a2 2 0 100-4 2 2 0 000 4zM6 12a2 2 0 100-4 2 2 0 000 4zm12 0a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, themeColor: '#6366f1', gradient: 'from-indigo-500 to-violet-600', hasDeviceTypes: true }
             ]
         };
 
@@ -222,6 +223,7 @@
         let allAppsData = {};
         let allAppsList = [];
         let currentCategoryId = 'home';
+        let currentDeviceType = 'all'; // [修复] 重新引入设备类型状态变量
 
         // 将十六进制颜色码转换为RGB字符串，用于CSS变量
         const hexToRgb = (hex) => {
@@ -252,6 +254,11 @@
             const isSearchResult = appsToRender !== null;
             const bannerText = isSearchResult ? `搜索: "${searchInput.value}"` : (categoryId === 'home' ? CONFIG.siteName : category.bannerText);
             mainContent.appendChild(createBanner(bannerText, category.gradient));
+
+            // [修复] 重新加入设备类型切换器的渲染逻辑
+            if (category.hasDeviceTypes && !isSearchResult) {
+                mainContent.appendChild(createDeviceTypeToggle(category));
+            }
 
             if (categoryId === 'home' && !isSearchResult) {
                 renderHomePage();
@@ -297,6 +304,33 @@
             mainContent.appendChild(homeContainer);
         };
         
+        // [修复] 恢复创建设备类型切换器的函数
+        const createDeviceTypeToggle = (category) => {
+            const container = doc.createElement('div');
+            container.className = 'flex justify-center items-center gap-2 p-2 rounded-full bg-gray-200 dark:bg-slate-800 w-max mx-auto';
+            
+            const types = [
+                { id: 'mobile', text: '移动端', icon: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="7" y="2" width="10" height="20" rx="2" stroke="currentColor" stroke-width="2"/><path d="M12 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>` },
+                { id: 'desktop', text: '桌面端', icon: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 18v2h10v-2" stroke="currentColor" stroke-width="2"/></svg>` }
+            ];
+
+            types.forEach(type => {
+                const button = doc.createElement('a');
+                button.href = `#${category.id}/${type.id}`;
+                button.dataset.type = type.id;
+                button.className = 'device-toggle-btn flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm transition-colors';
+                button.innerHTML = `${type.icon}<span>${type.text}</span>`;
+
+                if (currentDeviceType === type.id) {
+                    button.classList.add('theme-bg-active', 'text-white', 'shadow');
+                } else {
+                    button.classList.add('text-slate-600', 'dark:text-slate-300');
+                }
+                container.appendChild(button);
+            });
+            return container;
+        };
+        
         // 创建页面底部的“探索其他分类”导航
         const createOtherCategoriesNav = (currentId) => {
             const navSection = doc.createElement('div');
@@ -317,14 +351,22 @@
 
         // 渲染应用卡片区域
         const renderAppPage = (apps, isSearchResult = false) => {
-            if (!apps || apps.length === 0) {
-                if (!isSearchResult) mainContent.insertAdjacentHTML('beforeend', `<div class="text-center py-16"><p class="text-gray-500">这个分类下还没有应用。</p></div>`);
+            const category = CONFIG.categories.find(c => c.id === currentCategoryId);
+            let filteredApps = apps;
+
+            // [修复] 恢复按设备类型过滤应用的逻辑
+            if (category && category.hasDeviceTypes && !isSearchResult) {
+                filteredApps = apps.filter(app => app.type === currentDeviceType);
+            }
+
+            if (!filteredApps || filteredApps.length === 0) {
+                if (!isSearchResult) mainContent.insertAdjacentHTML('beforeend', `<div class="text-center py-16"><p class="text-gray-500 dark:text-slate-400">该分类下暂无应用。</p></div>`);
                 return;
             }
             const appGroups = {
-                large: apps.filter(app => app.size === 'large'),
-                medium: apps.filter(app => app.size === 'medium'),
-                small: apps.filter(app => app.size === 'small'),
+                large: filteredApps.filter(app => app.size === 'large'),
+                medium: filteredApps.filter(app => app.size === 'medium'),
+                small: filteredApps.filter(app => app.size === 'small'),
             };
             const sectionTitles = { large: '推荐应用', medium: '常用软件', small: '更多工具' };
 
