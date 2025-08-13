@@ -1,0 +1,92 @@
+## 应用商店配置与管理指南 (V6.0)
+
+您好！V6.0版本在修复BUG和重构代码的基础上，引入了更强大的外部配置文件系统，让您的网站个性化变得前所未有的简单。
+
+### 一、 文件目录结构 (V6.0)
+
+为了实现代码分离和易于配置，我们引入了新的文件夹和文件：
+
+```
+
+应用商店/
+├── 📂 apps/
+│   ├── 📂 android/
+│   │   ├── 📄 data.js
+│   │   └── 📄 content.md  <-- (新增) 分类页面顶部内容
+│   └── ... (其他分类)
+│
+├── 📂 conf/               <-- (新增) 自定义配置文件夹
+│   └── 📄 custom.js      <-- (新增) 个性化配置文件
+│
+├── 📂 js/
+│   ├── 📄 effects.js      <-- (新增) 视觉特效脚本
+│   ├── 📄 markdown-renderer.js <-- (新增) Markdown渲染脚本
+│   └── 📄 manifest.json   <-- (移动) PWA配置文件
+│
+├── 📄 index.html           <-- 网站核心文件 (已大幅精简)
+└── 📄 sw.js                <-- PWA Service Worker (无变化)
+
+```
+
+- ```conf/custom.js```: 这是您的**个性化控制中心**。所有非核心的功能，如社交链接、视觉特效，都在这里配置。
+
+- ````js/``` **文件夹**: 现在存放了所有的JavaScript模块文件，包括特效、Markdown渲染器和PWA的```manifest.json```。
+
+- ```apps/.../content.md```: 每个分类目录下新增的Markdown文件，用于定义该分类页面顶部、应用列表上方显示的图文内容。
+
+### 二、 如何进行个性化配置 (```conf/custom.js```)
+
+打开 ```conf/custom.js``` 文件，您会看到清晰的配置选项：
+
+``` java
+export const CUSTOM_CONFIG = {
+    // 1. 社交媒体链接
+    socials: [
+        {
+            name: "Bilibili",
+            url: "https://space.bilibili.com/",
+            icon: `<svg>...</svg>`
+        },
+        // 在此添加更多...
+    ],
+
+    // 2. 视觉特效
+    effects: {
+        sakura: true,      // true为开启樱花特效，false为关闭
+        clickEffect: true  // true为开启鼠标点击特效，false为关闭
+    }
+};
+
+```
+
+- **添加社交链接**: 只需复制一个 ```{...}``` 对象，修改 ```name```, ```url``` 和 ```icon``` 即可。图标代码可以从 [icones.js.org](https://icones.js.org/) 等网站轻松获取。
+
+- **开关特效**: 直接将 ```true``` 改为 ```false``` 即可禁用不想要的特效。
+
+### 三、 如何编辑页面顶部内容 (```content.md```)
+
+现在，每个分类页（包括主页）顶部的介绍性文字都由对应的 ```content.md``` 文件控制。例如，要修改PC端页面的内容，只需编辑 ```apps/windows/content.md```。
+
+该文件支持标准的Markdown语法，以及我为您定制的两个特殊组件：
+
+- **链接卡片网格:**
+
+```
+[LINKS_GRID]
+Clash Verge | <https://github.com/zzzgydi/clash-verge> | Clash Meta 内核的 GUI 工具
+Clash Nyanpasu | <https://github.com/keiko233/clash-nyanpasu> | 另一个高颜值的 Clash Meta 客户端
+```
+
+- **赞助商网格** (主要用于主页):
+
+```
+[SPONSORS]
+赞助商A | ./src/img/qr-a.png
+赞助商B | ./src/img/qr-b.png
+```
+
+### 四、 PWA配置 (```js/manifest.json```)
+
+请将您原有的 ```manifest.json``` 文件移动到 ```js/``` 文件夹内。代码已自动适配新路径。
+
+这个V6.0版本是目前为止最成熟、最易于维护的版本。希望您对这次的大升级感到满意！
