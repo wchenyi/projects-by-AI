@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赞助页面 - 我的AI前端项目集</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome CDN for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .animate-fadeIn { animation: fadeIn 1s ease-out forwards; }
+        .animate-fadeInUp { animation: fadeInUp 1s ease-out forwards; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-500 { animation-delay: 0.5s; }
+
+        html {
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Gradient background for body */
+            background: linear-gradient(-45deg, #FF6B6B, #F06292, #BA68C8, #7986CB, #4FC3F7); /* Softer, more youthful rainbow */
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        .dark body {
+            /* Darker, but still vibrant gradient for dark mode */
+            background: linear-gradient(-45deg, #1A237E, #4A148C, #1B5E20, #004D40, #01579B);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        /* Frosted Glass Effect - Adjusted for MD3 feel */
+        .frosted-glass {
+            background-color: rgba(255, 255, 255, 0.1); /* Lighter translucent white */
+            backdrop-filter: blur(12px) saturate(1.5); /* Stronger blur, subtle saturation */
+            -webkit-backdrop-filter: blur(12px) saturate(1.5); /* Safari support */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1); /* Softer shadow */
+        }
+        .dark .frosted-glass {
+            background-color: rgba(0, 0, 0, 0.1); /* Darker translucent black */
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+        /* Custom scrollbar for a more refined look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(255,255,255,0.4); /* Semi-transparent white */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255,255,255,0.6);
+        }
+        ::-webkit-scrollbar-track {
+            background-color: rgba(0,0,0,0.1); /* Semi-transparent black */
+        }
+
+        /* MD3 Inspired Card Hover Glow Effect */
+        .md3-card-hover-glow:hover {
+            box-shadow: 0 0 0 4px var(--md3-primary-color, #6750A4), 0 8px 30px rgba(0,0,0,0.2); /* Outer glow, adjusted for MD3 */
+            transform: translateY(-5px) scale(1.02); /* Slight lift and scale */
+        }
+        /* Define custom properties for dynamic colors if using them directly in CSS */
+        /* For this context, Tailwind classes with defined colors are used for simplicity */
+    </style>
+</head>
+<body class="font-sans min-h-screen text-white transition-colors duration-300 ease-in-out flex flex-col items-center">
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 w-full z-50 bg-white/10 dark:bg-black/10 backdrop-blur-md shadow-sm dark:shadow-lg transition-colors duration-300 ease-in-out">
+        <nav class="container mx-auto p-4 flex justify-between items-center max-w-7xl">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.href='index.html'">
+                <!-- Page Logo Placeholder -->
+                <img src="src/img/logo_placeholder.svg" alt="Logo" class="w-8 h-8 text-white">
+                <h1 class="text-3xl font-extrabold text-white">
+                    赞助页面
+                </h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <!-- Dark Mode Toggle -->
+                <button id="darkModeToggle" class="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white" aria-label="Toggle dark mode">
+                    <i id="sunIcon" class="fa-solid fa-sun fa-lg" style="display: none;"></i>
+                    <i id="moonIcon" class="fa-solid fa-moon fa-lg"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 pt-28 max-w-4xl flex-grow">
+        <section class="frosted-glass rounded-3xl shadow-xl p-8 md:p-12 mb-12 animate-fadeInUp delay-300 text-center text-white">
+            <!-- Main Illustration / Logo Area - You can replace this with a more complex SVG illustration -->
+            <img src="src/img/logo_placeholder.svg" alt="Support Logo" class="w-32 h-32 mx-auto mb-6 text-white animate-zoomIn opacity-80 filter drop-shadow-lg">
+            <h2 class="text-4xl font-extrabold mb-4 drop-shadow-lg leading-tight">支持我的创作之旅</h2>
+            <p class="text-lg leading-relaxed mb-8 drop-shadow-md opacity-90">
+                您的慷慨支持是推动我持续探索前端与AI融合的燃料，
+                帮助我投入更多时间在创新项目和技术分享上。
+                感谢您成为我创作路上的同行者！
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                <!-- 打赏卡片模板 - FontAwesome Icons, Themed Colors, Clickable for QR Code -->
+                <!-- 图标大小统一使用 fa-2x 或 fa-3x 类，保持一致性 -->
+
+                <!-- Alipay -->
+                <div class="donation-card bg-[#1677FF]/80 hover:bg-[#1677FF] rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center text-white shadow-lg transition-transform duration-300 transform hover:scale-105 cursor-pointer md3-card-hover-glow" data-qr-name="支付宝" data-qr-code="src/img/qr_alipay.png">
+                    <i class="fa-brands fa-alipay fa-2x mb-2" style="color: white;"></i> <!-- 支付宝图标 -->
+                    <span class="text-base md:text-xl font-semibold">支付宝</span>
+                    <a href="alipays://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=YOUR_ALIPAY_QR_CODE_CONTENT" class="mt-1 text-xs md:text-sm text-white/80 hover:underline" target="_blank" onclick="event.stopPropagation()">点击跳转App</a>
+                </div>
+
+                <!-- WeChat Pay -->
+                <div class="donation-card bg-[#07C160]/80 hover:bg-[#07C160] rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center text-white shadow-lg transition-transform duration-300 transform hover:scale-105 cursor-pointer md3-card-hover-glow" data-qr-name="微信支付" data-qr-code="src/img/qr_wechat.png">
+                    <i class="fa-brands fa-weixin fa-2x mb-2" style="color: white;"></i> <!-- 微信图标 -->
+                    <span class="text-base md:text-xl font-semibold">微信支付</span>
+                    <a href="weixin://dl/business/?t=pay/YOUR_WECHAT_QR_CODE_CONTENT" class="mt-1 text-xs md:text-sm text-white/80 hover:underline" target="_blank" onclick="event.stopPropagation()">点击跳转App</a>
+                </div>
+
+                <!-- UnionPay (Cloud QuickPass) -->
+                <div class="donation-card bg-[#FF0000]/80 hover:bg-[#FF0000] rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center text-white shadow-lg transition-transform duration-300 transform hover:scale-105 cursor-pointer md3-card-hover-glow" data-qr-name="云闪付" data-qr-code="src/img/qr_unionpay.png">
+                    <i class="fa-solid fa-credit-card fa-2x mb-2" style="color: white;"></i> <!-- 通用银行卡图标 -->
+                    <span class="text-base md:text-xl font-semibold">云闪付</span>
+                    <a href="uppay://YOUR_UNIONPAY_QR_CODE_CONTENT" class="mt-1 text-xs md:text-sm text-white/80 hover:underline" target="_blank" onclick="event.stopPropagation()">点击跳转App</a>
+                </div>
+
+                <!-- PayPal -->
+                <div class="donation-card bg-[#003087]/80 hover:bg-[#003087] rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center text-white shadow-lg transition-transform duration-300 transform hover:scale-105 cursor-pointer md3-card-hover-glow" data-qr-name="PayPal" data-qr-code="src/img/qr_paypal.png">
+                    <i class="fa-brands fa-paypal fa-2x mb-2" style="color: white;"></i> <!-- PayPal图标 -->
+                    <span class="text-base md:text-xl font-semibold">PayPal</span>
+                    <a href="https://www.paypal.me/YOUR_PAYPAL_ID" class="mt-1 text-xs md:text-sm text-white/80 hover:underline" target="_blank" onclick="event.stopPropagation()">点击跳转Web</a>
+                </div>
+
+                <!-- 爱发电 (Aifadian) -->
+                <div class="donation-card bg-[#9C27B0]/80 hover:bg-[#9C27B0] rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center text-white shadow-lg transition-transform duration-300 transform hover:scale-105 cursor-pointer md3-card-hover-glow" data-qr-name="爱发电" data-qr-code="src/img/qr_aifadian.png">
+                    <i class="fa-solid fa-plug fa-2x mb-2" style="color: white;"></i> <!-- 插头图标，象征电力/支持 -->
+                    <span class="text-base md:text-xl font-semibold">爱发电</span>
+                    <a href="https://afdian.net/a/YOUR_AIFADIAN_ID" class="mt-1 text-xs md:text-sm text-white/80 hover:underline" target="_blank" onclick="event.stopPropagation()">点击跳转Web</a>
+                </div>
+
+                <!-- Buy Me a Coffee / Give me a Coffee -->
+                <div class="donation-card bg-[#FFDD00]/80 hover:bg-[#FFDD00] rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center text-gray-900 shadow-lg transition-transform duration-300 transform hover:scale-105 cursor-pointer md3-card-hover-glow" data-qr-name="Buy Me a Coffee" data-qr-code="src/img/qr_buymeacoffee.png">
+                    <i class="fa-solid fa-mug-hot fa-2x mb-2" style="color: #424242;"></i> <!-- 咖啡杯图标，使用深色图标以对比黄色背景 -->
+                    <span class="text-base md:text-xl font-semibold">Buy Me a Coffee</span>
+                    <a href="https://www.buymeacoffee.com/YOUR_USERNAME" class="mt-1 text-xs md:text-sm text-gray-800 hover:underline" target="_blank" onclick="event.stopPropagation()">点击跳转Web</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- QR Code Modal (Hidden by default) -->
+    <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" onclick="closeQrModal(event)">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-80 max-w-sm text-center transform scale-95 opacity-0 animate-popIn" onclick="event.stopPropagation()">
+            <h3 id="qrModalTitle" class="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100">扫描二维码</h3>
+            <img id="qrImage" src="" alt="QR Code" class="w-48 h-48 mx-auto mb-4 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+            <p class="text-sm text-gray-600 dark:text-gray-300">使用您的手机应用扫描上方二维码进行打赏。</p>
+            <!-- Important: QR code links for app jump are placeholders. You need to replace "YOUR_ALIPAY_QR_CODE_LINK", etc. with actual deep links or QR code content. -->
+            <!-- The 'href' for app jump is typically a specific URL/schema that triggers the app. -->
+            <!-- 支付宝支付链接示例: alipays://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=YOUR_ALIPAY_QR_CODE_URL -->
+            <!-- 微信支付链接示例: weixin://dl/business/?t=pay/YOUR_WECHAT_QR_CODE_URL -->
+            <!-- 云闪付支付链接示例: uppay://YOUR_UNIONPAY_QR_CODE_URL -->
+        </div>
+    </div>
+
+    <!-- Footer (Re-use from index.html for consistency) -->
+    <footer class="bg-gray-200 dark:bg-gray-800 py-6 mt-auto text-center text-gray-600 dark:text-gray-400 transition-colors duration-300">
+        <p>&copy; <span id="currentYear"></span> 我的AI前端作品集. 保留所有权利。</p>
+    </footer>
+
+    <script>
+        // Dark Mode Toggle Logic for this page
+        document.addEventListener('DOMContentLoaded', () => {
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const savedTheme = localStorage.getItem('theme');
+            let isDarkMode = savedTheme === 'dark' || (savedTheme === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+            function applyTheme(isDark) {
+                const htmlElement = document.documentElement;
+                const sunIcon = document.getElementById('sunIcon');
+                const moonIcon = document.getElementById('moonIcon');
+                const bodyElement = document.body; // Reference to body for gradient
+
+                if (isDark) {
+                    htmlElement.classList.add('dark');
+                    if (sunIcon) { sunIcon.style.display = 'inline-block'; } // Use inline-block for FA icons
+                    if (moonIcon) { moonIcon.style.display = 'none'; }
+                    bodyElement.style.background = 'linear-gradient(-45deg, #1A237E, #4A148C, #1B5E20, #004D40, #01579B)';
+                } else {
+                    htmlElement.classList.remove('dark');
+                    if (sunIcon) { sunIcon.style.display = 'none'; }
+                    if (moonIcon) { moonIcon.style.display = 'inline-block'; }
+                    bodyElement.style.background = 'linear-gradient(-45deg, #FF6B6B, #F06292, #BA68C8, #7986CB, #4FC3F7)';
+                }
+                bodyElement.style.backgroundSize = '400% 400%';
+                bodyElement.style.animation = 'gradientShift 15s ease infinite';
+            }
+
+            applyTheme(isDarkMode);
+
+            darkModeToggle.addEventListener('click', () => {
+                isDarkMode = !isDarkMode;
+                applyTheme(isDarkMode);
+                localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            });
+
+            // Update current year in footer
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+            // QR Modal Logic
+            const qrModal = document.getElementById('qrModal');
+            const qrModalTitle = document.getElementById('qrModalTitle');
+            const qrImage = document.getElementById('qrImage');
+            const donationCards = document.querySelectorAll('.donation-card');
+
+            donationCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const qrName = card.dataset.qrName;
+                    const qrCodeUrl = card.dataset.qrCode; // This is the URL to your QR image
+
+                    qrModalTitle.textContent = `扫描 ${qrName} 二维码`;
+                    qrImage.src = qrCodeUrl; // Set the QR image source
+                    qrModal.classList.remove('hidden');
+                });
+            });
+
+            window.closeQrModal = function(event) {
+                if (event.target === qrModal) {
+                    qrModal.classList.add('hidden');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

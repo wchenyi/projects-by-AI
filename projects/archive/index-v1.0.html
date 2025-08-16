@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的前端项目集</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for animations can be added here if not using Tailwind's JIT config fully */
+        /* Define custom keyframes as per Tailwind config for explicit use if needed outside tailwind's JIT */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInFromLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInFromRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .animate-fadeIn { animation: fadeIn 1s ease-out forwards; }
+        .animate-fadeInUp { animation: fadeInUp 1s ease-out forwards; }
+        .animate-slideInFromLeft { animation: slideInFromLeft 0.8s ease-out forwards; }
+        .animate-slideInFromRight { animation: slideInFromRight 0.8s ease-out forwards; }
+        .animate-zoomIn { animation: zoomIn 0.6s ease-out forwards; }
+        .delay-500 { animation-delay: 0.5s; }
+        .delay-700 { animation-delay: 0.7s; }
+
+        /* Ensure smooth transitions for dark mode */
+        html {
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+        body {
+            font-family: 'Inter', sans-serif; /* Apply Inter font globally */
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors duration-300 ease-in-out">
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 w-full z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm dark:shadow-lg transition-colors duration-300 ease-in-out">
+        <nav class="container mx-auto p-4 flex justify-between items-center max-w-7xl">
+            <h1 class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
+                我的前端项目集
+            </h1>
+            <button id="darkModeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Toggle dark mode">
+                <!-- Sun Icon -->
+                <svg id="sunIcon" class="w-6 h-6 transform rotate-0 hover:rotate-45 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg>
+                <!-- Moon Icon -->
+                <svg id="moonIcon" class="w-6 h-6 transform rotate-0 hover:rotate-45 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </button>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 pt-28 max-w-7xl">
+        <!-- Hero Banner Section -->
+        <section id="heroBanner" class="relative w-full h-80 md:h-96 lg:h-[500px] overflow-hidden rounded-lg shadow-xl mb-12 transform translate-y-20 scale-95 opacity-0 animate-fadeInUp">
+            <!-- Slides will be dynamically inserted here by JavaScript -->
+        </section>
+
+        <!-- Projects Introduction Section -->
+        <section class="text-center mb-12 transform opacity-0 scale-95 animate-fadeInUp delay-500">
+            <h2 class="text-4xl font-extrabold text-gray-800 dark:text-gray-100 mb-6">我的项目作品集</h2>
+            <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                这里展示了我最近的一些前端开发项目，涵盖了不同的技术栈和设计理念。每个项目都是一次挑战，一次学习，一次成长。
+            </p>
+        </section>
+
+        <!-- Projects Grid Section -->
+        <section id="projectsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 p-4 transform opacity-0 scale-95 animate-fadeInUp delay-700">
+            <!-- Project cards will be dynamically inserted here by JavaScript -->
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-200 dark:bg-gray-800 py-6 mt-12 text-center text-gray-600 dark:text-gray-400 transition-colors duration-300">
+        <p>&copy; <span id="currentYear"></span> 我的前端作品集. 保留所有权利。</p>
+    </footer>
+
+    <script>
+        // Tailwind CSS Configuration and JavaScript Logic
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'blue-600': '#2563eb',
+                        'blue-700': '#1d4ed8',
+                        'purple-600': '#7c3aed',
+                        'purple-700': '#6d28d9',
+                        'gray-800': '#1f2937',
+                        'gray-900': '#111827',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        fadeInUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        slideInFromLeft: { '0%': { opacity: '0', transform: 'translateX(-20px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
+                        slideInFromRight: { '0%': { opacity: '0', transform: 'translateX(20px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
+                        zoomIn: { '0%': { opacity: '0', transform: 'scale(0.8)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+                    },
+                    animation: {
+                        fadeIn: 'fadeIn 1s ease-out forwards',
+                        fadeInUp: 'fadeInUp 1s ease-out forwards',
+                        slideInFromLeft: 'slideInFromLeft 0.8s ease-out forwards',
+                        slideInFromRight: 'slideInFromRight 0.8s ease-out forwards',
+                        zoomIn: 'zoomIn 0.6s ease-out forwards',
+                    },
+                },
+            },
+        };
+
+        // --- Mock Project Data ---
+        const projects = [
+            { id: 1, title: "响应式电商平台", description: "一个功能齐全的响应式电商平台，包含产品浏览、购物车和结账功能。", imageUrl: "https://placehold.co/400x250/C1E1C1/000000?text=电商网站", techStack: ["React", "Node.js", "MongoDB", "Tailwind CSS"], liveUrl: "#", githubUrl: "#" },
+            { id: 2, title: "任务管理系统", description: "一个直观的任务管理工具，支持拖放排序、截止日期提醒和团队协作。", imageUrl: "https://placehold.co/400x250/DDA0DD/000000?text=任务系统", techStack: ["Vue.js", "Firebase", "CSS Modules"], liveUrl: "#", githubUrl: "#" },
+            { id: 3, title: "天气预报应用", description: "实时天气信息展示应用，提供多城市查询、未来几天预测和动态背景。", imageUrl: "https://placehold.co/400x250/ADD8E6/000000?text=天气应用", techStack: ["Vanilla JS", "OpenWeather API", "SCSS"], liveUrl: "#", githubUrl: "#" },
+            { id: 4, title: "在线画板", description: "一个基于HTML5 Canvas的简单在线画板，支持多种画笔、颜色和撤销操作。", imageUrl: "https://placehold.co/400x250/F08080/000000?text=在线画板", techStack: ["HTML5 Canvas", "JavaScript"], liveUrl: "#", githubUrl: "#" },
+            { id: 5, title: "博客管理后台", description: "为博主设计的轻量级内容管理系统，支持文章发布、编辑和分类。", imageUrl: "https://placehold.co/400x250/98FB98/000000?text=博客后台", techStack: ["Next.js", "GraphQL", "PostgreSQL"], liveUrl: "#", githubUrl: "#" },
+            { id: 6, title: "图片画廊应用", description: "展示精美图片作品的画廊应用，支持图片懒加载和全屏预览。", imageUrl: "https://placehold.co/400x250/F0E68C/000000?text=画廊", techStack: ["React", "Firebase Storage", "CSS Grid"], liveUrl: "#", githubUrl: "#" },
+            { id: 7, title: "交互式数据可视化", description: "使用D3.js创建的交互式图表，展示复杂数据集的趋势和关系。", imageUrl: "https://placehold.co/400x250/B0E0E6/000000?text=数据可视化", techStack: ["D3.js", "SVG", "JavaScript"], liveUrl: "#", githubUrl: "#" },
+            { id: 8, title: "电影推荐系统", description: "根据用户偏好推荐电影的应用程序，集成TMDB API。", imageUrl: "https://placehold.co/400x250/D3D3D3/000000?text=电影推荐", techStack: ["React", "TMDB API", "Styled Components"], liveUrl: "#", githubUrl: "#" },
+            { id: 9, title: "问答小游戏", description: "一个简单的选择题问答小游戏，带分数统计和倒计时功能。", imageUrl: "https://placehold.co/400x250/E0BBE4/000000?text=问答游戏", techStack: ["Vanilla JS", "HTML", "CSS"], liveUrl: "#", githubUrl: "#" },
+            { id: 10, title: "Markdown编辑器", description: "一个实时预览的Markdown编辑器，支持导出HTML或PDF。", imageUrl: "https://placehold.co/400x250/957DAD/000000?text=Markdown", techStack: ["Vue.js", "Markdown-it", "Webpack"], liveUrl: "#", githubUrl: "#" },
+            { id: 11, title: "在线简历生成器", description: "帮助用户快速创建专业在线简历的工具，可导出PDF。", imageUrl: "https://placehold.co/400x250/C7B0D1/000000?text=简历生成", techStack: ["React", "Material UI", "Node.js"], liveUrl: "#", githubUrl: "#" },
+            { id: 12, title: "个人作品集网站模板", description: "一个可定制的个人作品集网站模板，展示个人技能和项目。", imageUrl: "https://placehold.co/400x250/A79DC2/000000?text=作品集模板", techStack: ["HTML", "CSS", "JavaScript", "GSAP"], liveUrl: "#", githubUrl: "#" },
+            { id: 13, title: "Todo列表应用", description: "一个经典的待办事项列表应用，支持任务添加、删除和标记完成。", imageUrl: "https://placehold.co/400x250/8D81AE/000000?text=Todo列表", techStack: ["React", "Local Storage", "Tailwind CSS"], liveUrl: "#", githubUrl: "#" },
+            { id: 14, title: "计时器和秒表", description: "一个简单的计时器和秒表应用，功能包含开始、暂停、重置。", imageUrl: "https://placehold.co/400x250/6A5ACD/000000?text=计时器", techStack: ["Vanilla JS", "HTML", "CSS"], liveUrl: "#", githubUrl: "#" },
+            { id: 15, title: "音乐播放器界面", description: "一个纯前端的音乐播放器UI界面，支持播放、暂停、进度条和音量控制。", imageUrl: "https://placehold.co/400x250/483D8B/000000?text=音乐播放器", techStack: ["HTML", "CSS", "JavaScript"], liveUrl: "#", githubUrl: "#" },
+            { id: 16, title: "在线聊天室", description: "一个基于WebSockets的实时在线聊天室，支持多用户消息发送。", imageUrl: "https://placehold.co/400x250/20B2AA/000000?text=聊天室", techStack: ["React", "WebSocket", "Express.js"], liveUrl: "#", githubUrl: "#" },
+            { id: 17, title: "投资组合计算器", description: "用于模拟投资组合增长和风险的简单计算器。", imageUrl: "https://placehold.co/400x250/7FFFD4/000000?text=投资计算器", techStack: ["Vue.js", "Chart.js"], liveUrl: "#", githubUrl: "#" },
+        ];
+
+        const slides = [
+            { title: "探索我的前端世界", description: "一系列基于现代技术栈的精选项目。", imageUrl: "https://placehold.co/1200x500/A0DAFB/000000?text=项目展示" },
+            { title: "创新与实践", description: "每个项目都是一次技术的探索与落地。", imageUrl: "https://placehold.co/1200x500/FEC8D8/000000?text=技术实践" },
+            { title: "精美界面与交互", description: "注重用户体验和视觉设计。", imageUrl: "https://placehold.co/1200x500/E0BBE4/000000?text=用户体验" },
+        ];
+
+        // --- Utility Functions ---
+        function getSavedTheme() {
+            return localStorage.getItem('theme');
+        }
+
+        function setSavedTheme(theme) {
+            localStorage.setItem('theme', theme);
+        }
+
+        function applyTheme(isDarkMode) {
+            const htmlElement = document.documentElement;
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+
+            if (isDarkMode) {
+                htmlElement.classList.add('dark');
+                if (sunIcon) sunIcon.style.display = 'block';
+                if (moonIcon) moonIcon.style.display = 'none';
+            } else {
+                htmlElement.classList.remove('dark');
+                if (sunIcon) sunIcon.style.display = 'none';
+                if (moonIcon) moonIcon.style.display = 'block';
+            }
+        }
+
+        // --- Dark Mode Toggle Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const savedTheme = getSavedTheme();
+            let isDarkMode = savedTheme === 'dark' || (savedTheme === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+            applyTheme(isDarkMode);
+
+            darkModeToggle.addEventListener('click', () => {
+                isDarkMode = !isDarkMode;
+                applyTheme(isDarkMode);
+                setSavedTheme(isDarkMode ? 'dark' : 'light');
+            });
+
+            // Update current year in footer
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+        });
+
+
+        // --- Hero Banner Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const heroBanner = document.getElementById('heroBanner');
+            let currentSlide = 0;
+
+            function renderSlides() {
+                heroBanner.innerHTML = ''; // Clear existing slides
+                slides.forEach((slide, index) => {
+                    const slideDiv = document.createElement('div');
+                    slideDiv.className = `absolute inset-0 transition-opacity duration-1000 ease-in-out flex items-center justify-center ${
+                        index === currentSlide ? 'opacity-100' : 'opacity-0'
+                    }`;
+                    slideDiv.style.backgroundImage = `url(${slide.imageUrl})`;
+                    slideDiv.style.backgroundSize = 'cover';
+                    slideDiv.style.backgroundPosition = 'center';
+
+                    slideDiv.innerHTML = `
+                        <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-center p-4">
+                            <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 animate-slideInFromLeft">${slide.title}</h2>
+                            <p class="text-lg md:text-xl text-white text-opacity-80 animate-slideInFromRight">${slide.description}</p>
+                            <button class="mt-8 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full shadow-lg transition-transform transform hover:scale-105 duration-300 animate-zoomIn">
+                                了解更多
+                            </button>
+                        </div>
+                    `;
+                    heroBanner.appendChild(slideDiv);
+                });
+
+                // Add pagination dots
+                const dotsContainer = document.createElement('div');
+                dotsContainer.className = 'absolute bottom-4 left-0 right-0 flex justify-center space-x-2';
+                slides.forEach((_, index) => {
+                    const dot = document.createElement('button');
+                    dot.className = `w-3 h-3 rounded-full transition-all duration-300 ${
+                        index === currentSlide ? 'bg-white scale-125' : 'bg-gray-400 dark:bg-gray-600'
+                    }`;
+                    dot.addEventListener('click', () => {
+                        currentSlide = index;
+                        renderSlides();
+                    });
+                    dotsContainer.appendChild(dot);
+                });
+                heroBanner.appendChild(dotsContainer);
+            }
+
+            function nextSlide() {
+                currentSlide = (currentSlide + 1) % slides.length;
+                renderSlides();
+            }
+
+            // Initial render
+            renderSlides();
+            const timer = setInterval(nextSlide, 5000); // Change slide every 5 seconds
+
+            // Clear interval on component unmount (or page unload for vanilla JS)
+            window.addEventListener('beforeunload', () => clearInterval(timer));
+        });
+
+        // --- Project Cards Rendering Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const projectsGrid = document.getElementById('projectsGrid');
+            const bgColors = [
+                "bg-blue-100 dark:bg-blue-800",
+                "bg-green-100 dark:bg-green-800",
+                "bg-purple-100 dark:bg-purple-800",
+                "bg-yellow-100 dark:bg-yellow-800",
+                "bg-red-100 dark:bg-red-800",
+                "bg-indigo-100 dark:bg-indigo-800",
+                "bg-pink-100 dark:bg-pink-800",
+            ];
+
+            projects.forEach(project => {
+                const randomBg = bgColors[Math.floor(Math.random() * bgColors.length)];
+                const projectCard = document.createElement('div');
+                projectCard.className = `
+                    ${randomBg}
+                    rounded-2xl shadow-lg dark:shadow-xl overflow-hidden
+                    flex flex-col transform transition-all duration-300 ease-in-out
+                    hover:scale-105 hover:shadow-2xl hover:-translate-y-2
+                    group
+                `;
+
+                projectCard.innerHTML = `
+                    <!-- Project Image -->
+                    <div class="relative overflow-hidden">
+                        <img
+                            src="${project.imageUrl}"
+                            alt="${project.title}"
+                            class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                            onerror="this.onerror=null;this.src='https://placehold.co/400x250/D3D3D3/000000?text=无法加载图片';"
+                        />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                            <h3 class="text-xl font-bold text-white drop-shadow-lg">${project.title}</h3>
+                        </div>
+                    </div>
+
+                    <!-- Project Details -->
+                    <div class="p-6 flex flex-col flex-grow text-gray-800 dark:text-gray-100">
+                        <p class="text-sm md:text-base mb-4 text-gray-700 dark:text-gray-300 flex-grow">
+                            ${project.description}
+                        </p>
+
+                        <!-- Tech Stack Icons -->
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${project.techStack.map(tech => `
+                                <span class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-semibold rounded-full shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                                    ${tech}
+                                </span>
+                            `).join('')}
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex justify-end space-x-3 mt-auto">
+                            <a
+                                href="${project.liveUrl}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-full shadow-md transition-all duration-300 transform hover:scale-105"
+                                aria-label="View live demo of ${project.title}"
+                            >
+                                <!-- Link Icon -->
+                                <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07L13 4.93a1 1 0 0 0 0 1.41l.71.71A1 1 0 0 1 12 7.07L7.07 12a5 5 0 0 0 7.07 7.07l.71-.71A1 1 0 0 0 17.07 18L12 12.93a5 5 0 0 0-7.07-7.07l-3 3a5 5 0 0 0 7.54.54"/></svg>
+                                查看
+                            </a>
+                            <a
+                                href="${project.githubUrl}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600 text-white text-sm font-semibold rounded-full shadow-md transition-all duration-300 transform hover:scale-105"
+                                aria-label="View GitHub repository for ${project.title}"
+                            >
+                                <!-- GitHub Icon -->
+                                <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.2c3.5-0.4 7.2-2.7 7.2-7.5 0-1.5-0.6-2.7-1.7-3.7 0.1-0.3 0.6-1.5 0-3.8 0 0-1.1-0.3-3.6 1.4a12.6 12.6 0 0 0-5.8 0c-2.5-1.7-3.6-1.4-3.6-1.4-0.6 2.3-0.1 3.5 0 3.8-1.1 1-1.7 2.2-1.7 3.7 0 4.8 3.7 7.1 7.2 7.5a4.8 4.8 0 0 0-1 3.2v4"/></svg>
+                                GitHub
+                            </a>
+                        </div>
+                    </div>
+                `;
+                projectsGrid.appendChild(projectCard);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="zh" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的AI前端项目集</title>
+    <!-- Favicon / PWA Icons (Temporary Placeholder) -->
+    <link rel="icon" href="src/img/logo_icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="src/img/logo_icon.svg">
+    <meta name="theme-color" content="#2563eb"> <!-- Customize theme color for PWA -->
+    <link rel="manifest" href="/manifest.json"> <!-- Placeholder for PWA manifest -->
+
+    <!-- Google Fonts: Inter (for Material You feel) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome CDN for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* Custom styles for animations and MD3 effects */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInFromLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideInFromRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        /* Rainbow Gradient Shadow for Featured Projects */
+        @keyframes rainbowShadow {
+            0%   { box-shadow: 0 0 15px rgba(255,0,0,0.5), 0 0 30px rgba(255,0,0,0.3); }
+            16%  { box-shadow: 0 0 15px rgba(255,165,0,0.5), 0 0 30px rgba(255,165,0,0.3); }
+            33%  { box-shadow: 0 0 15px rgba(255,255,0,0.5), 0 0 30px rgba(255,255,0,0.3); }
+            50%  { box-shadow: 0 0 15px rgba(0,128,0,0.5), 0 0 30px rgba(0,128,0,0.3); }
+            66%  { box-shadow: 0 0 15px rgba(0,0,255,0.5), 0 0 30px rgba(0,0,255,0.3); }
+            83%  { box-shadow: 0 0 15px rgba(75,0,130,0.5), 0 0 30px rgba(75,0,130,0.3); }
+            100% { box-shadow: 0 0 15px rgba(238,130,238,0.5), 0 0 30px rgba(238,130,238,0.3); }
+        }
+        .rainbow-shadow-animate:hover {
+            animation: rainbowShadow 2s linear infinite alternate; /* Loop rainbow shadow on hover */
+        }
+
+        .animate-fadeIn { animation: fadeIn 1s ease-out forwards; }
+        .animate-fadeInUp { animation: fadeInUp 1s ease-out forwards; }
+        .animate-slideInFromLeft { animation: slideInFromLeft 0.8s ease-out forwards; }
+        .animate-slideInFromRight { animation: slideInFromRight 0.8s ease-out forwards; }
+        .animate-zoomIn { animation: zoomIn 0.6s ease-out forwards; }
+        .animate-popIn { animation: popIn 0.3s ease-out forwards; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-500 { animation-delay: 0.5s; }
+        .delay-600 { animation-delay: 0.6s; }
+        .delay-700 { animation-delay: 0.7s; }
+        .delay-800 { animation-delay: 0.8s; }
+
+        /* Ensure smooth transitions for dark mode */
+        html {
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+            scroll-behavior: smooth; /* Smooth scrolling for 'back to top' */
+        }
+        body {
+            font-family: 'Inter', sans-serif; /* Apply Inter font globally */
+        }
+
+        /* Custom style for line clamping description */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Frosted Glass Effect for Sponsor Page - for reference */
+        .frosted-glass {
+            background-color: rgba(255, 255, 255, 0.15); /* Light translucent white */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); /* Safari support */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .dark .frosted-glass {
+            background-color: rgba(0, 0, 0, 0.15); /* Dark translucent black */
+            border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors duration-300 ease-in-out">
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 w-full z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm dark:shadow-lg transition-colors duration-300 ease-in-out">
+        <nav class="container mx-auto p-4 flex justify-between items-center max-w-7xl">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.href='index.html'">
+                <!-- Page Logo (Material You Style Placeholder) -->
+                <img src="src/img/logo_placeholder.svg" alt="Logo" class="w-8 h-8 text-blue-600 dark:text-blue-400">
+                <h1 class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
+                    我的AI前端项目集
+                </h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <!-- Search Bar -->
+                <div class="relative hidden sm:block">
+                    <input type="text" id="searchInput" placeholder="搜索AI模型或项目..." class="pl-10 pr-4 py-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 text-sm w-48 focus:w-64">
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-300"></i>
+                </div>
+
+                <!-- Navigation Buttons (Hidden on small screens) -->
+                <a href="about.html" class="hidden sm:inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-800 dark:hover:text-blue-100 transition-colors duration-200">
+                    <i class="fa-solid fa-circle-info fa-lg mr-2"></i>
+                    简介
+                </a>
+                <a href="sponsor.html" class="hidden sm:inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-pink-100 hover:text-pink-700 dark:hover:bg-pink-800 dark:hover:text-pink-100 transition-colors duration-200">
+                    <i class="fa-solid fa-hand-holding-heart fa-lg mr-2"></i>
+                    赞助
+                </a>
+                <!-- Share Button -->
+                <button id="shareButton" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Share page">
+                    <i class="fa-solid fa-share-nodes fa-lg"></i>
+                </button>
+                <!-- Dark Mode Toggle -->
+                <button id="darkModeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Toggle dark mode">
+                    <i id="sunIcon" class="fa-solid fa-sun fa-lg" style="display: none;"></i>
+                    <i id="moonIcon" class="fa-solid fa-moon fa-lg"></i>
+                </button>
+                <!-- Mobile Menu Button (Hamburger) -->
+                <button id="mobileMenuBtn" class="sm:hidden p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Open mobile menu">
+                    <i class="fa-solid fa-bars fa-lg"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 pt-28 max-w-7xl">
+        <!-- Hero Banner Section -->
+        <section id="heroBanner" class="relative w-full h-80 md:h-96 lg:h-[500px] overflow-hidden rounded-lg shadow-xl mb-12 transform translate-y-20 scale-95 opacity-0 animate-fadeInUp">
+            <!-- Slides will be dynamically inserted here by JavaScript -->
+        </section>
+
+        <!-- "得意项目" Featured Projects Section -->
+        <section class="text-center mb-12 mt-16 animate-fadeInUp delay-300">
+            <h2 class="text-4xl font-extrabold text-gray-800 dark:text-gray-100 mb-6">得意项目</h2>
+            <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                这些是我最引以为豪的几个项目，它们体现了我在前端开发和AI集成方面的核心能力。
+            </p>
+        </section>
+        <section id="featuredProjectsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 p-4 animate-fadeInUp delay-500 mb-12">
+            <!-- Featured project cards will be dynamically inserted here -->
+        </section>
+
+
+        <!-- Projects Introduction Section -->
+        <section class="text-center mb-12 animate-fadeInUp delay-500">
+            <h2 class="text-4xl font-extrabold text-gray-800 dark:text-gray-100 mb-6">我的所有项目作品集</h2>
+            <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                这里展示了我最近的一些前端AI开发项目，涵盖了不同的AI模型集成和技术栈。每个项目都是一次AI技术的探索与落地。
+            </p>
+        </section>
+
+        <!-- Project Category Filter Section (Material You Style Tabs) -->
+        <section class="mb-8 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg animate-fadeInUp delay-600">
+            <h3 class="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4 text-center">按使用方式分类</h3>
+            <div id="projectCategoryFilter" class="flex flex-wrap justify-center gap-3">
+                <!-- Category buttons will be dynamically inserted here -->
+            </div>
+        </section>
+
+        <!-- Projects Grid Section -->
+        <section id="projectsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 p-4 animate-fadeInUp delay-700">
+            <!-- Project cards will be dynamically inserted here by JavaScript -->
+        </section>
+
+        <!-- Mainstream AI Cards Section -->
+        <section class="text-center my-16 animate-fadeInUp delay-800">
+            <h2 class="text-4xl font-extrabold text-gray-800 dark:text-gray-100 mb-8">主流AI模型</h2>
+            <div id="mainstreamAICards" class="flex flex-wrap justify-center gap-6">
+                <!-- Mainstream AI cards will be dynamically inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTopBtn" class="fixed bottom-8 right-8 p-4 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 hidden animate-zoomIn" aria-label="Scroll to top">
+        <i class="fa-solid fa-arrow-up fa-lg"></i>
+    </button>
+
+    <!-- Share Modal (Hidden by default) -->
+    <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" onclick="closeShareModal(event)">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-80 max-w-sm text-center transform scale-95 opacity-0 animate-popIn" onclick="event.stopPropagation()">
+            <h3 class="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100">分享此页面</h3>
+            <button id="copyLinkBtn" class="flex items-center justify-center w-full px-6 py-3 mb-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all duration-300 shadow-md">
+                <i class="fa-solid fa-copy fa-lg mr-2"></i>
+                复制链接
+            </button>
+            <button id="showQrBtn" class="flex items-center justify-center w-full px-6 py-3 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold transition-all duration-300 shadow-md">
+                <i class="fa-solid fa-qrcode fa-lg mr-2"></i>
+                显示二维码
+            </button>
+            <div id="qrCodeContainer" class="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg hidden">
+                <!-- QR code will be generated here -->
+                <canvas id="qrCanvas" class="w-full h-auto"></canvas>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">扫描二维码分享</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Modal (Hidden by default) -->
+    <div id="mobileMenuModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" onclick="closeMobileMenuModal(event)">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-80 max-w-sm text-center transform scale-95 opacity-0 animate-popIn" onclick="event.stopPropagation()">
+            <h3 class="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100">导航</h3>
+            <a href="index.html" class="flex items-center justify-center w-full px-6 py-3 mb-3 rounded-full text-base font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-800 dark:hover:text-blue-100 transition-colors duration-200">
+                <i class="fa-solid fa-house fa-lg mr-2"></i>
+                主页
+            </a>
+            <a href="about.html" class="flex items-center justify-center w-full px-6 py-3 mb-3 rounded-full text-base font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-800 dark:hover:text-blue-100 transition-colors duration-200">
+                <i class="fa-solid fa-circle-info fa-lg mr-2"></i>
+                简介
+            </a>
+            <a href="sponsor.html" class="flex items-center justify-center w-full px-6 py-3 mb-4 rounded-full text-base font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-pink-100 hover:text-pink-700 dark:hover:bg-pink-800 dark:hover:text-pink-100 transition-colors duration-200">
+                <i class="fa-solid fa-hand-holding-heart fa-lg mr-2"></i>
+                赞助
+            </a>
+            <!-- Dark Mode Toggle within mobile menu -->
+            <button id="mobileDarkModeToggle" class="flex items-center justify-center w-full px-6 py-3 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Toggle dark mode">
+                <i id="mobileSunIcon" class="fa-solid fa-sun fa-lg" style="display: none;"></i>
+                <i id="mobileMoonIcon" class="fa-solid fa-moon fa-lg"></i>
+                <span class="ml-2">切换深色模式</span>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- Toast Notification (for copy to clipboard) -->
+    <div id="toastNotification" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-full shadow-lg transition-opacity duration-300 opacity-0 pointer-events-none z-50">
+        链接已复制到剪贴板！
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-200 dark:bg-gray-800 py-6 mt-12 text-center text-gray-600 dark:text-gray-400 transition-colors duration-300">
+        <p>浏览量: <span id="viewCount">Loading...</span> | 建站时间: <span id="buildTime">2023年1月1日</span></p>
+        <p>&copy; <span id="currentYear"></span> 我的AI前端作品集. 保留所有权利。</p>
+        <!-- Social Media Links -->
+        <div class="flex justify-center space-x-4 mt-4">
+            <a href="https://github.com/your-github" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200" aria-label="GitHub">
+                <i class="fa-brands fa-github fa-2x"></i>
+            </a>
+            <a href="https://weibo.com/your-weibo" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors duration-200" aria-label="Weibo">
+                <i class="fa-brands fa-weibo fa-2x"></i>
+            </a>
+            <a href="https://twitter.com/your-twitter" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-blue-400 transition-colors duration-200" aria-label="Twitter">
+                <i class="fa-brands fa-twitter fa-2x"></i>
+            </a>
+            <!-- You can add more social media links here with their FontAwesome icons -->
+            <!-- 例如：LinkedIn (<i class="fa-brands fa-linkedin fa-2x"></i>), Bilibili (<i class="fa-brands fa-bilibili fa-2x"></i>) 等 -->
+        </div>
+        <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">请配置您自己的社交媒体链接</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode.js/qrcode.min.js"></script> <!-- QR Code Library -->
+    <script>
+        // --- Tailwind CSS Configuration ---
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        // Custom MD3 inspired colors for categories
+                        'blue-primary': '#6750A4', // Indigo for primary interactions (e.g., All category)
+                        'blue-on-primary': '#FFFFFF',
+                        'blue-container': '#EADDFF',
+                        'blue-on-container': '#21005D',
+
+                        'green-primary': '#388E3C', // Green for success/life category
+                        'green-on-primary': '#FFFFFF',
+                        'green-container': '#C8E6C9',
+                        'green-on-container': '#003A04',
+
+                        'orange-primary': '#FF9800', // Orange for tools category
+                        'orange-on-primary': '#FFFFFF',
+                        'orange-container': '#FFE0B2',
+                        'orange-on-container': '#472B00',
+
+                        'red-primary': '#D32F2F', // Red for warnings/other category
+                        'red-on-primary': '#FFFFFF',
+                        'red-container': '#FFCDD2',
+                        'red-on-container': '#470000',
+
+                        'purple-primary': '#7C4DFF', // A different shade of purple for pages category
+                        'purple-on-primary': '#FFFFFF',
+                        'purple-container': '#EDE7F6',
+                        'purple-on-container': '#4527A0',
+
+                        'gray-50': '#FEF7FF', // Light surface
+                        'gray-900': '#1C1B1F', // Dark surface
+
+                        // AI Tag Colors (for project cards)
+                        'ai-claude': '#FF6F00', // Deep Orange
+                        'ai-chatgpt': '#1DA1F2', // Twitter Blue
+                        'ai-gemini': '#0F9D58', // Google Green
+                        'ai-gas': '#4285F4', // Google Blue
+                        'ai-copilot': '#8E24AA', // Deep Purple
+                        'ai-perplexity': '#009688', // Teal
+                        'ai-cursor': '#FFEB3B', // Yellow
+                        'ai-default': '#607D8B', // Blue Grey
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        fadeInUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        slideInFromLeft: { '0%': { opacity: '0', transform: 'translateX(-20px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
+                        slideInFromRight: { '0%': { opacity: '0', transform: 'translateX(20px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
+                        zoomIn: { '0%': { opacity: '0', transform: 'scale(0.8)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+                        popIn: { '0%': { opacity: '0', transform: 'scale(0.9)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+                    },
+                    animation: {
+                        fadeIn: 'fadeIn 1s ease-out forwards',
+                        fadeInUp: 'fadeInUp 1s ease-out forwards',
+                        slideInFromLeft: 'slideInFromLeft 0.8s ease-out forwards',
+                        slideInFromRight: 'slideInFromRight 0.8s ease-out forwards',
+                        zoomIn: 'zoomIn 0.6s ease-out forwards',
+                        popIn: 'popIn 0.3s ease-out forwards',
+                    },
+                },
+            },
+        };
+
+        // --- Mock Project Data (updated with new categories and multiple AI models) ---
+        // 'category' 字段用于主分类（工具、页面、生活、其他）
+        // 'aiModels' 字段是一个数组，用于显示项目卡片上的AI模型标签
+        const projects = [
+            { id: 1, title: "AI电商助手", description: "利用AI推荐算法的电商平台，提升用户购物体验，集成Gemini Vision和ChatGPT。", imageUrl: "https://placehold.co/400x250/C1E1C1/000000?text=AI电商", techStack: ["React", "Python", "TensorFlow"], liveUrl: "#", githubUrl: "#", category: "tools", aiModels: ["Gemini", "ChatGPT"] },
+            { id: 2, title: "智能客服平台", description: "基于ChatGPT的智能客服系统，实现24/7在线支持，可定制应答。", imageUrl: "https://placehold.co/400x250/DDA0DD/000000?text=智能客服", techStack: ["Vue.js", "OpenAI API"], liveUrl: "#", githubUrl: "#", category: "pages", aiModels: ["ChatGPT"] },
+            { id: 3, title: "Gemini天气预测", description: "结合Gemini Pro Vision的气象数据分析与天气预报应用，提供精准预报。", imageUrl: "https://placehold.co/400x250/ADD8E6/000000?text=天气AI", techStack: ["Vanilla JS", "Gemini API"], liveUrl: "#", githubUrl: "#", category: "life", aiModels: ["Gemini"] },
+            { id: 4, title: "AI绘图工具前端", description: "连接到生成式AI模型的在线绘图板，支持文本转图像，效果惊艳。", imageUrl: "https://placehold.co/400x250/F08080/000000?text=AI绘图", techStack: ["HTML5 Canvas", "Stable Diffusion"], liveUrl: "#", githubUrl: "#", category: "tools", aiModels: ["AI"] },
+            { id: 5, title: "Copilot代码助手", description: "一个VS Code前端扩展，利用Copilot生成代码片段，大幅提升开发效率。", imageUrl: "https://placehold.co/400x250/98FB98/000000?text=Copilot", techStack: ["TypeScript", "VS Code API"], liveUrl: "#", githubUrl: "#", category: "tools", aiModels: ["Copilot"] },
+            { id: 6, title: "Perplexity新闻摘要", description: "抓取新闻并使用Perplexity API生成简洁摘要的阅读应用，快速获取信息。", imageUrl: "https://placehold.co/400x250/F0E68C/000000?text=新闻AI", techStack: ["React", "Perplexity AI"], liveUrl: "#", githubUrl: "#", category: "life", aiModels: ["Perplexity"] },
+            { id: 7, title: "Cursor代码重构工具", description: "集成Cursor IDE功能的Web界面，辅助代码重构和优化，提升代码质量。", imageUrl: "https://placehold.co/400x250/B0E0E6/000000?text=AI重构", techStack: ["JavaScript", "CodeMirror"], liveUrl: "#", githubUrl: "#", category: "tools", aiModels: ["Cursor"] },
+            { id: 8, title: "CLaude聊天机器人", description: "一个基于CLaude的对话式AI界面，支持多轮对话，体验流畅自然。", imageUrl: "https://placehold.co/400x250/D3D3D3/000000?text=CLaude聊天", techStack: ["React", "Anthropic API"], liveUrl: "#", githubUrl: "#", category: "pages", aiModels: ["CLaude"] },
+            { id: 9, title: "GAS自动化报告", description: "使用Google Apps Script (GAS) 自动化生成报告，结合Google AI服务。", imageUrl: "https://placehold.co/400x250/E0BBE4/000000?text=GAS自动化", techStack: ["Google Apps Script", "Google AI"], liveUrl: "#", githubUrl: "#", category: "other", aiModels: ["GAS"] },
+            { id: 10, title: "多模态AI应用", description: "展示Gemini多模态能力的互动界面，支持图像、文本输入，功能强大。", imageUrl: "https://placehold.co/400x250/957DAD/000000?text=多模态AI", techStack: ["Vue.js", "Gemini API"], liveUrl: "#", githubUrl: "#", category: "pages", aiModels: ["Gemini"] },
+            { id: 11, title: "AI简历分析器", description: "利用AI解析和优化简历内容的工具，助你制作完美简历。", imageUrl: "https://placehold.co/400x250/C7B0D1/000000?text=AI简历", techStack: ["React", "NLP"], liveUrl: "#", githubUrl: "#", category: "tools", aiModels: ["AI"] },
+            { id: 12, title: "Copilot代码编辑器", description: "一个嵌入Copilot建议的在线代码编辑器，实时提供智能补全。", imageUrl: "https://placehold.co/400x250/A79DC2/000000?text=Copilot编辑", techStack: ["HTML", "CSS", "Monaco Editor"], liveUrl: "#", githubUrl: "#", category: "tools", aiModels: ["Copilot"] },
+            { id: 13, title: "AI驱动的待办事项", description: "智能待办事项应用，利用AI优先级排序和任务建议，提高效率。", imageUrl: "https://placehold.co/400x250/8D81AE/000000?text=AI待办", techStack: ["React", "AI Models"], liveUrl: "#", githubUrl: "#", category: "life", aiModels: ["AI"] },
+            { id: 14, title: "ChatGPT游戏生成器", description: "基于ChatGPT的简单游戏场景和对话生成器，创意无限。", imageUrl: "https://placehold.co/400x250/6A5ACD/000000?text=AI游戏", techStack: ["Vanilla JS", "ChatGPT API"], liveUrl: "#", githubUrl: "#", category: "other", aiModels: ["ChatGPT"] },
+            { id: 15, title: "AI音乐推荐器", description: "根据用户情绪和偏好推荐音乐的AI应用，发现你的专属歌单。", imageUrl: "https://placehold.co/400x250/483D8B/000000?text=AI音乐", techStack: ["HTML", "CSS", "JavaScript"], liveUrl: "#", githubUrl: "#", category: "life", aiModels: ["AI"] },
+            { id: 16, title: "CLaude内容创作", description: "一个利用CLaude辅助写作和内容生成的Web工具，提升创作效率。", imageUrl: "https://placehold.co/400x250/20B2AA/000000?text=CLaude创作", techStack: ["React", "Anthropic API"], liveUrl: "#", githubUrl: "#", category: "tools", aiModels: ["CLaude"] },
+            { id: 17, title: "Gemini图片描述器", description: "上传图片，通过Gemini Vision生成详细描述的应用，图文并茂。", imageUrl: "https://placehold.co/400x250/7FFFD4/000000?text=Gemini图片", techStack: ["Vue.js", "Gemini API"], liveUrl: "#", githubUrl: "#", category: "pages", aiModels: ["Gemini"] },
+        ];
+
+        // "得意项目" 列表，从总项目中选择几个 (使用id选择确保唯一性)
+        const featuredProjects = [
+            projects.find(p => p.id === 1), // AI电商助手
+            projects.find(p => p.id === 5), // Copilot代码助手
+            projects.find(p => p.id === 8)  // CLaude聊天机器人
+        ].filter(Boolean); // 过滤掉未找到的项目，防止报错
+
+        // 轮播图数据 (Banner)
+        const slides = [
+            { title: "探索我的AI前端世界", description: "一系列基于现代AI模型和技术栈的精选项目。", imageUrl: "https://placehold.co/1200x500/A0DAFB/000000?text=AI项目展示" },
+            { title: "创新与实践", description: "每个项目都是一次AI技术的探索与落地。", imageUrl: "https://placehold.co/1200x500/FEC8D8/000000?text=AI技术实践" },
+            { title: "精美界面与交互", description: "注重用户体验和AI功能的无缝融合。", imageUrl: "https://placehold.co/1200x500/E0BBE4/000000?text=AI用户体验" },
+        ];
+
+        // 项目主分类选项 (使用方式分类)
+        // key为内部使用的英文标识，name为显示名称，icon为FontAwesome类，colorClass为Tailwind颜色类
+        const projectCategories = [
+            { key: "All", name: "全部", icon: `<i class="fa-solid fa-list-ul mr-2"></i>`, colorClass: "bg-blue-container text-blue-on-container hover:bg-blue-primary hover:text-blue-on-primary dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-blue-primary dark:hover:text-blue-on-primary" },
+            { key: "tools", name: "工具", icon: `<i class="fa-solid fa-wrench mr-2"></i>`, colorClass: "bg-orange-container text-orange-on-container hover:bg-orange-primary hover:text-orange-on-primary dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-orange-primary dark:hover:text-orange-on-primary" },
+            { key: "pages", name: "页面", icon: `<i class="fa-solid fa-desktop mr-2"></i>`, colorClass: "bg-purple-container text-purple-on-container hover:bg-purple-primary hover:text-purple-on-primary dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-purple-primary dark:hover:text-purple-on-primary" },
+            { key: "life", name: "生活", icon: `<i class="fa-solid fa-heartbeat mr-2"></i>`, colorClass: "bg-green-container text-green-on-container hover:bg-green-primary hover:text-green-on-primary dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-green-primary dark:hover:text-green-on-primary" },
+            { key: "other", name: "其他", icon: `<i class="fa-solid fa-puzzle-piece mr-2"></i>`, colorClass: "bg-red-container text-red-on-container hover:bg-red-primary hover:text-red-on-primary dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-red-primary dark:hover:text-red-on-primary" },
+        ];
+
+        // 主流AI模型数据 (底部卡片)
+        // FontAwesome Icons used
+        const mainstreamAIs = [
+            { name: "ChatGPT", logo: `<i class="fa-solid fa-comment-dots fa-3x"></i>`, color: "bg-[#1da1f2]" }, // Twitter Blue for ChatGPT
+            { name: "Gemini", logo: `<i class="fa-solid fa-brain fa-3x"></i>`, color: "bg-[#0F9D58]" }, // Google Green for Gemini
+            { name: "CLaude", logo: `<i class="fa-solid fa-diamond fa-3x"></i>`, color: "bg-[#FF6F00]" }, // Deep Orange for CLaude
+            { name: "Copilot", logo: `<i class="fa-solid fa-plane fa-3x"></i>`, color: "bg-[#8E24AA]" }, // Deep Purple for Copilot
+            { name: "Perplexity", logo: `<i class="fa-solid fa-question fa-3x"></i>`, color: "bg-[#009688]" }, // Teal for Perplexity
+            { name: "Cursor", logo: `<i class="fa-solid fa-terminal fa-3x"></i>`, color: "bg-[#FFEB3B] text-gray-900" }, // Yellow for Cursor, with dark text
+            { name: "GAS", logo: `<i class="fa-solid fa-sheet-plastic fa-3x"></i>`, color: "bg-[#4285F4]" }, // Google Blue for GAS (spreadsheet icon)
+        ];
+
+        // AI Model Tag Colors (for small tags on project cards)
+        const aiTagColors = {
+            "CLaude": "bg-ai-claude text-white",
+            "ChatGPT": "bg-ai-chatgpt text-white",
+            "Gemini": "bg-ai-gemini text-white",
+            "GAS": "bg-ai-gas text-white",
+            "Copilot": "bg-ai-copilot text-white",
+            "Perplexity": "bg-ai-perplexity text-white",
+            "Cursor": "bg-ai-cursor text-gray-900", // Yellow might need dark text
+            "AI": "bg-ai-default text-white", // Default for general AI projects
+        };
+
+        // --- Utility Functions ---
+        function getSavedTheme() {
+            return localStorage.getItem('theme');
+        }
+
+        function setSavedTheme(theme) {
+            localStorage.setItem('theme', theme);
+        }
+
+        function applyTheme(isDarkMode) {
+            const htmlElement = document.documentElement;
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            const mobileSunIcon = document.getElementById('mobileSunIcon'); // For mobile menu
+            const mobileMoonIcon = document.getElementById('mobileMoonIcon'); // For mobile menu
+
+
+            if (isDarkMode) {
+                htmlElement.classList.add('dark');
+                if (sunIcon) sunIcon.style.display = 'inline-block'; // Use inline-block for FA icons
+                if (moonIcon) moonIcon.style.display = 'none';
+                if (mobileSunIcon) mobileSunIcon.style.display = 'inline-block';
+                if (mobileMoonIcon) mobileMoonIcon.style.display = 'none';
+            } else {
+                htmlElement.classList.remove('dark');
+                if (sunIcon) sunIcon.style.display = 'none';
+                if (moonIcon) moonIcon.style.display = 'inline-block';
+                if (mobileSunIcon) mobileSunIcon.style.display = 'none';
+                if (mobileMoonIcon) mobileMoonIcon.style.display = 'inline-block';
+            }
+        }
+
+        // Function to copy text to clipboard (fallback for non-secure contexts)
+        function copyTextToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('链接已复制到剪贴板！');
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    fallbackCopyTextToClipboard(text);
+                });
+            } else {
+                fallbackCopyTextToClipboard(text);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed"; // Avoid scrolling to bottom
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast('链接已复制到剪贴板！ (Fallback)');
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+                alert('无法复制链接，请手动复制：' + text);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // Function to show toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            toast.textContent = message;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        // --- DOMContentLoaded Events ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Dark Mode Toggle Logic
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const savedTheme = getSavedTheme();
+            let isDarkMode = savedTheme === 'dark' || (savedTheme === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            applyTheme(isDarkMode);
+
+            darkModeToggle.addEventListener('click', () => {
+                isDarkMode = !isDarkMode;
+                applyTheme(isDarkMode);
+                setSavedTheme(isDarkMode ? 'dark' : 'light');
+            });
+
+            // Mobile Dark Mode Toggle
+            const mobileDarkModeToggle = document.getElementById('mobileDarkModeToggle');
+            if (mobileDarkModeToggle) { // Ensure button exists for mobile view
+                mobileDarkModeToggle.addEventListener('click', () => {
+                    isDarkMode = !isDarkMode;
+                    applyTheme(isDarkMode);
+                    setSavedTheme(isDarkMode ? 'dark' : 'light');
+                });
+            }
+
+
+            // Update current year in footer
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+            // Set a dummy view count (replace with actual logic if needed)
+            document.getElementById('viewCount').textContent = Math.floor(Math.random() * 10000) + 100;
+
+            // --- Share Modal Logic ---
+            const shareButton = document.getElementById('shareButton');
+            const shareModal = document.getElementById('shareModal');
+            const copyLinkBtn = document.getElementById('copyLinkBtn');
+            const showQrBtn = document.getElementById('showQrBtn');
+            const qrCodeContainer = document.getElementById('qrCodeContainer');
+            const qrCanvas = document.getElementById('qrCanvas');
+
+            shareButton.addEventListener('click', () => {
+                shareModal.classList.remove('hidden');
+            });
+
+            window.closeShareModal = function(event) {
+                if (event.target === shareModal) {
+                    shareModal.classList.add('hidden');
+                    qrCodeContainer.classList.add('hidden'); // Hide QR on modal close
+                }
+            }
+
+            copyLinkBtn.addEventListener('click', () => {
+                copyTextToClipboard(window.location.href);
+                shareModal.classList.add('hidden'); // Close modal after copying
+                qrCodeContainer.classList.add('hidden'); // Hide QR
+            });
+
+            showQrBtn.addEventListener('click', () => {
+                qrCodeContainer.classList.toggle('hidden');
+                if (!qrCodeContainer.classList.contains('hidden')) {
+                    // Generate QR code
+                    qrCanvas.innerHTML = ''; // Clear previous QR
+                    const qrOptions = {
+                        text: window.location.href,
+                        width: 128,
+                        height: 128,
+                        correctLevel : QRCode.CorrectLevel.H
+                    };
+
+                    // Adjust QR colors based on dark mode
+                    if (document.documentElement.classList.contains('dark')) {
+                        qrOptions.colorDark = "#FFFFFF"; // White QR for dark mode
+                        qrOptions.colorLight = "#1C1B1F"; // Dark surface background
+                    } else {
+                        qrOptions.colorDark = "#000000"; // Black QR for light mode
+                        qrOptions.colorLight = "#FEF7FF"; // Light surface background
+                    }
+                    new QRCode(qrCanvas, qrOptions);
+                }
+            });
+
+            // --- Mobile Menu Logic ---
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenuModal = document.getElementById('mobileMenuModal');
+
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', () => {
+                    mobileMenuModal.classList.remove('hidden');
+                });
+            }
+
+            window.closeMobileMenuModal = function(event) {
+                if (event.target === mobileMenuModal) {
+                    mobileMenuModal.classList.add('hidden');
+                }
+            }
+
+
+            // --- Hero Banner Logic ---
+            const heroBanner = document.getElementById('heroBanner');
+            let currentSlide = 0;
+
+            function renderSlides() {
+                heroBanner.innerHTML = ''; // Clear existing slides
+                slides.forEach((slide, index) => {
+                    const slideDiv = document.createElement('div');
+                    slideDiv.className = `absolute inset-0 transition-opacity duration-1000 ease-in-out flex items-center justify-center ${
+                        index === currentSlide ? 'opacity-100' : 'opacity-0'
+                    }`;
+                    slideDiv.style.backgroundImage = `url(${slide.imageUrl})`;
+                    slideDiv.style.backgroundSize = 'cover';
+                    slideDiv.style.backgroundPosition = 'center';
+
+                    slideDiv.innerHTML = `
+                        <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-center p-4">
+                            <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 animate-slideInFromLeft">${slide.title}</h2>
+                            <p class="text-lg md:text-xl text-white text-opacity-80 animate-slideInFromRight">
+                                ${slide.description}
+                            </p>
+                            <button class="mt-8 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full shadow-lg transition-transform transform hover:scale-105 duration-300 animate-zoomIn">
+                                了解更多
+                            </button>
+                        </div>
+                    `;
+                    heroBanner.appendChild(slideDiv);
+                });
+
+                // Add pagination dots
+                const dotsContainer = document.createElement('div');
+                dotsContainer.className = 'absolute bottom-4 left-0 right-0 flex justify-center space-x-2';
+                slides.forEach((_, index) => {
+                    const dot = document.createElement('button');
+                    dot.className = `w-3 h-3 rounded-full transition-all duration-300 ${
+                        index === currentSlide ? 'bg-white scale-125' : 'bg-gray-400 dark:bg-gray-600'
+                    }`;
+                    dot.addEventListener('click', () => {
+                        currentSlide = index;
+                        renderSlides();
+                    });
+                    dotsContainer.appendChild(dot);
+                });
+                heroBanner.appendChild(dotsContainer);
+            }
+
+            function nextSlide() {
+                currentSlide = (currentSlide + 1) % slides.length;
+                renderSlides();
+            }
+
+            // Initial render
+            renderSlides();
+            const timer = setInterval(nextSlide, 5000); // Change slide every 5 seconds
+
+            // Clear interval on page unload
+            window.addEventListener('beforeunload', () => clearInterval(timer));
+
+
+            // --- Project Cards Rendering Logic ---
+            // 提取渲染项目卡片的功能为一个独立函数，方便分类筛选后重绘
+            function renderProjectCards(targetElement, projectList, isFeatured = false) {
+                targetElement.innerHTML = ''; // 清空现有项目卡片
+
+                const bgColors = [
+                    "bg-blue-100 dark:bg-blue-800",
+                    "bg-green-100 dark:bg-green-800",
+                    "bg-purple-100 dark:bg-purple-800",
+                    "bg-yellow-100 dark:bg-yellow-800",
+                    "bg-red-100 dark:bg-red-800",
+                    "bg-indigo-100 dark:bg-indigo-800",
+                    "bg-pink-100 dark:bg-pink-800",
+                ];
+
+                projectList.forEach(project => {
+                    const randomBg = bgColors[Math.floor(Math.random() * bgColors.length)];
+                    const projectCard = document.createElement('div');
+                    // Add rainbow-shadow-animate class only for featured projects
+                    projectCard.className = `
+                        ${randomBg}
+                        rounded-2xl shadow-lg dark:shadow-xl overflow-hidden
+                        flex flex-col transform transition-all duration-300 ease-in-out
+                        hover:scale-105 hover:-translate-y-2
+                        group
+                        ${isFeatured ? 'rainbow-shadow-animate' : 'hover:shadow-2xl'}
+                    `;
+
+                    // AI Models Tags HTML generation
+                    const aiModelsHtml = project.aiModels.map(aiModel => {
+                        const colorClass = aiTagColors[aiModel] || aiTagColors['AI']; // Default if not found
+                        return `<span class="px-3 py-1 text-xs font-semibold rounded-full ${colorClass} shadow-sm">${aiModel}</span>`;
+                    }).join('');
+
+                    projectCard.innerHTML = `
+                        <!-- Project Image -->
+                        <div class="relative overflow-hidden">
+                            <img
+                                src="${project.imageUrl}"
+                                alt="${project.title}"
+                                class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                                onerror="this.onerror=null;this.src='https://placehold.co/400x250/D3D3D3/000000?text=无法加载图片';"
+                            />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                <h3 class="text-xl font-bold text-white drop-shadow-lg">${project.title}</h3>
+                            </div>
+                        </div>
+
+                        <!-- Project Details -->
+                        <div class="p-6 flex flex-col flex-grow text-gray-800 dark:text-gray-100">
+                            <p class="text-sm md:text-base mb-4 text-gray-700 dark:text-gray-300 line-clamp-2">
+                                ${project.description}
+                            </p>
+
+                            <!-- Tech Stack & AI Models Tags -->
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                ${project.techStack.map(tech => `
+                                    <span class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-semibold rounded-full shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                                        ${tech}
+                                    </span>
+                                `).join('')}
+                                ${aiModelsHtml}
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex justify-end space-x-3 mt-auto">
+                                <a
+                                    href="${project.liveUrl}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-full shadow-md transition-all duration-300 transform hover:scale-105"
+                                    aria-label="View live demo of ${project.title}"
+                                >
+                                    <i class="fa-solid fa-link fa-lg mr-2"></i>
+                                    查看
+                                </a>
+                                <a
+                                    href="${project.githubUrl}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600 text-white text-sm font-semibold rounded-full shadow-md transition-all duration-300 transform hover:scale-105"
+                                    aria-label="View GitHub repository for ${project.title}"
+                                >
+                                    <i class="fa-brands fa-github fa-lg mr-2"></i>
+                                    GitHub
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    targetElement.appendChild(projectCard);
+                });
+            }
+
+            // Initial render of featured projects
+            const featuredProjectsGrid = document.getElementById('featuredProjectsGrid');
+            renderProjectCards(featuredProjectsGrid, featuredProjects, true); // Pass true for isFeatured
+
+
+            // --- Project Category Filter Logic ---
+            const projectCategoryFilterDiv = document.getElementById('projectCategoryFilter');
+            let activeProjectCategory = "All"; // 默认激活 '全部' 类别
+
+            // 渲染分类按钮
+            function renderProjectCategoryButtons() {
+                projectCategoryFilterDiv.innerHTML = ''; // 清空现有按钮
+                projectCategories.forEach(category => {
+                    const button = document.createElement('button');
+                    button.dataset.category = category.key;
+                    // Use dynamic class based on active state
+                    button.className = `
+                        flex items-center px-5 py-2 rounded-full text-sm font-medium
+                        transition-all duration-300 ease-in-out
+                        ${activeProjectCategory === category.key
+                            ? category.colorClass.replace(/hover:/g, ' ') + ' shadow-md' // 激活状态，移除hover
+                            : category.colorClass // 非激活状态，包含hover
+                        }
+                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
+                    `;
+                    button.innerHTML = `${category.icon}<span>${category.name}</span>`;
+                    button.addEventListener('click', () => {
+                        activeProjectCategory = category.key;
+                        renderProjectCategoryButtons(); // 重新渲染按钮以更新激活状态
+                        filterAndRenderProjects();      // 过滤项目并重新渲染
+                    });
+                    projectCategoryFilterDiv.appendChild(button);
+                });
+            }
+
+            // 过滤并渲染项目
+            function filterAndRenderProjects() {
+                let filtered = projects;
+                if (activeProjectCategory !== "All") {
+                    filtered = projects.filter(project => project.category === activeProjectCategory);
+                }
+                const projectsGrid = document.getElementById('projectsGrid');
+                renderProjectCards(projectsGrid, filtered);
+            }
+
+            // 页面加载时初始化分类按钮和项目
+            renderProjectCategoryButtons();
+            filterAndRenderProjects();
+
+            // --- Search Functionality ---
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (event) => {
+                const searchTerm = event.target.value.toLowerCase();
+                const filteredBySearch = projects.filter(project => {
+                    const matchesTitle = project.title.toLowerCase().includes(searchTerm);
+                    const matchesDescription = project.description.toLowerCase().includes(searchTerm);
+                    const matchesAiModel = project.aiModels.some(model => model.toLowerCase().includes(searchTerm));
+                    return matchesTitle || matchesDescription || matchesAiModel;
+                });
+                const projectsGrid = document.getElementById('projectsGrid');
+                renderProjectCards(projectsGrid, filteredBySearch);
+                // Reset category buttons if searching
+                activeProjectCategory = "All";
+                renderProjectCategoryButtons();
+            });
+
+            // --- Scroll to Top Button Logic ---
+            const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) { // Show button after scrolling 300px
+                    scrollToTopBtn.classList.remove('hidden');
+                } else {
+                    scrollToTopBtn.classList.add('hidden');
+                }
+            });
+            scrollToTopBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+
+            // --- Mainstream AI Cards Rendering ---
+            const mainstreamAICardsDiv = document.getElementById('mainstreamAICards');
+            mainstreamAIs.forEach(ai => {
+                const card = document.createElement('div');
+                card.className = `
+                    w-36 h-36 md:w-48 md:h-48 rounded-xl flex flex-col items-center justify-center p-4
+                    ${ai.color} text-white shadow-lg transform transition-all duration-300 ease-in-out
+                    hover:scale-105 hover:shadow-xl cursor-pointer
+                `;
+                card.innerHTML = `
+                    ${ai.logo}
+                    <span class="mt-3 text-lg font-semibold">${ai.name}</span>
+                `;
+                mainstreamAICardsDiv.appendChild(card);
+            });
+        });
+
+        // PWA manifest placeholder - you'll need to create a manifest.json file
+        /*
+        {
+          "name": "我的AI前端项目集",
+          "short_name": "AI作品集",
+          "description": "我的个人AI前端项目展示。",
+          "start_url": "./index.html",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#2563eb",
+          "icons": [
+            {
+              "src": "src/img/logo_icon_192.png",
+              "sizes": "192x192",
+              "type": "image/png"
+            },
+            {
+              "src": "src/img/logo_icon_512.png",
+              "sizes": "512x512",
+              "type": "image/png"
+            }
+          ]
+        }
+        */
+        // You'd need to create src/img/logo_icon.svg, src/img/logo_icon_192.png, src/img/logo_icon_512.png
+        // and src/img/logo_placeholder.svg (for the header logo)
+    </script>
+</body>
+</html>

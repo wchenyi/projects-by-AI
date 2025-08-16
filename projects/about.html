@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于我 - 我的AI前端项目集</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 1s ease-out forwards; }
+        .animate-fadeInUp { animation: fadeInUp 1s ease-out forwards; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-500 { animation-delay: 0.5s; }
+
+        html {
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for a more refined look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #A78BFA; /* Purple */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #8B5CF6; /* Darker purple */
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #E5E7EB; /* Light gray */
+        }
+        .dark::-webkit-scrollbar-thumb {
+            background-color: #6D28D9; /* Darker purple for dark mode */
+        }
+        .dark::-webkit-scrollbar-track {
+            background-color: #374151; /* Dark gray for dark mode */
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors duration-300 ease-in-out">
+
+    <!-- Header (Re-use from index.html for consistency) -->
+    <header class="fixed top-0 left-0 w-full z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm dark:shadow-lg transition-colors duration-300 ease-in-out">
+        <nav class="container mx-auto p-4 flex justify-between items-center max-w-7xl">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.href='index.html'">
+                <img src="src/img/logo_placeholder.svg" alt="Logo" class="w-8 h-8 text-blue-600 dark:text-blue-400">
+                <h1 class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
+                    我的AI前端项目集
+                </h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="index.html" class="flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-800 dark:hover:text-blue-100 transition-colors duration-200">
+                    <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    主页
+                </a>
+                <button id="darkModeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Toggle dark mode">
+                    <svg id="sunIcon" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg>
+                    <svg id="moonIcon" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 pt-28 max-w-4xl">
+        <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:p-12 mb-12 animate-fadeInUp delay-300">
+            <h2 class="text-4xl font-extrabold text-blue-600 dark:text-blue-400 mb-6 text-center">关于我</h2>
+            <div class="flex flex-col md:flex-row items-center md:items-start md:space-x-8">
+                <img src="https://placehold.co/200x200/5E35B1/FFFFFF?text=你的头像" alt="你的头像" class="w-40 h-40 rounded-full object-cover mb-6 md:mb-0 shadow-lg border-4 border-blue-200 dark:border-blue-700 animate-zoomIn">
+                <div class="text-center md:text-left flex-grow">
+                    <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                        你好！我是一位充满热情的AI前端开发者，专注于构建直观、高效且富有创意的用户界面。我对探索人工智能与前端技术的结合充满兴趣，并致力于将前沿的AI能力融入日常应用，提升用户体验。
+                    </p>
+                    <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                        我在React、Vue、JavaScript以及Tailwind CSS等技术栈拥有扎实的实践经验。在AI领域，我曾尝试集成ChatGPT、Gemini、Claude等主流大模型API，实现智能问答、代码辅助、内容生成等功能。我的目标是创造出既美观又智能的产品。
+                    </p>
+                    <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+                        期待与您交流，共同探索前端与AI的无限可能！
+                    </p>
+                    <!-- Contact Info / Social Links (Optional, can be added here) -->
+                    <div class="mt-6 flex justify-center md:justify-start space-x-4">
+                        <a href="mailto:your_email@example.com" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center">
+                            <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                            联系我
+                        </a>
+                        <a href="https://github.com/your-github" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center">
+                            <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387 0.599 0.111 0.793-0.261 0.793-0.577v-2.234c-3.338 0.726-4.033-1.416-4.033-1.416-0.546-1.387-1.333-1.756-1.333-1.756-1.087-0.744 0.084-0.729 0.084-0.729 1.205 0.084 1.839 1.237 1.839 1.237 1.07 1.835 2.809 1.305 3.493 0.998 0.108-0.778 0.418-1.305 0.762-1.604-2.665-0.305-5.467-1.334-5.467-5.931 0-1.311 0.469-2.381 1.236-3.221-0.124-0.305-0.535-1.524 0.117-3.176 0 0 1.008-0.322 3.301 1.231 0.959-0.266 1.984-0.399 3.004-0.399 1.021 0 2.046 0.133 3.004 0.399 2.291-1.553 3.297-1.231 3.297-1.231 0.653 1.653 0.242 2.871 0.118 3.176 0.767 0.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.923 0.431 0.372 0.823 1.102 0.823 2.222v3.293c0 0.319 0.192 0.694 0.801 0.576 4.765-1.589 8.196-6.086 8.196-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                            我的GitHub
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:p-12 animate-fadeInUp delay-500">
+            <h2 class="text-4xl font-extrabold text-purple-600 dark:text-purple-400 mb-6 text-center">我的项目理念</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-3 text-gray-800 dark:text-gray-100">1. 用户为本</h3>
+                    <p>我坚信优秀的产品始于对用户的深刻理解。每一个项目都力求提供流畅、直观且愉悦的用户体验，无论是界面的响应速度，还是交互的自然程度，都以用户需求为核心。</p>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-3 text-gray-800 dark:text-gray-100">2. 技术创新</h3>
+                    <p>拥抱前沿技术是我的驱动力。我积极探索人工智能、WebAssembly、Web Components等新兴技术，并将它们融入项目中，旨在创造更智能、更强大的Web应用。</p>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-3 text-gray-800 dark:text-gray-100">3. 美学与功能并重</h3>
+                    <p>设计不仅仅是美观，更是为功能服务。我致力于将优雅的界面设计与强大的功能逻辑完美结合，让用户在享受视觉美感的同时，也能高效地完成任务。</p>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-3 text-gray-800 dark:text-gray-100">4. 持续学习与成长</h3>
+                    <p>前端和AI领域日新月异，我始终保持学习的热情，不断提升自身技能。每一个项目都是一次学习的机会，从中吸取经验，不断完善自己。</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer (Re-use from index.html for consistency) -->
+    <footer class="bg-gray-200 dark:bg-gray-800 py-6 mt-12 text-center text-gray-600 dark:text-gray-400 transition-colors duration-300">
+        <p>&copy; <span id="currentYear"></span> 我的AI前端作品集. 保留所有权利。</p>
+    </footer>
+
+    <script>
+        // Dark Mode Toggle Logic for this page
+        document.addEventListener('DOMContentLoaded', () => {
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const savedTheme = localStorage.getItem('theme');
+            let isDarkMode = savedTheme === 'dark' || (savedTheme === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+            function applyTheme(isDark) {
+                const htmlElement = document.documentElement;
+                const sunIcon = document.getElementById('sunIcon');
+                const moonIcon = document.getElementById('moonIcon');
+
+                if (isDark) {
+                    htmlElement.classList.add('dark');
+                    if (sunIcon) sunIcon.style.display = 'block';
+                    if (moonIcon) moonIcon.style.display = 'none';
+                } else {
+                    htmlElement.classList.remove('dark');
+                    if (sunIcon) sunIcon.style.display = 'none';
+                    if (moonIcon) moonIcon.style.display = 'block';
+                }
+            }
+
+            applyTheme(isDarkMode);
+
+            darkModeToggle.addEventListener('click', () => {
+                isDarkMode = !isDarkMode;
+                applyTheme(isDarkMode);
+                localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            });
+
+            // Update current year in footer
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+        });
+    </script>
+</body>
+</html>
