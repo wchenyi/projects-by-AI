@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国八卦知识学习网站</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi5Lit5Zu95YWr5Y2b55+l6K+G5a2m5Lmg572R56uZIiwic2hvcnRfbmFtZSI6IuWFq+WNm+egtSIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lJSFpwWlhkQ2IzZzlJakFnTUNBMU1pQTFNaUkrUEhKbFkzUWdlRDBpTVNJZ2VUMGlNVElpSUhkcFpIUm9QU0kxTUNJZ2FHVnBaMmgwUFNJME1DSWdabWxzYkQwaUl6WTNNVEE0T1NJZ2NuZzlJalVpTHo0OGRHVjRkQ0I0UFNJeU5pSWdlVDBpTXpVaUlHWnBiR3c5SWlOQlJqQkJSakFpSUdadmJuUXRjMmw2WlQwaU1qUWlQaUE0T0Nrd1BDOTBaWGgwUGp3dmMzWm5QZz09Iiwic2l6ZXMiOiI1Mng1MiIsInR5cGUiOiJpbWFnZS9zdmcreG1sIn1dLCJ0aGVtZV9jb2xvciI6IiM2NzUwQTQiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI0ZFRjdGRiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwic3RhcnRfdXJsIjoiLyJ9">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MiA1MiI+PHJlY3QgeD0iMSIgeT0iMTIiIHdpZHRoPSI1MCIgaGVpZ2h0PSI0MCIgZmlsbD0iIzY3MTA4OSIgcng9IjUiLz48dGV4dCB4PSIyNiIgeT0iMzUiIGZpbGw9IiNBRjBBRjAiIGZvbnQtc2l6ZT0iMjQiPiDljKY8L3RleHQ+PC9zdmc+">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6750A4;
+            --on-primary: #FFFFFF;
+            --primary-container: #EADDFF;
+            --on-primary-container: #21005D;
+            --secondary: #625B71;
+            --surface: #FEF7FF;
+            --on-surface: #1D1B20;
+            --surface-variant: #E7E0EC;
+            --on-surface-variant: #49454F;
+            --outline: #79747E;
+            --surface-container: #F3EDF7;
+            --surface-container-high: #ECE6F0;
+            --wood: #2D5016;
+            --fire: #D32F2F;
+            --earth: #F57C00;
+            --metal: #FFD700;
+            --water: #1976D2;
+        }
+
+        [data-theme="dark"] {
+            --primary: #D0BCFF;
+            --on-primary: #381E72;
+            --primary-container: #4F378B;
+            --on-primary-container: #EADDFF;
+            --surface: #141218;
+            --on-surface: #E6E0E9;
+            --surface-variant: #49454F;
+            --on-surface-variant: #CAC4D0;
+            --outline: #938F99;
+            --surface-container: #211F26;
+            --surface-container-high: #2B2930;
+            --wood: #4CAF50;
+            --fire: #FF5252;
+            --earth: #FF9800;
+        }
+
+        body {
+            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
+            background-color: var(--surface);
+            color: var(--on-surface);
+            transition: all 0.3s;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        header {
+            background-color: var(--surface-container);
+            padding: 12px 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h1::before {
+            content: '☯';
+            font-size: 24px;
+        }
+
+        @media (min-width: 768px) {
+            h1 { font-size: 28px; }
+            .container { padding: 24px; }
+        }
+
+        .theme-toggle {
+            background-color: var(--primary-container);
+            color: var(--on-primary-container);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .card {
+            background-color: var(--surface-container-high);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .collapse-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 24px;
+            padding: 4px;
+        }
+
+        @media (min-width: 768px) {
+            .collapse-btn { display: none; }
+        }
+
+        .collapsible {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .collapsible.collapsed {
+            max-height: 0;
+        }
+
+        @media (min-width: 768px) {
+            .collapsible.collapsed {
+                max-height: 1000px;
+            }
+        }
+
+        .bagua-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        @media (min-width: 480px) {
+            .bagua-selector { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        @media (min-width: 768px) {
+            .bagua-selector { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+        }
+
+        .bagua-item {
+            background-color: var(--surface-container);
+            border: 2px solid var(--outline);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .bagua-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .bagua-item.selected {
+            background-color: var(--primary-container);
+            border-color: var(--primary);
+        }
+
+        .bagua-item canvas {
+            width: 100%;
+            max-width: 80px;
+            height: auto;
+        }
+
+        .bagua-name {
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .result-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 1024px) {
+            .result-section { grid-template-columns: 1fr 1.5fr; gap: 24px; }
+        }
+
+        .hexagram-display {
+            text-align: center;
+        }
+
+        #hexagramCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--outline);
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 8px 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--on-surface-variant);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        @media (min-width: 600px) {
+            .info-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .info-card {
+            background-color: var(--surface-container);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--on-surface-variant);
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .description {
+            padding: 16px;
+            background-color: var(--surface-container);
+            border-radius: 12px;
+            line-height: 1.8;
+            margin-top: 16px;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .settings-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .setting-item {
+            background-color: var(--surface-container);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .setting-item label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .button {
+            background-color: var(--primary);
+            color: var(--on-primary);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .element-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin: 2px;
+        }
+
+        .element-wood { background-color: var(--wood); color: white; }
+        .element-fire { background-color: var(--fire); color: white; }
+        .element-earth { background-color: var(--earth); color: white; }
+        .element-metal { background-color: var(--metal); color: black; }
+        .element-water { background-color: var(--water); color: white; }
+
+        canvas {
+            display: block;
+            margin: 20px auto;
+        }
+
+        .tiangan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .tiangan-item {
+            background-color: var(--surface-container);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .position-label {
+            display: inline-block;
+            background-color: var(--primary-container);
+            color: var(--on-primary-container);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .bagua-diagram {
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        .warning-text {
+            color: var(--on-surface-variant);
+            font-size: 12px;
+            font-style: italic;
+            margin-top: 4px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        input[type="color"] {
+            width: 60px;
+            height: 40px;
+            border: 2px solid var(--outline);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 2px solid var(--outline);
+            background-color: var(--surface-container);
+            color: var(--on-surface);
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>八卦知识</h1>
+        <button class="theme-toggle" onclick="window.app.toggleTheme()">🌓</button>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">选择上卦（外卦）</h2>
+                <button class="collapse-btn" onclick="window.app.toggleCollapse('upper')">▼</button>
+            </div>
+            <div class="position-label">上卦</div>
+            <div class="collapsible" id="upperCollapse">
+                <div class="bagua-selector" id="upperBagua"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">选择下卦（内卦）</h2>
+                <button class="collapse-btn" onclick="window.app.toggleCollapse('lower')">▼</button>
+            </div>
+            <div class="position-label">下卦</div>
+            <div class="collapsible" id="lowerCollapse">
+                <div class="bagua-selector" id="lowerBagua"></div>
+            </div>
+        </div>
+
+        <div class="card" id="resultCard" style="display: none;">
+            <h2 class="card-title">卦象结果</h2>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="window.app.switchTab('basic')">基本信息</button>
+                <button class="tab" onclick="window.app.switchTab('wuxing')">五行属性</button>
+                <button class="tab" onclick="window.app.switchTab('tiangan')">天干地支</button>
+                <button class="tab" onclick="window.app.switchTab('download')">下载设置</button>
+            </div>
+
+            <div class="result-section">
+                <div class="hexagram-display">
+                    <canvas id="hexagramCanvas" width="400" height="600"></canvas>
+                    <div class="action-buttons">
+                        <button class="button" onclick="window.app.updateHexagram()">🔄 更新</button>
+                        <button class="button" onclick="window.app.downloadHexagram()">⬇️ 下载</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div id="tabBasic" class="tab-content active">
+                        <div class="info-grid" id="basicInfo"></div>
+                        <div class="description" id="hexagramDesc"></div>
+                    </div>
+
+                    <div id="tabWuxing" class="tab-content">
+                        <div class="info-grid" id="wuxingInfo"></div>
+                        <canvas id="wuxingCanvas" width="500" height="500"></canvas>
+                        <canvas id="changshengCanvas" width="700" height="300"></canvas>
+                    </div>
+
+                    <div id="tabTiangan" class="tab-content">
+                        <h3 style="margin-bottom: 12px;">天干地支知识</h3>
+                        <div id="tianganContent"></div>
+                    </div>
+
+                    <div id="tabDownload" class="tab-content">
+                        <h3 style="margin-bottom: 12px;">下载选项</h3>
+                        <div class="settings-grid" id="downloadSettings"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="data:text/javascript;base64,"></script>
+    <script>
+// 八卦数据配置
+const BAGUA_CONFIG = {
+    '乾☰': {
+        lines: [1, 1, 1],
+        nature: '天',
+        wuxing: '金',
+        dizhiLower: ['辰', '寅', '子'],
+        dizhiUpper: ['戌', '申', '午'],
+        meaning: '乾为天，纯阳之卦。象征刚健、自强不息的精神。乾卦代表天道运行，刚健中正，万物之父。主创造、领导、积极进取。君子观此卦象，当效法天道，自强不息。',
+        xiantian: '南',
+        houtian: '西北'
+    },
+    '坤☷': {
+        lines: [0, 0, 0],
+        nature: '地',
+        wuxing: '土',
+        dizhiLower: ['卯', '巳', '未'],
+        dizhiUpper: ['酉', '亥', '丑'],
+        meaning: '坤为地，纯阴之卦。象征柔顺、厚德载物的品质。坤卦代表大地承载，柔顺包容，万物之母。主包容、养育、顺从自然。君子观此卦象，当效法地道，厚德载物。',
+        xiantian: '北',
+        houtian: '西南'
+    },
+    '震☳': {
+        lines: [0, 0, 1],
+        nature: '雷',
+        wuxing: '木',
+        dizhiLower: ['辰', '寅', '子'],
+        dizhiUpper: ['戌', '申', '午'],
+        meaning: '震为雷，一阳动于下。象征震动、奋起、勇往直前。震卦代表春雷惊蛰，万物复苏，生机勃发。主震动、启发、果断行动。君子观此卦象，应恐惧修身，谨言慎行。',
+        xiantian: '东北',
+        houtian: '东'
+    },
+    '巽☴': {
+        lines: [1, 1, 0],
+        nature: '风',
+        wuxing: '木',
+        dizhiLower: ['酉', '亥', '丑'],
+        dizhiUpper: ['卯', '巳', '未'],
+        meaning: '巽为风，一阴入于下。象征巽顺、谦逊、渗透。巽卦代表风行天下，无孔不入，柔而能刚。主顺从、渐进、灵活变通。君子观此卦象，当申命行事，随风而化。',
+        xiantian: '西南',
+        houtian: '东南'
+    },
+    '坎☵': {
+        lines: [0, 1, 0],
+        nature: '水',
+        wuxing: '水',
+        dizhiLower: ['午', '辰', '寅'],
+        dizhiUpper: ['子', '戌', '申'],
+        meaning: '坎为水，重险相叠。象征险陷、智慧、流动。坎卦代表水流不息，陷而不止，刚中之德。主险难、智谋、坚持不懈。君子观此卦象，当行有常德，习教不倦。',
+        xiantian: '西',
+        houtian: '北'
+    },
+    '离☲': {
+        lines: [1, 0, 1],
+        nature: '火',
+        wuxing: '火',
+        dizhiLower: ['亥', '丑', '卯'],
+        dizhiUpper: ['巳', '未', '酉'],
+        meaning: '离为火，外刚内柔。象征光明、附丽、文明。离卦代表日月丽天，光明普照，文明之象。主光明、美丽、依附。君子观此卦象，当继明照于四方，化育万物。',
+        xiantian: '东',
+        houtian: '南'
+    },
+    '艮☶': {
+        lines: [1, 0, 0],
+        nature: '山',
+        wuxing: '土',
+        dizhiLower: ['申', '午', '辰'],
+        dizhiUpper: ['寅', '子', '戌'],
+        meaning: '艮为山，止而不动。象征静止、稳重、守止。艮卦代表山之稳固，止欲修身，不轻举妄动。主静止、稳定、审时度势。君子观此卦象，当思不出其位，慎终如始。',
+        xiantian: '西北',
+        houtian: '东北'
+    },
+    '兑☱': {
+        lines: [0, 1, 1],
+        nature: '泽',
+        wuxing: '金',
+        dizhiLower: ['丑', '卯', '巳'],
+        dizhiUpper: ['未', '酉', '亥'],
+        meaning: '兑为泽，柔在上刚在下。象征喜悦、和说、交流。兑卦代表泽水滋润，和悦以行，言辞通达。主喜悦、口才、人际交往。君子观此卦象，当朋友讲习，以悦民心。',
+        xiantian: '东南',
+        houtian: '西'
+    }
+};
+
+// 64卦数据
+const HEXAGRAM_DATA = {
+    '111111': { name: '乾为天', palace: '乾宫', world: '八世卦', type: '六冲卦', desc: '乾卦象征纯阳刚健，天行健，君子以自强不息。代表创造、领导、积极进取的精神。' },
+            '111110': { name: '天风姤', palace: '乾宫', world: '一世卦', type: '', desc: '姤卦象征相遇，一阴始生。提醒防微杜渐，注意小人。' },
+            '111100': { name: '天山遁', palace: '乾宫', world: '二世卦', type: '', desc: '遁卦象征退避，君子以远小人。懂得进退，保全实力。' },
+            '111000': { name: '天地否', palace: '乾宫', world: '三世卦', type: '', desc: '否卦象征闭塞不通，天地不交。需要坚守正道，等待时机。' },
+            '110000': { name: '风地观', palace: '乾宫', world: '四世卦', type: '', desc: '观卦象征观察，下观而化。以身作则，教化他人。' },
+            '100000': { name: '山地剥', palace: '乾宫', world: '五世卦', type: '', desc: '剥卦象征剥落，阴盛阳衰。需要顺应时势，保存实力。' },
+            '101000': { name: '火地晋', palace: '乾宫', world: '游魂卦', type: '', desc: '晋卦象征上进，明出地上。光明磊落，不断进取。' },
+            '101111': { name: '火天大有', palace: '乾宫', world: '归魂卦', type: '', desc: '大有卦象征大有收获，火在天上。盛大丰收之象。' },
+            
+            '000111': { name: '泽天夬', palace: '兑宫', world: '一世卦', type: '', desc: '夬卦象征决断，刚决柔也。当机立断，除恶务尽。' },
+            '011111': { name: '兑为泽', palace: '兑宫', world: '八世卦', type: '六冲卦', desc: '兑卦象征喜悦，和悦以行。以喜悦之心待人接物。' },
+            '011110': { name: '泽水困', palace: '兑宫', world: '二世卦', type: '', desc: '困卦象征困境，泽无水。处困境时需坚守正道。' },
+            '011100': { name: '泽地萃', palace: '兑宫', world: '三世卦', type: '', desc: '萃卦象征聚集，聚合以盛。众人聚合，力量强大。' },
+            '010100': { name: '水地比', palace: '兑宫', world: '四世卦', type: '', desc: '比卦象征亲密，地上有水。亲密相处，互助合作。' },
+            '110100': { name: '水山蹇', palace: '兑宫', world: '五世卦', type: '', desc: '蹇卦象征艰难，山上有水。遇到艰难，反求诸己。' },
+            '100100': { name: '地山谦', palace: '兑宫', world: '游魂卦', type: '', desc: '谦卦象征谦逊，地中有山。谦虚谨慎，受益无穷。' },
+            '100111': { name: '地泽临', palace: '兑宫', world: '归魂卦', type: '', desc: '临卦象征临近，泽上有地。以柔临刚，教思无穷。' },
+
+            '101101': { name: '火山旅', palace: '离宫', world: '一世卦', type: '', desc: '旅卦象征旅行，山上有火。行旅之时，小心谨慎。' },
+            '101011': { name: '火风鼎', palace: '离宫', world: '二世卦', type: '', desc: '鼎卦象征革新，以木巽火。去旧立新，改革图强。' },
+            '101110': { name: '火水未济', palace: '离宫', world: '三世卦', type: '', desc: '未济卦象征未完成，火在水上。事情未成，继续努力。' },
+            '100110': { name: '山水蒙', palace: '离宫', world: '四世卦', type: '', desc: '蒙卦象征启蒙，山下出泉。童蒙养正，施以教育。' },
+            '110110': { name: '风水涣', palace: '离宫', world: '五世卦', type: '', desc: '涣卦象征涣散，风行水上。需要凝聚人心，团结一致。' },
+            '111110': { name: '天水讼', palace: '离宫', world: '游魂卦', type: '', desc: '讼卦象征诉讼，天与水违行。争讼之事，慎之又慎。' },
+            '111101': { name: '天火同人', palace: '离宫', world: '归魂卦', type: '', desc: '同人卦象征团结，火在天上。与人同心，和睦相处。' },
+            '101101': { name: '离为火', palace: '离宫', world: '八世卦', type: '六冲卦', desc: '离卦象征光明，明两作。附着依靠，文明之象。' },
+
+            '001001': { name: '雷火丰', palace: '震宫', world: '一世卦', type: '', desc: '丰卦象征丰盛，电闪雷鸣。盛大丰满，宜守成。' },
+            '001011': { name: '雷地豫', palace: '震宫', world: '二世卦', type: '', desc: '豫卦象征和乐，雷出地奋。顺时而动，喜悦随行。' },
+            '001010': { name: '雷水解', palace: '震宫', world: '三世卦', type: '', desc: '解卦象征解除，雷雨作。困难解除，化险为夷。' },
+            '001110': { name: '雷风恒', palace: '震宫', world: '四世卦', type: '', desc: '恒卦象征恒久，雷风相与。持之以恒，长久不变。' },
+            '001100': { name: '地风升', palace: '震宫', world: '五世卦', type: '', desc: '升卦象征上升，地中生木。柔顺而上，渐进不已。' },
+            '000100': { name: '水风井', palace: '震宫', world: '游魂卦', type: '', desc: '井卦象征水井，木上有水。改邑不改井，养而不穷。' },
+            '010100': { name: '泽风大过', palace: '震宫', world: '归魂卦', type: '', desc: '大过卦象征大的过度，泽灭木。栋桡之凶，需要改革。' },
+            '001001': { name: '震为雷', palace: '震宫', world: '八世卦', type: '六冲卦', desc: '震卦象征震动，洊雷震。震惊百里，临危不惧。' },
+
+            '110110': { name: '巽为风', palace: '巽宫', world: '八世卦', type: '六冲卦', desc: '巽卦象征风，随风巽。柔顺谦恭，渐进有利。' },
+            '110111': { name: '风天小畜', palace: '巽宫', world: '一世卦', type: '', desc: '小畜卦象征小的蓄积，风行天上。密云不雨，需要积累。' },
+            '110011': { name: '风火家人', palace: '巽宫', world: '二世卦', type: '', desc: '家人卦象征家庭，风自火出。齐家之道，由内及外。' },
+            '110001': { name: '风雷益', palace: '巽宫', world: '三世卦', type: '', desc: '益卦象征增益，风雷益。损上益下，利益众生。' },
+            '111001': { name: '天雷无妄', palace: '巽宫', world: '四世卦', type: '', desc: '无妄卦象征无妄，天下雷行。顺自然而行，不妄为。' },
+            '101001': { name: '火雷噬嗑', palace: '巽宫', world: '五世卦', type: '', desc: '噬嗑卦象征咬合，雷电合而章。刚柔相济，折狱断刑。' },
+            '100001': { name: '山雷颐', palace: '巽宫', world: '游魂卦', type: '', desc: '颐卦象征颐养，山下有雷。养生之道，慎言节食。' },
+            '100110': { name: '山风蛊', palace: '巽宫', world: '归魂卦', type: '', desc: '蛊卦象征蛊惑，山下有风。除旧布新，振作有为。' },
+
+            '010010': { name: '坎为水', palace: '坎宫', world: '八世卦', type: '六冲卦', desc: '坎卦象征险陷，水洊至。习坎重险，需要坚持。' },
+            '010011': { name: '水泽节', palace: '坎宫', world: '一世卦', type: '', desc: '节卦象征节制，泽上有水。制度有节，不可过度。' },
+            '010001': { name: '水雷屯', palace: '坎宫', world: '二世卦', type: '', desc: '屯卦象征艰难，云雷屯。草创之初，经营艰难。' },
+            '010101': { name: '水火既济', palace: '坎宫', world: '三世卦', type: '', desc: '既济卦象征成功，水在火上。事已成就，防止倾覆。' },
+            '011101': { name: '泽火革', palace: '坎宫', world: '四世卦', type: '', desc: '革卦象征变革，泽中有火。顺天应人，改革变通。' },
+            '001101': { name: '雷火丰', palace: '坎宫', world: '五世卦', type: '', desc: '丰卦象征盛大，雷电皆至。光明正大，志得意满。' },
+            '001010': { name: '地火明夷', palace: '坎宫', world: '游魂卦', type: '', desc: '明夷卦象征晦暗，明入地中。处困守正，韬光养晦。' },
+            '001110': { name: '地水师', palace: '坎宫', world: '归魂卦', type: '', desc: '师卦象征军旅，地中有水。以正统众，险中求胜。' },
+
+            '100100': { name: '艮为山', palace: '艮宫', world: '八世卦', type: '六冲卦', desc: '艮卦象征静止，兼山艮。止欲修身，不轻举妄动。' },
+            '100101': { name: '山火贲', palace: '艮宫', world: '一世卦', type: '', desc: '贲卦象征文饰，山下有火。刚柔交错，文质兼备。' },
+            '100111': { name: '山天大畜', palace: '艮宫', world: '二世卦', type: '', desc: '大畜卦象征大的蓄积，天在山中。蓄养贤德，充实自己。' },
+            '100011': { name: '山泽损', palace: '艮宫', world: '三世卦', type: '', desc: '损卦象征减损，山下有泽。损有余而补不足，平衡之道。' },
+            '101011': { name: '火泽睽', palace: '艮宫', world: '四世卦', type: '', desc: '睽卦象征乖离，上火下泽。求同存异，和而不同。' },
+            '111011': { name: '天泽履', palace: '艮宫', world: '五世卦', type: '', desc: '履卦象征践履，上天下泽。以柔克刚，谨慎而行。' },
+            '110011': { name: '风泽中孚', palace: '艮宫', world: '游魂卦', type: '', desc: '中孚卦象征诚信，泽上有风。内诚外信，感化他人。' },
+            '110100': { name: '风山渐', palace: '艮宫', world: '归魂卦', type: '', desc: '渐卦象征渐进，山上有木。女归吉，循序渐进。' },
+
+            '000000': { name: '坤为地', palace: '坤宫', world: '八世卦', type: '六冲卦', desc: '坤卦象征大地，地势坤。柔顺载物，厚德承载。' },
+            '000001': { name: '地雷复', palace: '坤宫', world: '一世卦', type: '', desc: '复卦象征返回，雷在地中。循环往复，剥极必复。' },
+            '000011': { name: '地泽临', palace: '坤宫', world: '二世卦', type: '', desc: '临卦象征临近，地上有泽。教思无穷，感化于民。' },
+            '000111': { name: '地天泰', palace: '坤宫', world: '三世卦', type: '', desc: '泰卦象征通泰，天地交泰。小往大来，吉祥亨通。' },
+            '001111': { name: '雷天大壮', palace: '坤宫', world: '四世卦', type: '', desc: '大壮卦象征壮盛，雷在天上。刚健盛大，勿妄行动。' },
+            '011111': { name: '泽天夬', palace: '坤宫', world: '五世卦', type: '', desc: '夬卦象征决断，泽上于天。当断则断，除恶务尽。' },
+            '010111': { name: '水天需', palace: '坤宫', world: '游魂卦', type: '', desc: '需卦象征等待，云上于天。需时而动， 心等待。' },
+            '010000': { name: '水地比', palace: '坤宫', world: '归魂卦', type: '', desc: '比卦象征亲比，地上有水。相辅相成，吉祥和顺。' }
+};
+
+// 天干地支数据
+const TIANGAN_DATA = {
+    tiangan: [
+        { name: '甲', yinyang: '阳', wuxing: '木', body: '胆', color: '#2D5016' },
+        { name: '乙', yinyang: '阴', wuxing: '木', body: '肝', color: '#2D5016' },
+        { name: '丙', yinyang: '阳', wuxing: '火', body: '小肠', color: '#D32F2F' },
+        { name: '丁', yinyang: '阴', wuxing: '火', body: '心', color: '#D32F2F' },
+        { name: '戊', yinyang: '阳', wuxing: '土', body: '胃', color: '#F57C00' },
+        { name: '己', yinyang: '阴', wuxing: '土', body: '脾', color: '#F57C00' },
+        { name: '庚', yinyang: '阳', wuxing: '金', body: '大肠', color: '#FFD700' },
+        { name: '辛', yinyang: '阴', wuxing: '金', body: '肺', color: '#FFD700' },
+        { name: '壬', yinyang: '阳', wuxing: '水', body: '膀胱、三焦', color: '#1976D2' },
+        { name: '癸', yinyang: '阴', wuxing: '水', body: '肾、包络', color: '#1976D2' }
+    ],
+    dizhi: [
+        { name: '子', yinyang: '阳', wuxing: '水', body: '膀胱、水道、耳', color: '#1976D2', chong: '午', he: '丑', san: '申辰' },
+        { name: '丑', yinyang: '阴', wuxing: '土', body: '胞肚、脾', color: '#F57C00', chong: '未', he: '子', san: '巳酉' },
+        { name: '寅', yinyang: '阳', wuxing: '木', body: '胆脉、两手', color: '#2D5016', chong: '申', he: '亥', san: '午戌' },
+        { name: '卯', yinyang: '阴', wuxing: '木', body: '十指、肝', color: '#2D5016', chong: '酉', he: '戌', san: '亥未' },
+        { name: '辰', yinyang: '阳', wuxing: '土', body: '皮肤、肩胸', color: '#F57C00', chong: '戌', he: '酉', san: '申子' },
+        { name: '巳', yinyang: '阴', wuxing: '火', body: '面、咽齿、肛', color: '#D32F2F', chong: '亥', he: '申', san: '酉丑' },
+        { name: '午', yinyang: '阳', wuxing: '火', body: '精神、眼目', color: '#D32F2F', chong: '子', he: '未', san: '寅戌' },
+        { name: '未', yinyang: '阴', wuxing: '土', body: '胃脘、脊梁', color: '#F57C00', chong: '丑', he: '午', san: '卯亥' },
+        { name: '申', yinyang: '阳', wuxing: '金', body: '大肠、经络、肺', color: '#FFD700', chong: '寅', he: '巳', san: '子辰' },
+        { name: '酉', yinyang: '阴', wuxing: '金', body: '精血、小肠', color: '#FFD700', chong: '卯', he: '辰', san: '巳丑' },
+        { name: '戌', yinyang: '阳', wuxing: '土', body: '命门、腿足', color: '#F57C00', chong: '辰', he: '卯', san: '寅午' },
+        { name: '亥', yinyang: '阴', wuxing: '水', body: '头、肾囊', color: '#1976D2', chong: '巳', he: '寅', san: '卯未' }
+    ],
+    gesong: {
+        tiangan: '甲胆乙肝丙小肠，丁心戊胃己脾乡；庚是大肠辛属肺，壬系膀胱癸肾藏；三焦亦向壬中寄，包络同归入癸乡。',
+        dizhi: '子属膀胱水道耳，丑为胞肚及脾乡；寅胆发脉并两手，卯木十指内肝方；辰土为皮肩胸类，巳面咽齿下尻肛；午火精神司眼目，未土胃脘隔脊梁；申金大肠经络肺，酉中精血小肠藏；戌土命门腿踝足，亥水为头及肾囊。'
+    }
+};
+
+// 全局应用对象
+window.app = {
+    selectedUpper: null,
+    selectedLower: null,
+    
+    init() {
+        this.initBaguaSelectors();
+        this.initTheme();
+    },
+    
+    initTheme() {
+        const theme = 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+    },
+    
+    toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const newTheme = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        if (this.selectedUpper && this.selectedLower) {
+            this.drawHexagram();
+            this.drawWuxingCircle();
+            this.drawChangshengChart();
+        }
+    },
+    
+    toggleCollapse(type) {
+        const id = type === 'upper' ? 'upperCollapse' : 'lowerCollapse';
+        const el = document.getElementById(id);
+        el.classList.toggle('collapsed');
+    },
+    
+    switchTab(tabName) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
+    },
+    
+    initBaguaSelectors() {
+        const upperDiv = document.getElementById('upperBagua');
+        const lowerDiv = document.getElementById('lowerBagua');
+        
+        Object.keys(BAGUA_CONFIG).forEach(name => {
+            upperDiv.appendChild(this.createBaguaItem(name, 'upper'));
+            lowerDiv.appendChild(this.createBaguaItem(name, 'lower'));
+        });
+    },
+    
+    createBaguaItem(name, position) {
+        const item = document.createElement('div');
+        item.className = 'bagua-item';
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = 100;
+        canvas.height = 80;
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        this.drawBagua(canvas, BAGUA_CONFIG[name].lines, isDark ? '#E6E0E9' : '#1D1B20');
+        
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'bagua-name';
+        nameDiv.textContent = name;
+        
+        const natureDiv = document.createElement('div');
+        natureDiv.style.fontSize = '12px';
+        natureDiv.style.color = 'var(--on-surface-variant)';
+        natureDiv.textContent = BAGUA_CONFIG[name].nature;
+        
+        const wuxing = BAGUA_CONFIG[name].wuxing;
+        const badge = document.createElement('div');
+        badge.className = `element-badge element-${this.getWuxingClass(wuxing)}`;
+        badge.textContent = wuxing;
+        
+        item.appendChild(canvas);
+        item.appendChild(nameDiv);
+        item.appendChild(natureDiv);
+        item.appendChild(badge);
+        
+        item.onclick = () => this.selectBagua(name, position, item);
+        
+        return item;
+    },
+    
+    selectBagua(name, position, element) {
+        if (position === 'upper') {
+            document.querySelectorAll('#upperBagua .bagua-item').forEach(el => el.classList.remove('selected'));
+            this.selectedUpper = name;
+        } else {
+            document.querySelectorAll('#lowerBagua .bagua-item').forEach(el => el.classList.remove('selected'));
+            this.selectedLower = name;
+        }
+        
+        element.classList.add('selected');
+        
+        if (this.selectedUpper && this.selectedLower) {
+            this.displayHexagram();
+        }
+    },
+    
+    drawBagua(canvas, lines, color) {
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const lineHeight = height / 5;
+        const lineWidth = width * 0.7;
+        const startX = (width - lineWidth) / 2;
+        const strokeWidth = height / 20;
+        
+        ctx.clearRect(0, 0, width, height);
+        
+        for (let i = 0; i < 3; i++) {
+            const y = lineHeight * (i + 1);
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = color;
+            
+            if (lines[i] === 1) {
+                ctx.beginPath();
+                ctx.moveTo(startX, y);
+                ctx.lineTo(startX + lineWidth, y);
+                ctx.stroke();
+            } else {
+                const gap = lineWidth * 0.25;
+                ctx.beginPath();
+                ctx.moveTo(startX, y);
+                ctx.lineTo(startX + (lineWidth - gap) / 2, y);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(startX + (lineWidth + gap) / 2, y);
+                ctx.lineTo(startX + lineWidth, y);
+                ctx.stroke();
+            }
+        }
+    },
+    
+    displayHexagram() {
+        document.getElementById('resultCard').style.display = 'block';
+        document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        
+        this.drawHexagram();
+        this.displayBasicInfo();
+        this.displayWuxingInfo();
+        this.displayTianganInfo();
+        this.setupDownloadSettings();
+        this.drawWuxingCircle();
+        this.drawChangshengChart();
+    },
+    
+    drawHexagram() {
+        const canvas = document.getElementById('hexagramCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        const transparentBg = document.getElementById('transparentBg')?.checked ?? true;
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        
+        if (!transparentBg) {
+            ctx.fillStyle = isDark ? '#1E1E1E' : '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+        } else {
+            ctx.clearRect(0, 0, width, height);
+        }
+        
+        const upperLines = BAGUA_CONFIG[this.selectedUpper].lines;
+        const lowerLines = BAGUA_CONFIG[this.selectedLower].lines;
+        const allLines = [...upperLines, ...lowerLines];
+        
+        const showWuxingColor = document.getElementById('showWuxingColor')?.checked ?? true;
+        const showName = document.getElementById('showName')?.checked ?? true;
+        const showType = document.getElementById('showType')?.checked ?? true;
+        const showDizhi = document.getElementById('showDizhi')?.checked ?? true;
+        
+        const topMargin = 60;
+        const bottomMargin = (showName || showType) ? 100 : 60;
+        const availableHeight = height - topMargin - bottomMargin;
+        const lineHeight = availableHeight / 7;
+        const lineWidth = width * 0.5;
+        const startX = (width - lineWidth) / 2;
+        const strokeWidth = 8;
+        
+        let upperColor, lowerColor;
+        if (showWuxingColor) {
+            upperColor = this.getWuxingColor(BAGUA_CONFIG[this.selectedUpper].wuxing);
+            lowerColor = this.getWuxingColor(BAGUA_CONFIG[this.selectedLower].wuxing);
+        } else {
+            upperColor = document.getElementById('upperColor')?.value ?? '#D32F2F';
+            lowerColor = document.getElementById('lowerColor')?.value ?? '#2D5016';
+        }
+        
+        const upperDizhi = BAGUA_CONFIG[this.selectedUpper].dizhiUpper;
+        const lowerDizhi = BAGUA_CONFIG[this.selectedLower].dizhiLower;
+        const allDizhi = [...upperDizhi, ...lowerDizhi];
+        
+        for (let i = 0; i < 6; i++) {
+            const y = topMargin + lineHeight * (i + 1);
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = 'round';
+            
+            const lineColor = i < 3 ? upperColor : lowerColor;
+            
+            if (allLines[i] === 1) {
+                ctx.strokeStyle = lineColor;
+                ctx.beginPath();
+                ctx.moveTo(startX, y);
+                ctx.lineTo(startX + lineWidth, y);
+                ctx.stroke();
+            } else {
+                ctx.strokeStyle = lineColor;
+                const gap = lineWidth * 0.3;
+                ctx.beginPath();
+                ctx.moveTo(startX, y);
+                ctx.lineTo(startX + (lineWidth - gap) / 2, y);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(startX + (lineWidth + gap) / 2, y);
+                ctx.lineTo(startX + lineWidth, y);
+                ctx.stroke();
+            }
+            
+            if (showDizhi) {
+                const dizhi = allDizhi[i];
+                const dizhiData = TIANGAN_DATA.dizhi.find(d => d.name === dizhi);
+                const dizhiColor = showWuxingColor && dizhiData ? dizhiData.color : (isDark ? '#E6E0E9' : '#1D1B20');
+                
+                ctx.fillStyle = dizhiColor;
+                ctx.font = 'bold 16px sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(dizhi, startX + lineWidth + 20, y + 6);
+            }
+        }
+        
+        ctx.fillStyle = isDark ? '#E6E0E9' : '#1D1B20';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        
+        if (showName) {
+            ctx.font = 'bold 24px sans-serif';
+            const hexagramKey = allLines.join('');
+            const hexagram = HEXAGRAM_DATA[hexagramKey];
+            if (hexagram) {
+                ctx.fillText(hexagram.name, width / 2, height - 50);
+            }
+        }
+        
+        if (showType) {
+            ctx.font = '14px sans-serif';
+            const hexagramKey = allLines.join('');
+            const hexagram = HEXAGRAM_DATA[hexagramKey];
+            if (hexagram && hexagram.type) {
+                ctx.fillText(hexagram.type, width / 2, height - 25);
+            }
+        }
+    },
+    
+    displayBasicInfo() {
+        const upperLines = BAGUA_CONFIG[this.selectedUpper].lines;
+        const lowerLines = BAGUA_CONFIG[this.selectedLower].lines;
+        const hexagramKey = [...upperLines, ...lowerLines].join('');
+        const hexagram = HEXAGRAM_DATA[hexagramKey] || { name: '未收录', palace: '-', world: '-', type: '-', desc: '此卦象数据暂未收录。' };
+        
+        const html = `
+            <div class="info-card"><div class="info-label">卦名</div><div class="info-value">${hexagram.name}</div></div>
+            <div class="info-card"><div class="info-label">卦宫</div><div class="info-value">${hexagram.palace}</div></div>
+            <div class="info-card"><div class="info-label">世应</div><div class="info-value">${hexagram.world}</div></div>
+            <div class="info-card"><div class="info-label">卦象特性</div><div class="info-value">${hexagram.type || '普通卦'}</div></div>
+        `;
+        
+        document.getElementById('basicInfo').innerHTML = html;
+        document.getElementById('hexagramDesc').innerHTML = `
+            <h4 style="margin-bottom: 12px;">卦象详解</h4>
+            <p style="margin-bottom: 12px;">${hexagram.desc}</p>
+            <h4 style="margin: 16px 0 8px 0;">上卦 - ${this.selectedUpper}</h4>
+            <p style="margin-bottom: 12px;">${BAGUA_CONFIG[this.selectedUpper].meaning}</p>
+            <h4 style="margin: 16px 0 8px 0;">下卦 - ${this.selectedLower}</h4>
+            <p>${BAGUA_CONFIG[this.selectedLower].meaning}</p>
+        `;
+    },
+    
+    displayWuxingInfo() {
+        const upperWuxing = BAGUA_CONFIG[this.selectedUpper].wuxing;
+        const lowerWuxing = BAGUA_CONFIG[this.selectedLower].wuxing;
+        const relation = this.getWuxingRelation(upperWuxing, lowerWuxing);
+        
+        const html = `
+            <div class="info-card">
+                <div class="info-label">上卦五行</div>
+                <div class="info-value"><span class="element-badge element-${this.getWuxingClass(upperWuxing)}">${upperWuxing}</span></div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">下卦五行</div>
+                <div class="info-value"><span class="element-badge element-${this.getWuxingClass(lowerWuxing)}">${lowerWuxing}</span></div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">五行关系</div>
+                <div class="info-value">${relation}</div>
+            </div>
+        `;
+        
+        document.getElementById('wuxingInfo').innerHTML = html;
+    },
+    
+    displayTianganInfo() {
+        let html = '<h4 style="margin: 16px 0 12px 0;">天干歌诀</h4>';
+        html += `<div class="description" style="margin-bottom: 16px;">${TIANGAN_DATA.gesong.tiangan}</div>`;
+        
+        html += '<div class="tiangan-grid">';
+        TIANGAN_DATA.tiangan.forEach(tg => {
+            html += `
+                <div class="tiangan-item" style="border-left-color: ${tg.color}">
+                    <strong>${tg.name}</strong> - ${tg.yinyang} - ${tg.wuxing}<br>
+                    <small>对应身体：${tg.body}</small>
+                </div>
+            `;
+        });
+        html += '</div>';
+        
+        html += '<h4 style="margin: 24px 0 12px 0;">地支歌诀</h4>';
+        html += `<div class="description" style="margin-bottom: 16px;">${TIANGAN_DATA.gesong.dizhi}</div>`;
+        
+        html += '<div class="tiangan-grid">';
+        TIANGAN_DATA.dizhi.forEach(dz => {
+            html += `
+                <div class="tiangan-item" style="border-left-color: ${dz.color}">
+                    <strong>${dz.name}</strong> - ${dz.yinyang} - ${dz.wuxing}<br>
+                    <small>对应身体：${dz.body}</small><br>
+                    <small>六冲：${dz.chong}</small><br>
+                    <small>六合：${dz.he}</small><br>
+                    <small>三合：${dz.san}</small>
+                </div>
+            `;
+        });
+        html += '</div>';
+        
+        html += '<h4 style="margin: 24px 0 12px 0;">先天八卦图</h4>';
+        html += '<canvas id="xiantianCanvas" class="bagua-diagram" width="400" height="400"></canvas>';
+        
+        html += '<h4 style="margin: 24px 0 12px 0;">后天八卦图</h4>';
+        html += '<canvas id="houtianCanvas" class="bagua-diagram" width="400" height="400"></canvas>';
+        
+        document.getElementById('tianganContent').innerHTML = html;
+        
+        setTimeout(() => {
+            this.drawBaguaDiagram('xiantianCanvas', 'xiantian');
+            this.drawBaguaDiagram('houtianCanvas', 'houtian');
+        }, 100);
+    },
+    
+    drawBaguaDiagram(canvasId, type) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = width / 3;
+        
+        ctx.clearRect(0, 0, width, height);
+        
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const textColor = isDark ? '#E6E0E9' : '#1D1B20';
+        
+        const positions = type === 'xiantian' ? 
+            { '乾☰': 0, '巽☴': 45, '坎☵': 90, '艮☶': 135, '坤☷': 180, '震☳': 225, '离☲': 270, '兑☱': 315 } :
+            { '离☲': 0, '坤☷': 45, '兑☱': 90, '乾☰': 135, '坎☵': 180, '艮☶': 225, '震☳': 270, '巽☴': 315 };
+        
+        Object.keys(positions).forEach(name => {
+            const angle = (positions[name] - 90) * Math.PI / 180;
+            const x = centerX + radius * Math.cos(angle);
+            const y = centerY + radius * Math.sin(angle);
+            
+            ctx.fillStyle = textColor;
+            ctx.font = 'bold 18px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(name, x, y - 20);
+            
+            ctx.font = '14px sans-serif';
+            ctx.fillText(BAGUA_CONFIG[name].nature, x, y);
+            
+            const wuxing = BAGUA_CONFIG[name].wuxing;
+            ctx.fillStyle = this.getWuxingColor(wuxing);
+            ctx.fillText(wuxing, x, y + 20);
+            
+            const dizhi = type === 'xiantian' ? BAGUA_CONFIG[name].dizhiLower : BAGUA_CONFIG[name].dizhiUpper;
+            ctx.fillStyle = textColor;
+            ctx.font = '12px sans-serif';
+            ctx.fillText(dizhi.join(''), x, y + 35);
+        });
+        
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(type === 'xiantian' ? '先天八卦' : '后天八卦', centerX, centerY);
+    },
+    
+    setupDownloadSettings() {
+        const html = `
+            <div class="setting-item">
+                <label><input type="checkbox" id="showName" checked> 显示卦名</label>
+            </div>
+            <div class="setting-item">
+                <label><input type="checkbox" id="showType" checked> 显示特殊类型</label>
+            </div>
+            <div class="setting-item">
+                <label><input type="checkbox" id="showDizhi" checked> 显示地支装卦</label>
+            </div>
+            <div class="setting-item">
+                <label><input type="checkbox" id="showXiangyi"> 显示象意</label>
+            </div>
+            <div class="setting-item">
+                <label><input type="checkbox" id="showXiantian"> 显示先天位置</label>
+            </div>
+            <div class="setting-item">
+                <label><input type="checkbox" id="showHoutian"> 显示后天位置</label>
+            </div>
+            <div class="setting-item">
+                <label><input type="checkbox" id="showWuxingColor" checked onchange="window.app.toggleColorMode()"> 使用五行颜色</label>
+                <div class="warning-text">启用后将覆盖自定义颜色</div>
+            </div>
+            <div class="setting-item">
+                <label>上卦颜色: <input type="color" id="upperColor" value="#D32F2F"></label>
+                <div class="warning-text" id="upperColorWarning">五行颜色模式已启用</div>
+            </div>
+            <div class="setting-item">
+                <label>下卦颜色: <input type="color" id="lowerColor" value="#2D5016"></label>
+                <div class="warning-text" id="lowerColorWarning">五行颜色模式已启用</div>
+            </div>
+            <div class="setting-item">
+                <label><input type="checkbox" id="transparentBg" checked> 背景透明</label>
+            </div>
+            <div class="setting-item">
+                <label>下载格式:
+                    <select id="downloadFormat">
+                        <option value="png">PNG</option>
+                        <option value="jpeg">JPEG</option>
+                        <option value="webp">WebP</option>
+                    </select>
+                </label>
+            </div>
+        `;
+        
+        document.getElementById('downloadSettings').innerHTML = html;
+        this.toggleColorMode();
+    },
+    
+    toggleColorMode() {
+        const useWuxing = document.getElementById('showWuxingColor')?.checked ?? true;
+        const upperInput = document.getElementById('upperColor');
+        const lowerInput = document.getElementById('lowerColor');
+        const upperWarning = document.getElementById('upperColorWarning');
+        const lowerWarning = document.getElementById('lowerColorWarning');
+        
+        if (upperInput) upperInput.disabled = useWuxing;
+        if (lowerInput) lowerInput.disabled = useWuxing;
+        if (upperWarning) upperWarning.style.display = useWuxing ? 'block' : 'none';
+        if (lowerWarning) lowerWarning.style.display = useWuxing ? 'block' : 'none';
+    },
+    
+    drawWuxingCircle() {
+        const canvas = document.getElementById('wuxingCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = Math.min(width, height) / 3;
+        
+        ctx.clearRect(0, 0, width, height);
+        
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const textColor = isDark ? '#E6E0E9' : '#1D1B20';
+        
+        const elements = [
+            { name: '木', angle: -90, color: isDark ? '#4CAF50' : '#2D5016' },
+            { name: '火', angle: -18, color: isDark ? '#FF5252' : '#D32F2F' },
+            { name: '土', angle: 54, color: isDark ? '#FF9800' : '#F57C00' },
+            { name: '金', angle: 126, color: '#FFD700' },
+            { name: '水', angle: 198, color: isDark ? '#2196F3' : '#1976D2' }
+        ];
+        
+        // 相生圆环
+        ctx.strokeStyle = 'rgba(128,128,128,0.3)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        elements.forEach((el, i) => {
+            const x = centerX + radius * Math.cos(el.angle * Math.PI / 180);
+            const y = centerY + radius * Math.sin(el.angle * Math.PI / 180);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.closePath();
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // 相克五角星
+        ctx.strokeStyle = 'rgba(128,128,128,0.3)';
+        ctx.lineWidth = 1;
+        [0, 2, 4, 1, 3, 0].forEach((idx, i) => {
+            const el = elements[idx];
+            const x = centerX + radius * Math.cos(el.angle * Math.PI / 180);
+            const y = centerY + radius * Math.sin(el.angle * Math.PI / 180);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        
+        // 五行圆圈
+        elements.forEach((el, idx) => {
+            const x = centerX + radius * Math.cos(el.angle * Math.PI / 180);
+            const y = centerY + radius * Math.sin(el.angle * Math.PI / 180);
+            
+            ctx.beginPath();
+            ctx.arc(x, y, 35, 0, 2 * Math.PI);
+            ctx.fillStyle = el.color;
+            ctx.fill();
+            
+            ctx.fillStyle = el.name === '金' ? '#000' : '#FFF';
+            ctx.font = 'bold 22px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(el.name, x, y);
+            
+            // 相生标注
+            const nextIdx = (idx + 1) % 5;
+            const nextEl = elements[nextIdx];
+            const nextX = centerX + radius * Math.cos(nextEl.angle * Math.PI / 180);
+            const nextY = centerY + radius * Math.sin(nextEl.angle * Math.PI / 180);
+            const midX = (x + nextX) / 2;
+            const midY = (y + nextY) / 2;
+            
+            ctx.fillStyle = textColor;
+            ctx.font = '12px sans-serif';
+            ctx.fillText('生→', midX, midY);
+            
+            // 相克标注
+            const keIdx = (idx + 2) % 5;
+            const keEl = elements[keIdx];
+            const keX = centerX + radius * Math.cos(keEl.angle * Math.PI / 180);
+            const keY = centerY + radius * Math.sin(keEl.angle * Math.PI / 180);
+            const keMidX = (x + keX) / 2;
+            const keMidY = (y + keY) / 2;
+
+            if (idx % 2 === 0) {            
+                ctx.fillText('克→', keMidX, keMidY);
+            }
+        });
+        
+        const upperWuxing = BAGUA_CONFIG[this.selectedUpper].wuxing;
+        const lowerWuxing = BAGUA_CONFIG[this.selectedLower].wuxing;
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`上卦：${upperWuxing}  下卦：${lowerWuxing}`, centerX, height - 20);
+    },
+    
+    drawChangshengChart() {
+        const canvas = document.getElementById('changshengCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const padding = 50;
+        
+        ctx.clearRect(0, 0, width, height);
+        
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const textColor = isDark ? '#E6E0E9' : '#1D1B20';
+        const lineColor = isDark ? '#D0BCFF' : '#6750A4';
+        
+        const points = [
+            { x: 0, y: 0.2, label: '长生' },
+            { x: 1, y: 0.4, label: '沐浴' },
+            { x: 2, y: 0.6, label: '冠带' },
+            { x: 3, y: 0.8, label: '临官' },
+            { x: 4, y: 1.0, label: '帝旺' },
+            { x: 5, y: 0.8, label: '衰' },
+            { x: 6, y: 0.6, label: '病' },
+            { x: 7, y: 0.4, label: '死' },
+            { x: 8, y: 0.3, label: '墓' },
+            { x: 9, y: 0.1, label: '绝' },
+            { x: 10, y: 0.15, label: '胎' },
+            { x: 11, y: 0.18, label: '养' }
+        ];
+        
+        const chartWidth = width - padding * 2;
+        const chartHeight = height - padding * 2;
+        const stepX = chartWidth / 11;
+        
+        ctx.strokeStyle = lineColor;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        points.forEach((point, i) => {
+            const x = padding + point.x * stepX;
+            const y = height - padding - point.y * chartHeight;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        
+        ctx.fillStyle = lineColor;
+        points.forEach(point => {
+            const x = padding + point.x * stepX;
+            const y = height - padding - point.y * chartHeight;
+            
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.fillStyle = textColor;
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(point.label, x, height - padding + 20);
+            ctx.fillStyle = lineColor;
+        });
+        
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('五行十二长生曲线图', width / 2, 30);
+    },
+    
+    updateHexagram() {
+        this.drawHexagram();
+    },
+    
+    downloadHexagram() {
+        const showXiangyi = document.getElementById('showXiangyi')?.checked;
+        const showXiantian = document.getElementById('showXiantian')?.checked;
+        const showHoutian = document.getElementById('showHoutian')?.checked;
+        
+        if (showXiangyi || showXiantian || showHoutian) {
+            this.downloadCard();
+        } else {
+            this.downloadSimple();
+        }
+    },
+    
+    downloadSimple() {
+        const canvas = document.getElementById('hexagramCanvas');
+        const format = document.getElementById('downloadFormat')?.value ?? 'png';
+        const upperLines = BAGUA_CONFIG[this.selectedUpper].lines;
+        const lowerLines = BAGUA_CONFIG[this.selectedLower].lines;
+        const hexagramKey = [...upperLines, ...lowerLines].join('');
+        const hexagram = HEXAGRAM_DATA[hexagramKey];
+        const name = hexagram ? hexagram.name : '八卦';
+        
+        const link = document.createElement('a');
+        link.download = `${name}.${format}`;
+        
+        if (format === 'png') {
+            link.href = canvas.toDataURL('image/png');
+        } else if (format === 'jpeg') {
+            link.href = canvas.toDataURL('image/jpeg', 0.95);
+        } else if (format === 'webp') {
+            link.href = canvas.toDataURL('image/webp', 0.95);
+        }
+        
+        link.click();
+    },
+    
+    downloadCard() {
+        const cardCanvas = document.createElement('canvas');
+        cardCanvas.width = 600;
+        cardCanvas.height = 900;
+        const ctx = cardCanvas.getContext('2d');
+        
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        ctx.fillStyle = isDark ? '#1E1E1E' : '#FFFFFF';
+        ctx.fillRect(0, 0, cardCanvas.width, cardCanvas.height);
+        
+        ctx.strokeStyle = isDark ? '#D0BCFF' : '#6750A4';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(10, 10, cardCanvas.width - 20, cardCanvas.height - 20);
+        
+        const textColor = isDark ? '#E6E0E9' : '#1D1B20';
+        const upperLines = BAGUA_CONFIG[this.selectedUpper].lines;
+        const lowerLines = BAGUA_CONFIG[this.selectedLower].lines;
+        const hexagramKey = [...upperLines, ...lowerLines].join('');
+        const hexagram = HEXAGRAM_DATA[hexagramKey];
+        
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 32px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(hexagram ? hexagram.name : '未知卦', cardCanvas.width / 2, 60);
+        
+        const miniCanvas = document.getElementById('hexagramCanvas');
+        ctx.drawImage(miniCanvas, 150, 80, 300, 450);
+        
+        let yPos = 560;
+        ctx.font = '16px sans-serif';
+        ctx.textAlign = 'left';
+        
+        if (document.getElementById('showXiangyi')?.checked) {
+            ctx.fillText(`象意: ${BAGUA_CONFIG[this.selectedUpper].nature}${BAGUA_CONFIG[this.selectedLower].nature}`, 40, yPos);
+            yPos += 30;
+        }
+        
+        if (document.getElementById('showXiantian')?.checked) {
+            ctx.fillText(`先天位置: 上卦-${BAGUA_CONFIG[this.selectedUpper].xiantian} 下卦-${BAGUA_CONFIG[this.selectedLower].xiantian}`, 40, yPos);
+            yPos += 30;
+        }
+        
+        if (document.getElementById('showHoutian')?.checked) {
+            ctx.fillText(`后天位置: 上卦-${BAGUA_CONFIG[this.selectedUpper].houtian} 下卦-${BAGUA_CONFIG[this.selectedLower].houtian}`, 40, yPos);
+            yPos += 30;
+        }
+        
+        const upperDizhi = BAGUA_CONFIG[this.selectedUpper].dizhiUpper;
+        const lowerDizhi = BAGUA_CONFIG[this.selectedLower].dizhiLower;
+        ctx.fillText(`地支: 上卦-${upperDizhi.join('')} 下卦-${lowerDizhi.join('')}`, 40, yPos);
+        yPos += 30;
+        
+        ctx.fillText(`五行: 上卦-${BAGUA_CONFIG[this.selectedUpper].wuxing} 下卦-${BAGUA_CONFIG[this.selectedLower].wuxing}`, 40, yPos);
+        
+        const format = document.getElementById('downloadFormat')?.value ?? 'png';
+        const link = document.createElement('a');
+        link.download = `${hexagram ? hexagram.name : '八卦'}-卡片.${format}`;
+        
+        if (format === 'png') {
+            link.href = cardCanvas.toDataURL('image/png');
+        } else if (format === 'jpeg') {
+            link.href = cardCanvas.toDataURL('image/jpeg', 0.95);
+        } else if (format === 'webp') {
+            link.href = cardCanvas.toDataURL('image/webp', 0.95);
+        }
+        
+        link.click();
+    },
+    
+    getWuxingColor(wuxing) {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const colors = {
+            '木': isDark ? '#4CAF50' : '#2D5016',
+            '火': isDark ? '#FF5252' : '#D32F2F',
+            '土': isDark ? '#FF9800' : '#F57C00',
+            '金': '#FFD700',
+            '水': isDark ? '#2196F3' : '#1976D2'
+        };
+        return colors[wuxing] || '#000000';
+    },
+    
+    getWuxingClass(wuxing) {
+        const map = { '木': 'wood', '火': 'fire', '土': 'earth', '金': 'metal', '水': 'water' };
+        return map[wuxing];
+    },
+    
+    getWuxingRelation(w1, w2) {
+        const relations = {
+            '木木': '比和', '木火': '相生', '木土': '相克', '木金': '被克', '木水': '被生',
+            '火木': '被生', '火火': '比和', '火土': '相生', '火金': '相克', '火水': '被克',
+            '土木': '被克', '土火': '被生', '土土': '比和', '土金': '相生', '土水': '相克',
+            '金木': '相克', '金火': '被克', '金土': '被生', '金金': '比和', '金水': '相生',
+            '水木': '相生', '水火': '相克', '水土': '被克', '水金': '被生', '水水': '比和'
+        };
+        return relations[w1 + w2] || '未知';
+    }
+};
+
+// 初始化应用
+window.addEventListener('DOMContentLoaded', () => {
+    window.app.init();
+});
+
+// PWA支持
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('data:text/javascript,');
+}
+    </script>
+</body>
+</html>
