@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主观题模拟考试系统</title>
+    <style>
+        :root {
+            --primary-bg: #E4F2FF; --secondary-bg: #D3E7FB; --panel-bg: #F0F8FF;
+            --border-color: #A9C9E2; --text-color: #333; --header-height: 60px;
+            --sidebar-width: 200px; --sidebar-collapsed-width: 60px;
+        }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'SimSun', '宋体', serif; font-size: 16px; background-color: var(--primary-bg); color: var(--text-color); overflow: hidden; }
+        .wrapper { display: flex; height: 100vh; transition: padding-left 0.3s ease; }
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; transition: width 0.3s ease; }
+
+        /* --- Header --- */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 5px 20px; background: linear-gradient(to bottom, #D9E9F8, #C4D9EC); border-bottom: 2px solid var(--border-color); height: var(--header-height); box-sizing: border-box; flex-shrink: 0; position: relative; transition: margin-top 0.3s ease; }
+        .header.collapsed { margin-top: calc(-1 * var(--header-height)); }
+        .user-info { display: flex; align-items: center; }
+        .user-info img { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; }
+        .user-info .details { font-size: 14px; }
+        .exam-title { font-size: 18px; font-weight: bold; }
+        .exam-controls { display: flex; align-items: center; }
+        .timer-container { display: flex; align-items: center; margin-right: 20px; font-weight: bold; }
+        #timer { color: #D9534F; }
+        #pause-timer-btn { margin-left: 8px; padding: 2px 6px; font-size: 12px; cursor: pointer; }
+        .submit-btn { padding: 8px 15px; background: linear-gradient(to bottom, #F7BA2A, #F5A623); border: 1px solid #D48C11; color: #fff; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        #toggle-header-btn { position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); width: 60px; height: 15px; background-color: var(--secondary-bg); border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 5px 5px; cursor: pointer; text-align: center; line-height: 15px; font-size: 12px; }
+
+        /* --- Sidebar --- */
+        .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: var(--sidebar-width); background-color: var(--secondary-bg); border-right: 2px solid var(--border-color); display: flex; flex-direction: column; transition: width 0.3s ease; z-index: 100; overflow: hidden; }
+        .wrapper { padding-left: var(--sidebar-width); }
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+        .sidebar.collapsed .wrapper { padding-left: var(--sidebar-collapsed-width); }
+        .sidebar-content { padding: 20px; opacity: 1; transition: opacity 0.2s; }
+        .sidebar.collapsed .sidebar-content { opacity: 0; }
+        .sidebar .instructions { background-color: var(--panel-bg); border: 1px solid var(--border-color); padding: 10px; border-radius: 5px; margin-bottom: 20px; }
+        .sidebar h4 { margin-top: 0; font-weight: bold; }
+        .sidebar ul { list-style: none; padding-left: 0; font-size: 14px; }
+        .sidebar li { margin-bottom: 10px; }
+        .main-question-nav-expanded { margin-top: 20px; }
+        .main-question-nav-expanded a { display: block; text-decoration: none; color: var(--text-color); padding: 8px; border-radius: 4px; margin-bottom: 5px; cursor: pointer; position: relative; }
+        .main-question-nav-expanded a:hover { background-color: #cce3ff; }
+        .main-question-nav-expanded a.active { background-color: #4477A8; color: white; font-weight: bold; }
+        .unanswered-star-sidebar { color: red; font-weight: bold; position: absolute; right: 8px; top: 8px; font-size: 14px; }
+        .sidebar-bottom { margin-top: auto; padding: 20px; }
+        .law-link-btn { display: block; width: 100%; padding: 10px; background: linear-gradient(to bottom, #5A99D4, #4477A8); color: white; border: 1px solid #3A668E; border-radius: 5px; text-align: center; text-decoration: none; font-weight: bold; cursor: pointer; box-sizing: border-box; }
+        .sidebar-collapsed-content { position: absolute; top: 20px; left: 0; width: 100%; opacity: 0; transition: opacity 0.2s 0.1s; }
+        .sidebar.collapsed .sidebar-collapsed-content { opacity: 1; }
+        .main-question-nav-collapsed { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .main-question-nav-collapsed a { display: flex; justify-content: center; align-items: center; width: 36px; height: 36px; border-radius: 50%; background-color: #fff; border: 1px solid var(--border-color); text-decoration: none; color: var(--text-color); font-weight: bold; cursor: pointer; position: relative; }
+        .main-question-nav-collapsed a.active { background-color: #4477A8; color: white; }
+        .main-question-nav-collapsed .unanswered-star-sidebar { color: red; right: 2px; top: -2px; font-size: 16px; }
+        #toggle-sidebar-btn { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); cursor: pointer; font-size: 24px; color: #555; }
+
+        /* --- Content Area --- */
+        .content-area { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .question-panel { flex-basis: 50%; background-color: white; border-bottom: 2px solid var(--border-color); padding: 15px 25px; box-sizing: border-box; overflow-y: auto; position: relative; }
+        .question-panel.theme-dark { background-color: #282c34; color: #abb2bf; }
+        .question-panel.theme-sepia { background-color: #f4e8d1; color: #5b4636; }
+        .panel-resizer { height: 5px; background: var(--border-color); cursor: ns-resize; flex-shrink: 0; }
+        .answer-panel { flex-basis: 50%; background-color: var(--secondary-bg); display: flex; flex-direction: column; overflow: hidden; }
+        .question-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px; }
+        .view-controls { display: flex; align-items: center; gap: 15px; }
+        .view-controls .control-group { display: flex; align-items: center; gap: 5px; }
+        .view-controls button { padding: 5px 8px; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; background-color: #fff; }
+        .question-content { line-height: 1.8; }
+        .question-content p { text-indent: 2em; }
+
+        /* --- Answer Area --- */
+        .question-tabs { display: flex; flex-wrap: wrap; background-color: var(--primary-bg); padding: 5px 5px 0 5px; border-bottom: 2px solid var(--border-color); flex-shrink: 0; }
+        .tab { padding: 8px 15px; margin-right: 5px; border: 1px solid var(--border-color); border-bottom: none; border-radius: 5px 5px 0 0; cursor: pointer; position: relative; background-color: #C4D9EC; }
+        .tab.active { background-color: #4477A8; color: white; font-weight: bold; }
+        .unanswered-star-tab { color: red; font-weight: bold; position: absolute; right: 4px; top: 2px; font-size: 14px; }
+        .answer-area-wrapper { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; }
+        .answer-header { display: flex; justify-content: space-between; align-items: center; padding: 0 5px 10px 5px; }
+        #enlarge-answer-btn { cursor: pointer; border: 1px solid #999; padding: 2px 6px; border-radius: 3px; }
+        .answer-input-container { position: relative; flex-grow: 1; }
+        .answer-textarea, .answer-textarea-bg { width: 100%; height: 100%; padding: 15px; box-sizing: border-box; border-radius: 5px; font-size: 16px; line-height: 1.8; font-family: inherit; }
+        .answer-textarea { resize: none; background-color: transparent; position: absolute; top: 0; left: 0; z-index: 1; color: #000; }
+        .answer-textarea[readonly] { background-color: #f0f0f0; cursor: not-allowed; }
+        .answer-textarea-bg { background-color: #fff; color: #999; position: absolute; top: 0; left: 0; white-space: pre-wrap; word-wrap: break-word; overflow-y: auto; }
+        
+        /* --- Modals --- */
+        .modal-overlay { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+        .modal-content { background-color: #fff; padding: 30px 40px; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); min-width: 300px; }
+        #setup-modal input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        #enlarged-answer-modal { z-index: 1100; }
+        .enlarged-answer-container { width: 80vw; height: 80vh; background: white; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; border-radius: 8px; }
+        #modal-answer-textarea { width: 100%; height: 100%; flex-grow: 1; font-size: 18px; line-height: 1.8; }
+        #close-enlarged-answer-btn { align-self: flex-end; margin-top: 10px; }
+        
+        .modal-content h2 { margin-top: 0; }
+        .modal-content p { margin-bottom: 25px; }
+        .modal-content .modal-buttons { display: flex; justify-content: center; gap: 20px; }
+        .modal-btn {
+            padding: 10px 25px; border: none; border-radius: 5px;
+            color: white; font-size: 16px; cursor: pointer;
+        }
+        .modal-btn.orange { background-color: #f0ad4e; }
+        .modal-btn.green { background-color: #5cb85c; }
+        #setup-modal .form-group { margin-bottom: 15px; text-align: left; }
+        #setup-modal label { display: block; margin-bottom: 5px; font-weight: bold; }
+        #setup-modal input, #setup-modal .timer-inputs {
+            width: 100%; padding: 8px; box-sizing: border-box;
+            border: 1px solid #ccc; border-radius: 4px;
+        }
+        .modal-btn.orange { background-color: #f0ad4e; }
+        .modal-btn.green { background-color: #5cb85c; }
+        #setup-modal .form-group { margin-bottom: 15px; text-align: left; }
+        #setup-modal label { display: block; margin-bottom: 5px; font-weight: bold; }
+        #setup-modal input, #setup-modal .timer-inputs {
+            width: 100%; padding: 8px; box-sizing: border-box;
+            border: 1px solid #ccc; border-radius: 4px;
+        }
+        #setup-modal .timer-inputs { display: flex; gap: 10px; align-items: center; width: auto;}
+        #setup-modal .timer-inputs input { width: 60px; text-align: center; }
+        #start-exam-btn { background-color: #4477A8; width: 100%; }
+        #time-warning-modal .modal-content { background-color: #fffbe6; border: 1px solid #ffe58f; }
+        #time-warning-modal h2 { color: #faad14; }
+        
+    </style>
+    
+    <script src="question-data-1.js"></script>
+    <script src="question-data-2.js"></script>
+    
+</head>
+<body>
+    <div id="setup-modal" class="modal-overlay" style="display: flex;">
+        <div class="modal-content">
+            <h2>考试设置</h2>
+            <div class="form-group">
+                <label for="student-name">姓名:</label>
+                <input type="text" id="student-name" value="张三">
+            </div>
+            <div class="form-group">
+                <label for="student-id">准考证号:</label>
+                <input type="text" id="student-id" value="191****7889">
+            </div>
+            <div class="form-group">
+                <label>考试时间 (不填则为正向计时):</label>
+                <div class="timer-inputs">
+                    <input type="number" id="countdown-h" min="0" max="23" placeholder="时"> :
+                    <input type="number" id="countdown-m" min="0" max="59" placeholder="分">
+                </div>
+            </div>
+
+            <button id="start-exam-btn" class="submit-btn" style="width:100%;">开始考试</button>
+        </div>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <div class="instructions">
+                <h4>说明：</h4>
+                <ul>
+                    <li>1. 题号右上角 '*' 代表该题尚未作答完毕。</li>
+                    <li>2. 作答的同时系统自动保存答案。</li>
+                </ul>
+            </div>
+            <div class="main-question-nav-expanded" id="main-question-nav-expanded">
+                <h4>题目列表</h4>
+            </div>
+            <div class="sidebar-bottom">
+                 <a href="https://www.zhumavip.com/w/questionBank?curQuestionType=1" target="_blank" class="law-link-btn">法律法规汇编</a>
+            </div>
+        </div>
+        <div class="sidebar-collapsed-content">
+            <div class="main-question-nav-collapsed" id="main-question-nav-collapsed"></div>
+        </div>
+        <div id="toggle-sidebar-btn">‹</div>
+    </div>
+    
+    <div class="wrapper" id="main-wrapper" style="visibility: hidden;">
+        <div class="main-content">
+            <div class="header" id="header">
+                <div class="user-info">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAM1BMVEXk5ueutLfn6eqrsbTZ3N25vsHHy82zuLq4vcDW2drh4+SorrK9wsfh5OSts7j19/e7w8gIYxWIAAAC/klEQVR4nO3b63LiMBiGYSwt9wG9/8s91CCsSNKz7rT7ZJKlslJZuvY8BwAAAAAAAAAAAAAAAAAAAACAD2nJ64rASb2YHqGhr30d6XgOcb/2eWgd6Xg60/E89HwN6Yg60/E89LwP6ag60/E89HwP6Zg60/E89LwP6Ug60/E89LwP6Ug60/E89LwP6Ug60/E89Hwf6Xg60/E89LwP6bg60/E89LwP6Yg60/E89LwP6Xg60/E8dFyfI+roPw/DXxGfGZ+bnws/cz4nfjM+J34zPic+J34zPic+J34zPic+Jz5/9I/Pz83vi8/Pze+Lz8/N74vPz83vi8/Pze+Lz8/N74vPz43vi8/Pje+Lz8+N74vPz43vi8/Pje+Lz43vyM/f6e/Lz9/p78vP3+nvy8/f6e/Lz9/p78vP3+nvy8/f6e/Lz9/p78vP3+nvy8/f6e/Lz5/1/Pn/X8+f9fz5/1/Pn/X8+f9fz5/1/Pn/X8+f9fz5/1/Pn/X8+f9fz5/1/Pn/X8+fnz3r++Pz53l/Pn/f8+d5fz5/3/PneX8+f9/z53l/Pn/f8+d5fz5/3/PneX8+f9/z53l/Pny95n/Pny95n/Pny95n/Pny95n/Pny95n/Pny95n/Pny95n/Pny95n/Pny95n/Pny95n/Pn/z8ef/Pxx/9/PH/X88f/fzx/1/PH/X88f/fzx/1/PH/X88f/fzx/1/PH/X88fnz/7++Pz5/9/Pn/388f/fz5/9/Pn/388f/fz5/9/Pn/388f/fz5/9/Pn/388f/fz5/9/Pn295v/Pny95v/Pny95v/Pny95v/Pny95v/Pny95v/Pny95v/Pny95v/Pny95v/Pny95v/Pn4x8efjHx5+MfHn4x8efjHx5+MfHn4x8efjHx5+MfHn4x8efjHx5+MfHn4x8efjHx5+MfHn4x8cf/vxx/+/HH/78cf/vxx/+/HH/78cf/vxx/+/HH/78cf/vxx/+/HH/78cff5z1/fH7+c9f3x+/nPX98fv5z1/fH7+c9f3x+/nPX98fv5z1/fH7+c9f3x+/nPWtB0fMh/QEPo+NaA/fwYj2Y/n+cZl4/q/IqA/d/ZEuA8/c/ZFCfcj2o10G+uE/L8j2430G+uE/D8j2430G+uE/D8j2430G+uE/D8j2430G+uE/D8j2430G+uE/L8j2430G+uE/D8h2430G+uE/L8h2430G+sEfa/Dch2430G+sEfa/Dch2430G+sEfa/Dch2430G+sEfa/Dch2430G+uEfa/Dch2430G+uEfa/Dch2430G+uEfa/Dch2430G+sEfa/Deh2430H+hEfa/Deh2430H+hEfa/Deh2430H+hEfa/Deh2430H+hEfa/Deh2430H+hEfa/Dch2430F+mEfa/Deh2430F+mEfa/Dch2430F+mEfa/Dch2430F+mEfa/Dch2430F+mEf2/8O0/AnqA/wfAAAAAAAAAAAAAAAAAAAAAAD/wL950k8LgR5IAAAAAElFTkSuQmCC" alt="avatar">
+                    <div class="details">
+                        <div id="display-name">姓名: 张三</div>
+                        <div id="display-id">准考证号: 108108108</div>
+                    </div>
+                </div>
+                <div class="exam-title" id="exam-main-title"></div>
+                <div class="exam-controls">
+                    <div class="timer-container">
+                        <div id="timer">答题耗时 00:00:00</div>
+                        <button id="pause-timer-btn">暂停</button>
+                    </div>
+                    <button id="submit-btn" class="submit-btn">交卷</button>
+                </div>
+                <div id="toggle-header-btn">▲</div>
+            </div>
+
+            <div class="content-area">
+                <div class="question-panel" id="question-panel">
+                    <div class="question-header">
+                        <h3 id="question-panel-title"></h3>
+                        <div class="view-controls">
+                            <div class="control-group">
+                                风格:
+                                <button data-theme="light">默认</button>
+                                <button data-theme="dark">深色</button>
+                                <button data-theme="sepia">护眼</button>
+                            </div>
+                            <div class="control-group">
+                                字体:
+                                <button id="font-size-decrease">-</button>
+                                <button id="font-size-increase">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="question-content" id="question-content"></div>
+                </div>
+
+                <div class="panel-resizer" id="panel-resizer"></div>
+
+                <div class="answer-panel">
+                    <div class="question-tabs" id="question-tabs"></div>
+                    <div class="answer-area-wrapper">
+                        <div class="answer-header">
+                            <div id="current-question-title"></div>
+                            <div>
+                                <span id="word-count">字数: 0</span>
+                                <label class="mark-checkbox"><input type="checkbox" id="mark-checkbox"> 标记</label>
+                                <button id="enlarge-answer-btn">放大窗口</button>
+                            </div>
+                        </div>
+                        <div class="answer-input-container">
+                            <div id="answer-bg" class="answer-textarea-bg"></div>
+                            <textarea id="answer-textarea" class="answer-textarea" spellcheck="false"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="submission-modal" class="modal-overlay"> </div>
+    <div id="enlarged-answer-modal" class="modal-overlay">
+        <div class="enlarged-answer-container">
+            <textarea id="modal-answer-textarea"></textarea>
+            <button id="close-enlarged-answer-btn" class="submit-btn">关闭</button>
+        </div>
+    </div>
+    
+    <script>
+    // --- Global State ---
+    const allExamData = {
+        1: typeof examData1 !== 'undefined' ? examData1 : null,
+        2: typeof examData2 !== 'undefined' ? examData2 : null,
+    };
+    const TOTAL_MAIN_QUESTIONS = Object.keys(allExamData).filter(k => allExamData[k] !== null).length;
+    let examData;
+    let currentQuestionSetId = 1, currentSubQuestionId = 1;
+    let timerInterval, totalSeconds = 0, isPaused = false, isSubmitted = false;
+
+    // --- DOM Elements ---
+    const DOMElements = { 
+        setupModal: document.getElementById('setup-modal'),
+        startExamBtn: document.getElementById('start-exam-btn'),
+        mainWrapper: document.getElementById('main-wrapper'),
+        displayName: document.getElementById('display-name'),
+        displayId: document.getElementById('display-id'),
+        timer: document.getElementById('timer'),
+        submitBtn: document.getElementById('submit-btn'),
+        examMainTitle: document.getElementById('exam-main-title'),
+        questionPanelTitle: document.getElementById('question-panel-title'),
+        questionContent: document.getElementById('question-content'),
+        fullscreenBtn: document.getElementById('fullscreen-btn'),
+        tabsContainer: document.getElementById('question-tabs'),
+        currentQuestionTitle: document.getElementById('current-question-title'),
+        answerTextarea: document.getElementById('answer-textarea'),
+        answerBg: document.getElementById('answer-bg'),
+        wordCount: document.getElementById('word-count'),
+        markCheckbox: document.getElementById('mark-checkbox'),
+        resizer: document.getElementById('panel-resizer'),
+        submissionModal: document.getElementById('submission-modal'),
+        reviewBtn: document.getElementById('review-answers-btn'),
+        gohomeBtn: document.getElementById('gohome-btn'),
+        timeWarningModal: document.getElementById('time-warning-modal'),
+        readonlyAlertModal: document.getElementById('readonly-alert-modal'),
+        mainQuestionNav: document.getElementById('main-question-nav'),
+    };
+
+    function cacheDOMElements() {
+        const ids = ['setup-modal', 'start-exam-btn', 'sidebar', 'toggle-sidebar-btn', 'main-question-nav-expanded', 'main-question-nav-collapsed', 'main-wrapper', 'header', 'toggle-header-btn', 'display-name', 'display-id', 'exam-main-title', 'timer', 'pause-timer-btn', 'submit-btn', 'question-panel', 'question-panel-title', 'font-size-decrease', 'font-size-increase', 'question-content', 'panel-resizer', 'question-tabs', 'current-question-title', 'word-count', 'enlarge-answer-btn', 'answer-bg', 'answer-textarea', 'submission-modal', 'enlarged-answer-modal', 'modal-answer-textarea', 'close-enlarged-answer-btn'];
+        ids.forEach(id => DOMElements[id] = document.getElementById(id));
+    }
+
+    // --- Core Logic ---
+    function loadQuestionSet(id) {
+        examData = allExamData[id];
+        if (!examData) { alert(`Error loading data for question set ${id}`); return; }
+        currentQuestionSetId = id;
+        DOMElements['exam-main-title'].textContent = examData.mainTitle;
+        DOMElements['question-panel-title'].textContent = examData.panelTitle;
+        DOMElements['question-content'].innerHTML = examData.material;
+        currentSubQuestionId = 1;
+        renderSubQuestionTabs();
+        loadSubQuestion(currentSubQuestionId);
+        renderMainQuestionNav();
+    }
+
+    function loadSubQuestion(id) {
+        const question = examData.questions.find(q => q.id === id);
+        if (!question) return;
+        currentSubQuestionId = id;
+        DOMElements['current-question-title'].textContent = question.fullText;
+        DOMElements['answer-textarea'].value = question.answer;
+        updateAnswerArea();
+        document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', parseInt(t.dataset.id) === id));
+        DOMElements.markCheckbox.checked = question.marked;
+    }
+    
+    DOMElements.markCheckbox.addEventListener('change', () => {
+            const question = examData.questions.find(q => q.id === currentSubQuestionId);
+            question.marked = DOMElements.markCheckbox.checked;
+            renderTabs();
+        });
+    
+    // --- Rendering ---
+    function renderMainQuestionNav() {
+        const expandedContainer = DOMElements['main-question-nav-expanded'];
+        const collapsedContainer = DOMElements['main-question-nav-collapsed'];
+        expandedContainer.innerHTML = '<h4>题目列表</h4>'; // Reset
+        collapsedContainer.innerHTML = ''; // Reset
+
+        for (let i = 1; i <= TOTAL_MAIN_QUESTIONS; i++) {
+            const isAnswered = allExamData[i].questions.every(q => q.answer.trim().length > 0);
+            const star = isAnswered ? '' : '<span class="unanswered-star-sidebar">*</span>';
+            const isActive = i === currentQuestionSetId;
+
+            // Expanded view
+            const linkExpanded = document.createElement('a');
+            linkExpanded.className = isActive ? 'active' : '';
+            linkExpanded.dataset.id = i;
+            linkExpanded.innerHTML = `第${i}题 ${star}`;
+            expandedContainer.appendChild(linkExpanded);
+
+            // Collapsed view
+            const linkCollapsed = document.createElement('a');
+            linkCollapsed.className = isActive ? 'active' : '';
+            linkCollapsed.dataset.id = i;
+            linkCollapsed.innerHTML = `${i} ${star}`;
+            collapsedContainer.appendChild(linkCollapsed);
+        }
+    }
+
+    function renderSubQuestionTabs() {
+        DOMElements['question-tabs'].innerHTML = '';
+        examData.questions.forEach(q => {
+            const tab = document.createElement('div');
+            tab.className = `tab ${q.id === currentSubQuestionId ? 'active' : ''}`;
+            tab.dataset.id = q.id;
+            const star = q.answer.trim().length === 0 ? '<span class="unanswered-star-tab">*</span>' : '';
+            tab.innerHTML = `${q.title}${star}`;
+            DOMElements['question-tabs'].appendChild(tab);
+        });
+    }
+
+    // --- UI Interaction & Updates ---
+    function updateAnswerArea() {
+        const text = DOMElements['answer-textarea'].value;
+        const lastNewlineIndex = text.lastIndexOf('\n');
+        DOMElements['answer-bg'].textContent = lastNewlineIndex !== -1 ? text.substring(0, lastNewlineIndex + 1) : '';
+        DOMElements['word-count'].textContent = `字数: ${text.length}`;
+        DOMElements['answer-bg'].scrollTop = DOMElements['answer-textarea'].scrollTop;
+    }
+    
+    function saveCurrentAnswer() {
+        if (isSubmitted) return;
+        const question = examData.questions.find(q => q.id === currentSubQuestionId);
+        if (question) question.answer = DOMElements['answer-textarea'].value;
+        renderSubQuestionTabs();
+        renderMainQuestionNav();
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            if (!isPaused && !isSubmitted) {
+                totalSeconds++;
+                DOMElements['timer'].textContent = `答题耗时 ${formatTime(totalSeconds)}`;
+            }
+        }, 1000);
+    }
+    
+    function formatTime(sec) {
+        const h = Math.floor(sec / 3600).toString().padStart(2, '0');
+        const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
+        const s = (sec % 60).toString().padStart(2, '0');
+        return `${h}:${m}:${s}`;
+    }
+
+    // --- Event Listeners Setup ---
+    function addEventListeners() {
+        // Initial Setup
+        DOMElements['start-exam-btn'].addEventListener('click', () => {
+            const name = document.getElementById('student-name').value;
+            const id = document.getElementById('student-id').value;
+            DOMElements['display-name'].textContent = `姓名: ${name}`;
+            DOMElements['display-id'].textContent = `准考证号: ${id}`;
+            DOMElements['setup-modal'].style.display = 'none';
+            DOMElements['main-wrapper'].style.visibility = 'visible';
+            startTimer();
+        });
+
+        // Toggles
+        DOMElements['toggle-header-btn'].addEventListener('click', () => {
+            const btn = DOMElements['toggle-header-btn'];
+            DOMElements['header'].classList.toggle('collapsed');
+            btn.textContent = btn.textContent === '▲' ? '▼' : '▲';
+        });
+        DOMElements['toggle-sidebar-btn'].addEventListener('click', () => {
+            const btn = DOMElements['toggle-sidebar-btn'];
+            DOMElements['sidebar'].classList.toggle('collapsed');
+            btn.textContent = btn.textContent === '‹' ? '›' : '‹';
+        });
+
+        // Timer
+        DOMElements['pause-timer-btn'].addEventListener('click', () => {
+            isPaused = !isPaused;
+            DOMElements['pause-timer-btn'].textContent = isPaused ? '继续' : '暂停';
+            DOMElements['timer'].style.color = isPaused ? '#007bff' : '#D9534F';
+        });
+        
+        // Question Navigation
+        document.body.addEventListener('click', (e) => {
+            const target = e.target.closest('.main-question-nav-expanded a, .main-question-nav-collapsed a');
+            if(target) {
+                const id = parseInt(target.dataset.id);
+                if (id !== currentQuestionSetId) loadQuestionSet(id);
+            }
+        });
+
+        DOMElements['question-tabs'].addEventListener('click', (e) => {
+            const tab = e.target.closest('.tab');
+            if (tab) {
+                const id = parseInt(tab.dataset.id);
+                if (id !== currentSubQuestionId) { saveCurrentAnswer(); loadSubQuestion(id); }
+            }
+        });
+
+        // View Controls
+        document.querySelector('.view-controls').addEventListener('click', (e) => {
+            const target = e.target;
+            const panel = DOMElements['question-panel'];
+            // Theme
+            if(target.dataset.theme) {
+                panel.classList.remove('theme-dark', 'theme-sepia');
+                if (target.dataset.theme !== 'light') panel.classList.add(`theme-${target.dataset.theme}`);
+            }
+            // Font Size
+            const content = DOMElements['question-content'];
+            let currentSize = parseFloat(window.getComputedStyle(content).fontSize);
+            if (target.id === 'font-size-increase') content.style.fontSize = `${currentSize + 1}px`;
+            if (target.id === 'font-size-decrease') content.style.fontSize = `${currentSize - 1}px`;
+        });
+        
+        // Answer Area
+        DOMElements['answer-textarea'].addEventListener('input', () => { updateAnswerArea(); saveCurrentAnswer(); });
+        DOMElements['enlarge-answer-btn'].addEventListener('click', () => {
+            DOMElements['modal-answer-textarea'].value = DOMElements['answer-textarea'].value;
+            DOMElements['enlarged-answer-modal'].style.display = 'flex';
+            DOMElements['modal-answer-textarea'].focus();
+        });
+        DOMElements['close-enlarged-answer-btn'].addEventListener('click', () => {
+            DOMElements['enlarged-answer-modal'].style.display = 'none';
+        });
+        DOMElements['modal-answer-textarea'].addEventListener('input', () => {
+            DOMElements['answer-textarea'].value = DOMElements['modal-answer-textarea'].value;
+            updateAnswerArea();
+            saveCurrentAnswer();
+        });
+
+        // Panel Resizer (unchanged)
+        DOMElements['panel-resizer'].addEventListener('mousedown', (e) => {
+            const startY = e.clientY;
+            const startHeight = DOMElements['question-panel'].offsetHeight;
+            const doDrag = (moveEvent) => {
+                const newHeight = startHeight + moveEvent.clientY - startY;
+                if (newHeight > 100 && newHeight < DOMElements['panel-resizer'].parentElement.clientHeight - 100) {
+                    DOMElements['question-panel'].style.flexBasis = `${newHeight}px`;
+                }
+            };
+            const stopDrag = () => document.documentElement.removeEventListener('mousemove', doDrag);
+            document.documentElement.addEventListener('mousemove', doDrag);
+            document.documentElement.addEventListener('mouseup', stopDrag, { once: true });
+        });
+    }
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        cacheDOMElements();
+        addEventListeners();
+        loadQuestionSet(1); // Load the first question set by default
+    });
+    </script>
+</body>
+</html>

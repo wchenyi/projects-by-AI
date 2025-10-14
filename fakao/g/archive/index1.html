@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主观题模拟考试系统</title>
+    <style>
+        /* --- 全局与布局 --- */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'SimSun', '宋体', serif;
+            font-size: 16px;
+            background-color: #E4F2FF;
+            color: #333;
+            overflow: hidden; /* 防止页面滚动 */
+        }
+        .wrapper {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* --- 左侧边栏 --- */
+        .sidebar {
+            width: 200px;
+            background-color: #D3E7FB;
+            padding: 20px;
+            box-sizing: border-box;
+            border-right: 2px solid #A9C9E2;
+            flex-shrink: 0; /* 防止侧边栏被压缩 */
+        }
+        .sidebar .instructions {
+            background-color: #F0F8FF;
+            border: 1px solid #A9C9E2;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .sidebar h4 {
+            margin-top: 0;
+            font-weight: bold;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding-left: 0;
+            font-size: 14px;
+        }
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+        .sidebar .law-link-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(to bottom, #5A99D4, #4477A8);
+            color: white;
+            border: 1px solid #3A668E;
+            border-radius: 5px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        .sidebar .law-link-btn:hover {
+            background: linear-gradient(to bottom, #6AB3F3, #508BC7);
+        }
+
+        /* --- 主内容区 --- */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- 顶部 Header --- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 20px;
+            background: linear-gradient(to bottom, #D9E9F8, #C4D9EC);
+            border-bottom: 2px solid #A9C9E2;
+            height: 60px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .user-info .details {
+            font-size: 14px;
+        }
+        .exam-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .exam-controls {
+            display: flex;
+            align-items: center;
+        }
+        .timer {
+            margin-right: 20px;
+            font-weight: bold;
+            color: #D9534F;
+        }
+        .submit-btn {
+            padding: 8px 15px;
+            background: linear-gradient(to bottom, #F7BA2A, #F5A623);
+            border: 1px solid #D48C11;
+            color: #fff;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .submit-btn:hover {
+            background: linear-gradient(to bottom, #FFC84A, #F7B035);
+        }
+
+        /* --- 题目与作答区分割布局 --- */
+        .content-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .question-panel {
+            flex-basis: 50%; /* 初始高度 */
+            background-color: #F0F8FF;
+            border-bottom: 2px solid #A9C9E2;
+            padding: 15px 25px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            position: relative;
+        }
+        .panel-resizer {
+            height: 5px;
+            background: #A9C9E2;
+            cursor: ns-resize;
+            flex-shrink: 0;
+        }
+        .answer-panel {
+            flex-basis: 50%; /* 初始高度 */
+            background-color: #D3E7FB;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- 题目区域 --- */
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        .question-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .view-controls button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+            background-color: #fff;
+        }
+        .question-content {
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        .question-content p {
+            text-indent: 2em; /* 首行缩进 */
+        }
+        .fullscreen-btn {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 12px;
+            color: #666;
+        }
+
+
+        /* --- 作答区域 --- */
+        .question-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            background-color: #E4F2FF;
+            padding: 5px 5px 0 5px;
+            border-bottom: 2px solid #A9C9E2;
+            flex-shrink: 0;
+        }
+        .tab {
+            padding: 8px 15px;
+            margin-right: 5px;
+            margin-bottom: -2px; /* 覆盖边框 */
+            border: 2px solid #A9C9E2;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            position: relative;
+            background-color: #C4D9EC;
+        }
+        .tab.active {
+            background-color: #D3E7FB;
+            border-bottom: 2px solid #D3E7FB;
+            font-weight: bold;
+        }
+        .tab .mark-icon {
+            display: none;
+            color: orange;
+            margin-right: 5px;
+        }
+        .tab.marked .mark-icon {
+            display: inline;
+        }
+        
+        .answer-area-wrapper {
+            padding: 10px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .answer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5px 10px 5px;
+        }
+        .current-question-title {
+            font-weight: bold;
+            position: relative;
+        }
+        .mandatory-star {
+            color: red;
+            font-weight: bold;
+            position: absolute;
+            right: -12px;
+            top: -2px;
+        }
+        .word-count {
+            font-size: 14px;
+            color: #666;
+        }
+        .answer-input-container {
+            position: relative;
+            flex-grow: 1;
+        }
+        .answer-textarea {
+            width: 100%;
+            height: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            line-height: 1.8;
+            resize: none;
+            background-color: transparent; /* 透明背景 */
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            color: #000;
+        }
+        .answer-textarea, .answer-textarea-bg {
+            font-family: inherit; /* 继承字体 */
+        }
+        .answer-textarea-bg {
+            width: 100%;
+            height: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+            border-radius: 5px;
+            font-size: 16px;
+            line-height: 1.8;
+            background-color: #fff; /* 白色背景 */
+            color: #999; /* 灰色字体 */
+            position: absolute;
+            top: 0;
+            left: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-y: auto; /* 保持同步滚动 */
+        }
+        .mark-checkbox {
+            margin-left: 20px;
+        }
+        
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <div class="sidebar">
+            <div class="instructions">
+                <h4>说明：</h4>
+                <ul>
+                    <li>1.题号右方的"**"符号代表该题尚未作答。</li>
+                    <li>2.题号右方的"✔"符号代表该题做过标记。</li>
+                    <li>3.作答的同时系统自动保存答案。</li>
+                </ul>
+            </div>
+            <a href="http://www.zyfayuan.com/" target="_blank" class="law-link-btn">法律法规汇编</a>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div class="user-info">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAM1BMVEXk5ueutLfn6eqrsbTZ3N25vsHHy82zuLq4vcDW2drh4+SorrK9wsfh5OSts7j19/e7w8gIYxWIAAAC/klEQVR4nO3b63LiMBiGYSwt9wG9/8s91CCsSNKz7rT7ZJKlslJZuvY8BwAAAAAAAAAAAAAAAAAAAACAD2nJ64rASb2YHqGhr30d6XgOcb/2eWgd6Xg60/E89HwN6Yg60/E89LwP6ag60/E89HwP6Zg60/E89LwP6Ug60/E89LwP6Ug60/E89LwP6Ug60/E89Hwf6Xg60/E89LwP6bg60/E89LwP6Yg60/E89LwP6Xg60/E8dFyfI+roPw/DXxGfGZ+bnws/cz4nfjM+J34zPic+J34zPic+J34zPic+J34zPic+Jz5/9I/Pz83vi8/Pze+Lz8/N74vPz83vi8/Pze+Lz8/N74vPz43vi8/Pje+Lz8+N74vPz43vi8/Pje+Lz43vyM/f6e/Lz9/p78vP3+nvy8/f6e/Lz9/p78vP3+nvy8/f6e/Lz9/p78vP3+nvy8/f6e/Lz5/1/Pn/X8+f9fz5/1/Pn/X8+f9fz5/1/Pn/X8+f9fz5/1/Pn/X8+f9fz5/1/Pn/X8+fnz3r++Pz53l/Pn/f8+d5fz5/3/PneX8+f9/z53l/Pn/f8+d5fz5/3/PneX8+f9/z53l/Pny95n/Pny95n/Pny95n/Pny95n/Pny95n/Pny95n/Pny95n/Pny95n/Pny95n/Pny95n/Pn/z8ef/Pxx/9/PH/X88f/fzx/1/PH/X88f/fzx/1/PH/X88f/fzx/1/PH/X88fnz/7++Pz5/9/Pn/388f/fz5/9/Pn/388f/fz5/9/Pn/388f/fz5/9/Pn/388f/fz5/9/Pn295v/Pny95v/Pny95v/Pny95v/Pny95v/Pny95v/Pny95v/Pny95v/Pny95v/Pny95v/Pn4x8efjHx5+MfHn4x8efjHx5+MfHn4x8efjHx5+MfHn4x8efjHx5+MfHn4x8efjHx5+MfHn4x8cf/vxx/+/HH/78cf/vxx/+/HH/78cf/vxx/+/HH/78cf/vxx/+/HH/78cff5z1/fH7+c9f3x+/nPX98fv5z1/fH7+c9f3x+/nPX98fv5z1/fH7+c9f3x+/nPWtB0fMh/QEPo+NaA/fwYj2Y/n+cZl4/q/IqA/d/ZEuA8/c/ZFCfcj2o10G+uE/L8j2430G+uE/D8j2430G+uE/D8j2430G+uE/D8j2430G+uE/D8j2430G+uE/L8j2430G+uE/D8h2430G+uE/L8h2430G+sEfa/Dch2430G+sEfa/Dch2430G+sEfa/Dch2430G+sEfa/Dch2430G+uEfa/Dch2430G+uEfa/Dch2430G+uEfa/Dch2430G+sEfa/Deh2430H+hEfa/Deh2430H+hEfa/Deh2430H+hEfa/Deh2430H+hEfa/Deh2430H+hEfa/Dch2430F+mEfa/Deh2430F+mEfa/Dch2430F+mEfa/Dch2430F+mEfa/Dch2430F+mEf2/8O0/AnqA/wfAAAAAAAAAAAAAAAAAAAAAAD/wL950k8LgR5IAAAAAElFTkSuQmCC" alt="avatar">
+                    <div class="details">
+                        <div>姓名: 张三</div>
+                        <div>手机号: 191****7889</div>
+                    </div>
+                </div>
+                <div class="exam-title">审判 • 章节练习 › 法律职业资格考试2023年主观题阶段测试第1套</div>
+                <div class="exam-controls">
+                    <div id="timer" class="timer">答题耗时 00:00:00</div>
+                    <button id="submit-btn" class="submit-btn">交卷</button>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div class="question-panel" id="question-panel">
+                    <div class="question-header">
+                        <h3>1. 主观题</h3>
+                        <div class="view-controls">
+                            风格: <button id="font-style-toggle">宋体</button>
+                            字体大小: <button id="font-size-decrease">-</button> <button id="font-size-increase">+</button>
+                        </div>
+                    </div>
+                    <div class="question-content" id="question-content">
+                        <p>(本题30分)</p>
+                        <p>2020年12月某日20时，李某乘前自行车的赵一一、钱二、孙三看到，三人把李某拉到公园殴打，并要求李某交出手机，通过微信转走了李某2000元。之后孙三被家里电话叫走。随后，赵一和钱二要求李某脱光衣服并将其推到公园的池塘里。次日，李某被人发现死在公园池塘中，池塘边放着李某生前脱下的衣物。经法医鉴定，李某身上有多处挫伤，并且头部被钝器击打致死，死亡时间是案发当晚20点-23点之间。公安机关并未收集到赵钱二人对李某击打头部的证据，但是监控拍到二人离开公园的时间是案发当晚20：40分。</p>
+                        <p>公安机关侦查终结后，对赵钱孙三人以抢劫罪，赵钱二人以故意伤害（致人死亡）罪移交检察院审查起诉。赵钱孙三人对抢劫事实认罪认罚，但赵钱二人对故意伤害（致人死亡）予以否认，辩称没有对李某后脑进行击打，且不排除李某落水后他人施救可能。李某母亲对赵钱二人提起附带民事诉讼，要求二人赔偿丧葬费、死亡赔偿金和精神损失费。</p>
+                        <p>钱二委托了辩护律师，律师辩称钱二犯罪时为未成年人，提供证据如下：1.钱二父母和祖父母的证言，称钱二出生时间为2003年3月5日，但因为村支书手写登记时将“3”误写成“2”，故显示出生时间为2002年3月5日。2.准生证上登记发放时间为2002年12月底，基于准生证发放于出生前，故可以确定出生日期在2002年12月之后。3.钱二初中毕业同学录上填写的相关时间是2002年3月5日，但有涂改痕迹。</p>
+                        <p>一审法院经过审理，判决赵钱孙三人抢劫罪成立，分别判处有期徒刑5年、4年、3年。对于赵钱二人故意伤害（致人死亡）罪，因证据不足，不予认定。对钱二系未成年人不予认定，原因是：1.钱二父母和祖父母的证言证明力低。2.准生证系被告方长期保存，真实性存疑3.初中毕业同学录是被告人事后提供，证明力低。</p>
+                    </div>
+                     <button id="fullscreen-btn" class="fullscreen-btn">放大窗口</button>
+                </div>
+
+                <div class="panel-resizer" id="panel-resizer"></div>
+
+                <div class="answer-panel">
+                    <div class="question-tabs" id="question-tabs">
+                        </div>
+                    <div class="answer-area-wrapper">
+                        <div class="answer-header">
+                            <div class="current-question-title" id="current-question-title">
+                                </div>
+                            <div class="controls">
+                               <span class="word-count" id="word-count">已输入字数: 0</span>
+                               <label class="mark-checkbox"><input type="checkbox" id="mark-checkbox"> 标记</label>
+                            </div>
+                        </div>
+                        <div class="answer-input-container">
+                            <div id="answer-bg" class="answer-textarea-bg"></div>
+                            <textarea id="answer-textarea" class="answer-textarea" spellcheck="false"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="submission-modal" class="modal">
+        <div class="modal-content">
+            答题已终止！
+        </div>
+    </div>
+
+    <script>
+    // --- 在这里配置你的题目和问题 ---
+    const examData = {
+        questions: [
+            { id: 1, title: '问题1', fullText: '1.对赵钱二人能否适用认罪认罚从宽制度？', answer: '', marked: false },
+            { id: 2, title: '问题2', fullText: '2.一审法院对赵钱二人故意伤害致人死亡判决不予认定是否合法？说明理由。', answer: '', marked: false },
+            { id: 3, title: '问题3', fullText: '3.对于赵钱二人故意伤害致人死亡不予认定后，法院能否判决赵钱二人因李某的死亡对李某母亲承担附带民事责任？李某母亲的哪些诉讼请求能被支持？', answer: '', marked: false },
+            { id: 4, title: '问题4', fullText: '4.如何评价法院对钱二是否满18周岁的认定？', answer: '', marked: false },
+            { id: 5, title: '问题5', fullText: '5.若钱二提起上诉，检察院没有提起抗诉，二审法院认定钱二出生时间是2003年3月5日，二审法院应当如何处理？', answer: '', marked: false }
+        ]
+    };
+
+    // --- DOM 元素获取 ---
+    const timerEl = document.getElementById('timer');
+    const submitBtn = document.getElementById('submit-btn');
+    const modal = document.getElementById('submission-modal');
+    
+    const fontStyleToggle = document.getElementById('font-style-toggle');
+    const fontSizeIncrease = document.getElementById('font-size-increase');
+    const fontSizeDecrease = document.getElementById('font-size-decrease');
+    const questionContent = document.getElementById('question-content');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    
+    const questionPanel = document.getElementById('question-panel');
+    const resizer = document.getElementById('panel-resizer');
+    const answerPanel = document.querySelector('.answer-panel');
+
+    const tabsContainer = document.getElementById('question-tabs');
+    const currentQuestionTitle = document.getElementById('current-question-title');
+    const answerTextarea = document.getElementById('answer-textarea');
+    const answerBg = document.getElementById('answer-bg');
+    const wordCountEl = document.getElementById('word-count');
+    const markCheckbox = document.getElementById('mark-checkbox');
+
+    // --- 状态变量 ---
+    let currentQuestionId = 1;
+    let timerInterval;
+    let seconds = 0;
+    let isPaused = false;
+    let isSubmitted = false;
+    
+    // --- 初始化函数 ---
+    function init() {
+        renderTabs();
+        loadQuestion(currentQuestionId);
+        startTimer();
+        addEventListeners();
+    }
+
+    // --- 渲染与加载 ---
+    function renderTabs() {
+        tabsContainer.innerHTML = '';
+        examData.questions.forEach(q => {
+            const tab = document.createElement('div');
+            tab.className = `tab ${q.id === currentQuestionId ? 'active' : ''} ${q.marked ? 'marked' : ''}`;
+            tab.dataset.id = q.id;
+            tab.innerHTML = `<span class="mark-icon">✔</span>${q.title}`;
+            tabsContainer.appendChild(tab);
+        });
+    }
+    
+    function loadQuestion(id) {
+        const question = examData.questions.find(q => q.id === id);
+        if (!question) return;
+
+        currentQuestionId = id;
+        
+        // 更新问题标题
+        currentQuestionTitle.innerHTML = `${question.fullText} <span class="mandatory-star" id="mandatory-star">*</span>`;
+        
+        // 加载答案
+        answerTextarea.value = question.answer;
+        updateAnswerArea();
+        
+        // 更新Tab激活状态
+        document.querySelectorAll('.tab').forEach(t => {
+            t.classList.toggle('active', parseInt(t.dataset.id) === id);
+        });
+
+        // 更新标记复选框
+        markCheckbox.checked = question.marked;
+    }
+    
+    // --- 计时器功能 ---
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            if (!isPaused && !isSubmitted) {
+                seconds++;
+                timerEl.textContent = `答题耗时 ${formatTime(seconds)}`;
+            }
+        }, 1000);
+        
+        timerEl.addEventListener('click', () => {
+             isPaused = !isPaused;
+             if(isPaused) {
+                timerEl.style.color = '#FFA500'; // 橙色表示暂停
+                timerEl.textContent += ' (已暂停)';
+             } else {
+                timerEl.style.color = '#D9534F'; // 恢复红色
+             }
+        });
+    }
+
+    function formatTime(sec) {
+        const h = Math.floor(sec / 3600).toString().padStart(2, '0');
+        const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
+        const s = (sec % 60).toString().padStart(2, '0');
+        return `${h}:${m}:${s}`;
+    }
+
+    // --- 事件监听器 ---
+    function addEventListeners() {
+        // 交卷
+        submitBtn.addEventListener('click', () => {
+            isSubmitted = true;
+            clearInterval(timerInterval);
+            modal.style.display = 'flex';
+        });
+
+        // 字体样式与大小
+        fontStyleToggle.addEventListener('click', () => {
+            if (questionContent.style.fontFamily === 'SimHei, "黑体", sans-serif') {
+                questionContent.style.fontFamily = "'SimSun', '宋体', serif";
+                fontStyleToggle.textContent = '宋体';
+            } else {
+                questionContent.style.fontFamily = 'SimHei, "黑体", sans-serif';
+                fontStyleToggle.textContent = '黑体';
+            }
+        });
+        fontSizeIncrease.addEventListener('click', () => {
+            const currentSize = parseFloat(window.getComputedStyle(questionContent).fontSize);
+            questionContent.style.fontSize = `${currentSize + 1}px`;
+        });
+        fontSizeDecrease.addEventListener('click', () => {
+            const currentSize = parseFloat(window.getComputedStyle(questionContent).fontSize);
+            questionContent.style.fontSize = `${currentSize - 1}px`;
+        });
+        
+        // 全屏/放大窗口
+        fullscreenBtn.addEventListener('click', () => {
+             if (document.fullscreenElement) {
+                document.exitFullscreen();
+                fullscreenBtn.textContent = "放大窗口";
+            } else {
+                document.querySelector('.wrapper').requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                });
+                fullscreenBtn.textContent = "退出放大";
+            }
+        });
+
+        // 问题切换
+        tabsContainer.addEventListener('click', e => {
+            const tab = e.target.closest('.tab');
+            if (tab) {
+                const id = parseInt(tab.dataset.id);
+                if(id !== currentQuestionId){
+                    saveCurrentAnswer();
+                    loadQuestion(id);
+                }
+            }
+        });
+
+        // 作答区输入与同步
+        answerTextarea.addEventListener('input', updateAnswerArea);
+        answerTextarea.addEventListener('scroll', () => {
+            answerBg.scrollTop = answerTextarea.scrollTop;
+        });
+        
+        // 标记功能
+        markCheckbox.addEventListener('change', () => {
+            const question = examData.questions.find(q => q.id === currentQuestionId);
+            question.marked = markCheckbox.checked;
+            document.querySelector(`.tab[data-id='${currentQuestionId}']`).classList.toggle('marked', question.marked);
+        });
+
+        // 窗口拖拽调整
+        resizer.addEventListener('mousedown', initDrag);
+    }
+    
+    function saveCurrentAnswer() {
+        const question = examData.questions.find(q => q.id === currentQuestionId);
+        if (question) {
+            question.answer = answerTextarea.value;
+        }
+    }
+
+    // --- 作答区核心功能 ---
+    function updateAnswerArea() {
+        const text = answerTextarea.value;
+        
+        // 1. 更新背景层（换行变灰）
+        // 找到最后一个换行符的位置
+        const lastNewlineIndex = text.lastIndexOf('\n');
+        let grayPart = text;
+        
+        if (lastNewlineIndex !== -1) {
+            // 如果有换行，则变灰的部分是最后一个换行符之前的所有内容
+            grayPart = text.substring(0, lastNewlineIndex + 1);
+        } else {
+            // 如果没有换行，则没有灰色部分
+            grayPart = '';
+        }
+        answerBg.textContent = grayPart;
+        
+        // 2. 更新字数统计
+        wordCountEl.textContent = `已输入字数: ${text.length}`;
+        
+        // 3. 更新必答星号
+        const star = document.getElementById('mandatory-star');
+        if (star) {
+            star.style.display = text.length > 0 ? 'none' : 'inline';
+        }
+
+        // 4. 同步滚动
+        answerBg.scrollTop = answerTextarea.scrollTop;
+    }
+    
+    // --- 窗口拖拽功能 ---
+    let startY, startHeight;
+    function initDrag(e) {
+        startY = e.clientY;
+        startHeight = questionPanel.offsetHeight;
+        document.documentElement.addEventListener('mousemove', doDrag, false);
+        document.documentElement.addEventListener('mouseup', stopDrag, false);
+    }
+
+    function doDrag(e) {
+        const newHeight = startHeight + e.clientY - startY;
+        const totalHeight = questionPanel.parentElement.clientHeight;
+        // 设置最小/最大高度，防止面板消失
+        if (newHeight > 100 && newHeight < totalHeight - 100) {
+            questionPanel.style.flexBasis = `${newHeight}px`;
+        }
+    }
+
+    function stopDrag() {
+        document.documentElement.removeEventListener('mousemove', doDrag, false);
+        document.documentElement.removeEventListener('mouseup', stopDrag, false);
+    }
+
+    // --- 启动程序 ---
+    init();
+
+    </script>
+
+</body>
+</html>
