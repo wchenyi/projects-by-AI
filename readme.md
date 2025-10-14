@@ -22,11 +22,12 @@
 - [netdisk](https://projects.wangcy.site/netdisk/assets/index.html)
 - [appstore-CL](https://projects.wangcy.site/appstore-CL/index.html)
 - [八卦知识](https://projects.wangcy.site/%E5%85%AB%E5%8D%A6%E7%9F%A5%E8%AF%86)
-- [法考主观模拟网站](https://projects.wangcy.site/fakao/index)
+- [法考主观模拟网站](https://projects.wangcy.site/fakao/c/index)
 
 > ChatGPT
 - [起始页生成](https://wchenyi.github.io/Auto-search)
 
 > Gemini
 - [appstore](https://projects.wangcy.site/appstore/index.html)
+- [法考主观题模拟](https://projects.wangcy.site/fakao/g/index)
 
