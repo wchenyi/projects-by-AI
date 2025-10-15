@@ -2,7 +2,7 @@
 const projects = [
     {
         id: 1,
-        category: 'other',
+        category: 'office',
         name: '赞助页面',
         description: '支持项目的赞助页面',
         icon: '💝',
@@ -35,7 +35,7 @@ const projects = [
     },
     {
         id: 4,
-        category: 'other',
+        category: 'office',
         name: '个人项目展示页',
         description: '展示个人项目的网站',
         icon: '🌟',
@@ -68,17 +68,6 @@ const projects = [
     },
     {
         id: 7,
-        category: 'other',
-        name: '个人介绍',
-        description: '个人简历和介绍页面',
-        icon: '👤',
-        tags: ['Claude'],
-        versions: [
-            { name: '查看介绍', url: 'https://projects.wangcy.site/me.html' }
-        ]
-    },
-    {
-        id: 8,
         category: 'office',
         name: 'Start Page',
         description: '个性化起始页',
@@ -89,7 +78,7 @@ const projects = [
         ]
     },
     {
-        id: 9,
+        id: 8,
         category: 'office',
         name: 'NetDisk',
         description: '网络存储工具',
@@ -100,7 +89,7 @@ const projects = [
         ]
     },
     {
-        id: 10,
+        id: 9,
         category: 'other',
         name: 'App Store - CL',
         description: '应用商店界面 Claude 版本',
@@ -111,18 +100,18 @@ const projects = [
         ]
     },
     {
-        id: 11,
-        category: 'learning',
+        id: 10,
+        category: 'entertainment',
         name: '八卦知识',
         description: '中国传统文化学习',
         icon: '📖',
         tags: ['Claude'],
         versions: [
-            { name: '学习页面', url: 'https://projects.wangcy.site/%E5%85%AB%E5%8D%A6%E7%9F%A5%E8%AF%86' }
+            { name: '学习页面', url: 'https://projects.wangcy.site/other/bagua' }
         ]
     },
     {
-        id: 12,
+        id: 11,
         category: 'learning',
         name: '法考主观模拟网站',
         description: '法律考试模拟练习',
@@ -133,7 +122,7 @@ const projects = [
         ]
     },
     {
-        id: 13,
+        id: 12,
         category: 'office',
         name: '起始页生成',
         description: '自动搜索起始页生成器',
@@ -144,7 +133,7 @@ const projects = [
         ]
     },
     {
-        id: 14,
+        id: 13,
         category: 'other',
         name: 'App Store',
         description: '应用商店界面 Gemini 版本',
@@ -155,7 +144,7 @@ const projects = [
         ]
     },
     {
-        id: 15,
+        id: 14,
         category: 'learning',
         name: '法考主观题模拟',
         description: '法律考试模拟练习 Gemini 版',
