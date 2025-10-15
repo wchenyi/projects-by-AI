@@ -4,7 +4,7 @@
 
 这是一个用于法律职业资格考试练习的Web刷题系统，具有完整的答题、计时、标记等功能。
 
-**⚠️ 重要声明**：此页面并非司法部官方答题页面，仅为学习交流的前端项目，题目和法律法规来自"方圆众合教育"相关页面。本站仅为演示使用，任何人不得用于盈利。
+**⚠️ 重要声明**：此页面并非司法部官方答题页面，仅为学习交流的前端项目，题目和法律法规来自"方圆众合教育"相关页面，如有侵权请联系本人修改或删除。本站仅为演示使用，任何人不得用于盈利。
 
 ## 📁 文件结构
 
@@ -13,12 +13,12 @@
 ├── index.html              # 主HTML文件
 ├── style.css               # 样式文件
 ├── main.js                 # JavaScript主文件
-├── question-data-1.js.js   # 第1题数据文件
-├── question-data-2.js.js   # 第2题数据文件
-├── question-data-3.js.js   # 第3题数据文件
-├── question-data-4.js.js   # 第4题数据文件（可选）
-├── question-data-5.js.js   # 第5题数据文件（可选）
-├── question-data-6.js.js   # 第6题数据文件（可选）
+├── question-data-1.js   # 第1题数据文件
+├── question-data-2.js   # 第2题数据文件
+├── question-data-3.js   # 第3题数据文件
+├── question-data-4.js   # 第4题数据文件（可选）
+├── question-data-5.js   # 第5题数据文件（可选）
+├── question-data-6.js   # 第6题数据文件（可选）
 └── README.md               # 本说明文档
 ```
 
@@ -29,7 +29,7 @@
 - `index.html`
 - `style.css`
 - `main.js`
-- `question-data-1.js.js`（至少需要一个题目文件）
+- `question-data-1.js`（至少需要一个题目文件）
 
 ### 2. 打开系统
 双击 `index.html` 文件，在浏览器中打开。
@@ -90,7 +90,7 @@
 ## 📊 添加新题目
 
 ### 步骤1：创建题目数据文件
-复制 `question-data-1.js.js` 并重命名为 `question-data-X.js.js`（X为题号）
+复制 `question-data-1.js` 并重命名为 `question-data-X.js`（X为题号）
 
 ### 步骤2：修改题目内容
 编辑新文件，修改以下内容：
@@ -125,10 +125,10 @@ window.QUESTIONS = {
 
 ```javascript
 const QUESTION_FILES = [
-    { id: 1, name: '1', file: 'question-data-1.js.js' },
-    { id: 2, name: '2', file: 'question-data-2.js.js' },
+    { id: 1, name: '1', file: 'question-data-1.js' },
+    { id: 2, name: '2', file: 'question-data-2.js' },
     // ... 其他题目
-    { id: X, name: 'X', file: 'question-data-X.js.js' },  // 新添加
+    { id: X, name: 'X', file: 'question-data-X.js' },  // 新添加
 ];
 ```
 
@@ -164,7 +164,7 @@ const ACCESS_KEY = '666666'; // 改为你想要的密钥
 
 1. **浏览器兼容**：建议使用Chrome、Edge、Firefox等现代浏览器
 2. **文件路径**：所有文件必须在同一目录下
-3. **文件命名**：题目文件必须严格按照 `question-data-X.js.js` 格式命名
+3. **文件命名**：题目文件必须严格按照 `question-data-X.js` 格式命名
 4. **数据安全**：答案数据仅保存在浏览器内存中，刷新页面会丢失
 5. **网络要求**：本系统为纯前端，无需服务器，可离线使用
 
