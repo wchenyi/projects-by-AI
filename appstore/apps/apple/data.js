@@ -632,6 +632,21 @@ export const appleApps = [
     github: "https://github.com/chen08209/FlClash"
   }
 },
+{
+  name: "ClashParty",
+  category: "工具",
+  icon: "https://clashparty.org/logo.png",
+  size: "large",
+  rating: "5.0",
+  platform: "MacOS",
+  type: "desktop",
+  description: "",
+    features: ["多平台"],
+  downloads: {
+    github: "https://github.com/mihomo-party-org/clash-party/releases",
+    official: "https://clashparty.org/"
+  }
+},
 
 // --- 桌面端 MacOS Medium ---
 {
@@ -768,6 +783,7 @@ export const appleApps = [
   }
 },
 ];
+
 
 
 
