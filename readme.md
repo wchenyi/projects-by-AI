@@ -30,4 +30,4 @@
 > Gemini
 - [appstore](https://projects.wangcy.site/appstore/index.html)
 - [法考主观题模拟](https://projects.wangcy.site/fakao/g/index)
-
+- [favorite](https://projects.wangcy.site/favorite/index)
