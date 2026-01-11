@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Bookmarks</title>
+    <style>
+        :root {
+            /* MD3 Light Theme Variables */
+            --md-sys-color-primary: #6750A4;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #EADDFF;
+            --md-sys-color-on-primary-container: #21005D;
+            --md-sys-color-background: #FFFBFE;
+            --md-sys-color-on-background: #1C1B1F;
+            --md-sys-color-surface: #FFFBFE;
+            --md-sys-color-surface-variant: #E7E0EC;
+            --md-sys-color-on-surface: #1C1B1F;
+            --md-sys-color-on-surface-variant: #49454F;
+            --md-sys-color-outline: #79747E;
+            --md-sys-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+            --md-sys-elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+            --md-sys-radius-l: 16px;
+            --md-sys-radius-m: 12px;
+            --md-sys-radius-s: 8px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                /* MD3 Dark Theme Variables */
+                --md-sys-color-primary: #D0BCFF;
+                --md-sys-color-on-primary: #381E72;
+                --md-sys-color-primary-container: #4F378B;
+                --md-sys-color-on-primary-container: #EADDFF;
+                --md-sys-color-background: #1C1B1F;
+                --md-sys-color-on-background: #E6E1E5;
+                --md-sys-color-surface: #1C1B1F;
+                --md-sys-color-surface-variant: #49454F;
+                --md-sys-color-on-surface: #E6E1E5;
+                --md-sys-color-on-surface-variant: #CAC4D0;
+                --md-sys-color-outline: #938F99;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Roboto', 'PingFang SC', sans-serif;
+            background-color: var(--md-sys-color-background);
+            color: var(--md-sys-color-on-background);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        /* AppBar / Search Area */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: var(--md-sys-color-background);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            background-color: rgba(var(--md-sys-color-background), 0.8);
+        }
+
+        .search-bar {
+            background-color: var(--md-sys-color-surface-variant);
+            border-radius: 28px;
+            height: 56px;
+            width: 100%;
+            max-width: 720px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            transition: box-shadow 0.2s;
+        }
+
+        .search-bar:focus-within {
+            box-shadow: var(--md-sys-elevation-1);
+            background-color: var(--md-sys-color-surface);
+        }
+
+        .search-icon {
+            width: 24px;
+            height: 24px;
+            fill: var(--md-sys-color-on-surface-variant);
+            margin-right: 12px;
+        }
+
+        .search-input {
+            flex: 1;
+            background: none;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            color: var(--md-sys-color-on-surface);
+            height: 100%;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-btn:hover {
+            background-color: rgba(128,128,128, 0.1);
+        }
+
+        .action-icon {
+            width: 24px;
+            height: 24px;
+            fill: var(--md-sys-color-primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* Empty State / Upload */
+        .upload-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 70vh;
+            border: 2px dashed var(--md-sys-color-outline);
+            border-radius: var(--md-sys-radius-l);
+            margin: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            background-color: var(--md-sys-color-primary-container);
+            border-color: var(--md-sys-color-primary);
+        }
+
+        .upload-text {
+            margin-top: 16px;
+            font-size: 1.2rem;
+            color: var(--md-sys-color-on-surface);
+        }
+        
+        .upload-subtext {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: var(--md-sys-color-on-surface-variant);
+            max-width: 80%;
+        }
+
+        /* Folder & Bookmarks Grid */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin: 32px 0 16px;
+            padding-left: 8px;
+            color: var(--md-sys-color-primary);
+            display: flex;
+            align-items: center;
+        }
+
+        .breadcrumb {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 0 8px;
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb-item {
+            cursor: pointer;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .breadcrumb-item:hover {
+            text-decoration: underline;
+            color: var(--md-sys-color-primary);
+        }
+
+        .breadcrumb-item::after {
+            content: '/';
+            margin-left: 8px;
+            opacity: 0.5;
+        }
+
+        .breadcrumb-item:last-child {
+            color: var(--md-sys-color-primary);
+            font-weight: bold;
+        }
+        .breadcrumb-item:last-child::after {
+            content: '';
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--md-sys-color-surface-variant);
+            border-radius: var(--md-sys-radius-m);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.4s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--md-sys-elevation-1);
+            background-color: var(--md-sys-color-primary-container);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: var(--md-sys-color-background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            flex-shrink: 0;
+            font-size: 20px;
+            overflow: hidden;
+        }
+
+        .card-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        .card-subtitle {
+            font-size: 0.8rem;
+            color: var(--md-sys-color-on-surface-variant);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Folder specific styling */
+        .folder-card {
+            background-color: rgba(var(--md-sys-color-primary), 0.05);
+            border: 1px solid var(--md-sys-color-outline);
+            background-color: transparent;
+        }
+        
+        .folder-card:hover {
+            border-color: var(--md-sys-color-primary);
+        }
+
+        .folder-icon {
+            color: var(--md-sys-color-primary);
+        }
+
+        /* Ripple Effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--md-sys-color-on-surface);
+            color: var(--md-sys-color-surface);
+            padding: 12px 24px;
+            border-radius: 24px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="search-bar">
+        <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input type="text" id="searchInput" class="search-input" placeholder="搜索书签或文件夹...">
+        <button class="action-btn" id="resetBtn" title="重新上传 favorites.html">
+            <svg class="action-icon" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        </button>
+    </div>
+</header>
+
+<div class="container" id="mainContainer">
+    <div class="upload-zone" id="uploadZone">
+        <svg style="width: 64px; height: 64px; fill: var(--md-sys-color-primary);" viewBox="0 0 24 24">
+            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+        </svg>
+        <div class="upload-text">未检测到 favorites.html</div>
+        <div class="upload-subtext">请将 Chrome/Edge 导出的 favorites.html 拖放到此处<br>或确保在使用本地服务器时文件名正确。</div>
+        <input type="file" id="fileInput" accept=".html" style="display: none;">
+    </div>
+</div>
+
+<div class="toast" id="toast">已加载最新收藏夹数据</div>
+
+<script>
+    // State Management
+    let allBookmarks = []; // Flat array for search
+    let rootFolder = [];   // Tree structure
+    let currentFolder = [];
+    let breadcrumbs = [];
+
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const mainContainer = document.getElementById('mainContainer');
+    const searchInput = document.getElementById('searchInput');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', async () => {
+        // 1. Try fetching locally (Works if running on server)
+        try {
+            const response = await fetch('./favorites.html');
+            if (response.ok) {
+                const text = await response.text();
+                processHTML(text);
+                return;
+            }
+        } catch (e) {
+            console.log("Fetch failed (expected if opening via file://). Checking localStorage.");
+        }
+
+        // 2. Try loading from LocalStorage
+        const cachedData = localStorage.getItem('bookmarks_cache');
+        if (cachedData) {
+            try {
+                const parsed = JSON.parse(cachedData);
+                rootFolder = parsed.tree;
+                allBookmarks = parsed.flat;
+                currentFolder = rootFolder;
+                renderBookmarks(rootFolder);
+                showToast("已加载缓存的收藏夹");
+                uploadZone.style.display = 'none';
+                return;
+            } catch (e) {
+                console.error("Cache corrupted");
+            }
+        }
+
+        // 3. Fallback to Upload UI
+        uploadZone.style.display = 'flex';
+    });
+
+    // --- Event Listeners ---
+    uploadZone.addEventListener('click', () => fileInput.click());
+    uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('dragover');
+    });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file) handleFile(file);
+    });
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) handleFile(file);
+    });
+
+    resetBtn.addEventListener('click', () => {
+        if(confirm("确定要清除缓存并重新上传吗？")) {
+            localStorage.removeItem('bookmarks_cache');
+            location.reload();
+        }
+    });
+
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        if (!query) {
+            renderBookmarks(currentFolder);
+            renderBreadcrumbs();
+            return;
+        }
+        
+        // Flatten search
+        const results = allBookmarks.filter(item => 
+            item.title.toLowerCase().includes(query) || 
+            (item.url && item.url.toLowerCase().includes(query))
+        );
+        
+        renderSearchResults(results);
+    });
+
+    function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => processHTML(e.target.result);
+        reader.readAsText(file);
+    }
+
+    // --- Parsing Logic ---
+    function processHTML(htmlContent) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, 'text/html');
+        const dl = doc.querySelector('dl'); // Root list
+
+        allBookmarks = []; // Reset
+        rootFolder = parseDL(dl);
+        
+        // Cache data
+        try {
+            localStorage.setItem('bookmarks_cache', JSON.stringify({
+                tree: rootFolder,
+                flat: allBookmarks
+            }));
+            showToast("收藏夹已处理并缓存");
+        } catch(e) {
+            showToast("文件太大，无法缓存，但已加载");
+        }
+
+        uploadZone.style.display = 'none';
+        currentFolder = rootFolder;
+        breadcrumbs = [{title: '首页', folder: rootFolder}];
+        renderBookmarks(rootFolder);
+        renderBreadcrumbs();
+    }
+
+    function parseDL(dl) {
+        const items = [];
+        if (!dl) return items;
+
+        const children = Array.from(dl.children);
+        
+        for (let i = 0; i < children.length; i++) {
+            const node = children[i];
+            if (node.tagName === 'DT') {
+                const h3 = node.querySelector('h3');
+                const a = node.querySelector('a');
+                const subDl = node.querySelector('dl');
+
+                if (h3 && subDl) {
+                    // It's a folder
+                    const folder = {
+                        type: 'folder',
+                        title: h3.textContent,
+                        addDate: h3.getAttribute('ADD_DATE'),
+                        lastModified: h3.getAttribute('LAST_MODIFIED'),
+                        children: parseDL(subDl)
+                    };
+                    items.push(folder);
+                } else if (a) {
+                    // It's a bookmark
+                    const bookmark = {
+                        type: 'link',
+                        title: a.textContent,
+                        url: a.getAttribute('HREF'),
+                        icon: a.getAttribute('ICON'),
+                        addDate: a.getAttribute('ADD_DATE')
+                    };
+                    items.push(bookmark);
+                    allBookmarks.push(bookmark);
+                }
+            }
+        }
+        return items;
+    }
+
+    // --- Rendering Logic ---
+    function renderBreadcrumbs() {
+        if (searchInput.value) return; // Don't show breadcrumbs in search mode
+
+        let html = `<div class="breadcrumb">`;
+        breadcrumbs.forEach((crumb, index) => {
+            html += `<div class="breadcrumb-item" onclick="navigateToBreadcrumb(${index})">${crumb.title}</div>`;
+        });
+        html += `</div>`;
+        
+        // Insert before grid, usually manageable by clearing mainContainer first
+    }
+
+    function navigateToBreadcrumb(index) {
+        breadcrumbs = breadcrumbs.slice(0, index + 1);
+        currentFolder = breadcrumbs[index].folder;
+        renderBookmarks(currentFolder);
+    }
+
+    function openFolder(folder, title) {
+        currentFolder = folder.children;
+        breadcrumbs.push({title: title, folder: currentFolder});
+        renderBookmarks(currentFolder);
+    }
+
+    function renderBookmarks(items) {
+        // Clear container except UploadZone (which is hidden)
+        mainContainer.innerHTML = '';
+        
+        // Re-append upload zone just in case we need it later hidden
+        mainContainer.appendChild(uploadZone);
+
+        // Render Breadcrumbs
+        const bcDiv = document.createElement('div');
+        bcDiv.className = 'breadcrumb';
+        breadcrumbs.forEach((crumb, index) => {
+            const span = document.createElement('div');
+            span.className = 'breadcrumb-item';
+            span.innerText = crumb.title;
+            span.onclick = () => navigateToBreadcrumb(index);
+            bcDiv.appendChild(span);
+        });
+        mainContainer.appendChild(bcDiv);
+
+        // Render Grid
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+
+        // Separate folders and files for better organization
+        const folders = items.filter(i => i.type === 'folder');
+        const links = items.filter(i => i.type === 'link');
+
+        [...folders, ...links].forEach((item, index) => {
+            const card = document.createElement(item.type === 'link' ? 'a' : 'div');
+            card.className = item.type === 'link' ? 'card' : 'card folder-card';
+            card.style.animationDelay = `${index * 0.03}s`; // Staggered animation
+            
+            // Icon
+            let iconHtml = '';
+            if (item.type === 'folder') {
+                iconHtml = `<div class="card-icon folder-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                </div>`;
+                card.onclick = () => openFolder(item, item.title);
+            } else {
+                if (item.icon) {
+                    iconHtml = `<div class="card-icon"><img src="${item.icon}" alt=""></div>`;
+                } else {
+                    // Generate a color based on the first letter
+                    const letter = item.title ? item.title.charAt(0).toUpperCase() : '?';
+                    iconHtml = `<div class="card-icon" style="background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-primary)">${letter}</div>`;
+                }
+                card.href = item.url;
+                card.target = "_blank";
+            }
+
+            // Date formatting
+            let dateStr = '';
+            if(item.addDate) {
+                const date = new Date(parseInt(item.addDate) * 1000);
+                dateStr = date.toLocaleDateString();
+            }
+
+            card.innerHTML = `
+                ${iconHtml}
+                <div class="card-content">
+                    <div class="card-title">${item.title}</div>
+                    <div class="card-subtitle">${item.type === 'link' ? (item.url.length > 30 ? item.url.substring(0,30)+'...' : item.url) : item.children.length + ' 个项目'}</div>
+                </div>
+            `;
+
+            // Ripple effect click handler
+            card.addEventListener('mousedown', createRipple);
+
+            grid.appendChild(card);
+        });
+
+        if (items.length === 0) {
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--md-sys-color-on-surface-variant); padding: 40px;">此文件夹为空</div>';
+        }
+
+        mainContainer.appendChild(grid);
+    }
+
+    function renderSearchResults(items) {
+        mainContainer.innerHTML = '';
+        mainContainer.appendChild(uploadZone); // Keep hidden zone
+
+        const title = document.createElement('div');
+        title.className = 'section-title';
+        title.innerText = `搜索结果 (${items.length})`;
+        mainContainer.appendChild(title);
+
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+
+        items.forEach((item, index) => {
+            const card = document.createElement('a');
+            card.className = 'card';
+            card.style.animationDelay = `${index * 0.03}s`;
+            card.href = item.url;
+            card.target = "_blank";
+
+            let iconHtml = '';
+            if (item.icon) {
+                iconHtml = `<div class="card-icon"><img src="${item.icon}" alt=""></div>`;
+            } else {
+                const letter = item.title ? item.title.charAt(0).toUpperCase() : '?';
+                iconHtml = `<div class="card-icon" style="background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-primary)">${letter}</div>`;
+            }
+
+            card.innerHTML = `
+                ${iconHtml}
+                <div class="card-content">
+                    <div class="card-title">${item.title}</div>
+                    <div class="card-subtitle">${item.url}</div>
+                </div>
+            `;
+            card.addEventListener('mousedown', createRipple);
+            grid.appendChild(card);
+        });
+
+        mainContainer.appendChild(grid);
+    }
+
+    // --- Utilities ---
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function createRipple(event) {
+        const button = event.currentTarget;
+        const circle = document.createElement("span");
+        const diameter = Math.max(button.clientWidth, button.clientHeight);
+        const radius = diameter / 2;
+
+        circle.style.width = circle.style.height = `${diameter}px`;
+        circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+        circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+        circle.classList.add("ripple");
+
+        const ripple = button.getElementsByClassName("ripple")[0];
+        if (ripple) {
+            ripple.remove();
+        }
+
+        button.appendChild(circle);
+    }
+</script>
+</body>
+</html>
