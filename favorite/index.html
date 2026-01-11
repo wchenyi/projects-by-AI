@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Start Page</title>
+    <style>
+        /* --- Material Design 3 Token System --- */
+        :root {
+            /* Light Theme */
+            --md-primary: #6750A4;
+            --md-on-primary: #FFFFFF;
+            --md-primary-container: #EADDFF;
+            --md-on-primary-container: #21005D;
+            --md-secondary: #625B71;
+            --md-secondary-container: #E8DEF8;
+            --md-surface: #FDF8FD;
+            --md-surface-container: #F3EDF7;
+            --md-surface-container-high: #ECE6F0;
+            --md-on-surface: #1C1B1F;
+            --md-on-surface-variant: #49454F;
+            --md-outline: #79747E;
+            --md-outline-variant: #CAC4D0;
+            --md-error: #B3261E;
+            --md-error-container: #F9DEDC;
+            --md-on-error-container: #410E0B;
+            
+            --elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+            --elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+            --elevation-3: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+
+            --radius-l: 24px;
+            --radius-m: 16px;
+            --radius-s: 12px;
+            --anim-standard: 300ms cubic-bezier(0.2, 0.0, 0, 1.0);
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme */
+            --md-primary: #D0BCFF;
+            --md-on-primary: #381E72;
+            --md-primary-container: #4F378B;
+            --md-on-primary-container: #EADDFF;
+            --md-secondary: #CCC2DC;
+            --md-secondary-container: #4A4458;
+            --md-surface: #141218;
+            --md-surface-container: #211F26;
+            --md-surface-container-high: #2B2930;
+            --md-on-surface: #E6E1E5;
+            --md-on-surface-variant: #CAC4D0;
+            --md-outline: #938F99;
+            --md-outline-variant: #49454F;
+            --md-error: #F2B8B5;
+            --md-error-container: #8C1D18;
+            --md-on-error-container: #F9DEDC;
+        }
+
+        /* --- Global Reset & Base --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+            background-color: var(--md-surface);
+            color: var(--md-on-surface);
+            transition: background-color var(--anim-standard), color var(--anim-standard);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: scroll;
+        }
+
+        /* --- Top App Bar --- */
+        .top-app-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: rgba(var(--md-surface), 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color var(--anim-standard);
+        }
+
+        .logo-area {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--md-on-surface);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* --- Buttons & Icons --- */
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--md-on-surface-variant);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background var(--anim-standard);
+        }
+        .icon-btn:hover { background-color: rgba(128,128,128, 0.1); color: var(--md-on-surface); }
+        .icon-btn svg { width: 24px; height: 24px; fill: currentColor; }
+
+        .filled-btn {
+            background-color: var(--md-primary);
+            color: var(--md-on-primary);
+            padding: 0 24px;
+            height: 40px;
+            border-radius: 20px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: box-shadow var(--anim-standard);
+        }
+        .filled-btn:hover { box-shadow: var(--elevation-1); }
+
+        /* --- Hero Search Section --- */
+        .hero-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px 40px;
+            transition: padding var(--anim-standard);
+        }
+
+        .engine-tabs {
+            display: flex;
+            background-color: var(--md-surface-container-high);
+            border-radius: 20px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+
+        .engine-tab {
+            padding: 8px 24px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--md-on-surface-variant);
+            transition: all 0.2s;
+        }
+
+        .engine-tab.active {
+            background-color: var(--md-secondary-container);
+            color: var(--md-on-secondary-container);
+        }
+
+        .main-search-box {
+            position: relative;
+            width: 100%;
+            max-width: 680px;
+            height: 56px;
+            background-color: var(--md-surface-container-high);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            transition: all var(--anim-standard);
+            border: 2px solid transparent;
+        }
+
+        .main-search-box:focus-within {
+            background-color: var(--md-surface-container);
+            border-color: var(--md-primary);
+            box-shadow: var(--elevation-2);
+        }
+
+        .main-search-input {
+            flex: 1;
+            height: 100%;
+            border: none;
+            background: none;
+            outline: none;
+            font-size: 1.1rem;
+            color: var(--md-on-surface);
+            margin-left: 12px;
+        }
+
+        /* --- Content Container --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 16px 80px;
+            flex: 1;
+        }
+
+        /* --- Breadcrumb --- */
+        .breadcrumb-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 8px 0;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .crumb {
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+            color: var(--md-on-surface-variant);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .crumb:hover { background-color: var(--md-surface-container-high); }
+        .crumb:last-child { color: var(--md-primary); font-weight: 600; pointer-events: none; }
+        .crumb-separator { margin: 0 4px; color: var(--md-outline-variant); }
+
+        /* --- Grid System --- */
+        .grid {
+            display: grid;
+            gap: 16px;
+            transition: all var(--anim-standard);
+        }
+
+        /* Layout Modes */
+        .grid.mode-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+        .grid.mode-list { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+        .grid.mode-detail { grid-template-columns: 1fr; }
+
+        /* --- Cards --- */
+        .card {
+            background-color: var(--md-surface-container);
+            border-radius: var(--radius-m);
+            padding: 16px;
+            display: flex;
+            align-items: center; /* Default align for list/detail */
+            text-decoration: none;
+            position: relative;
+            transition: all 0.2s;
+            cursor: pointer;
+            overflow: hidden;
+            border: 1px solid transparent;
+            opacity: 0;
+            animation: slideUp 0.4s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card:hover {
+            background-color: var(--md-surface-container-high);
+            box-shadow: var(--elevation-2);
+            transform: translateY(-2px);
+            z-index: 1;
+        }
+
+        /* Grid Mode Specifics */
+        .grid.mode-grid .card {
+            flex-direction: column;
+            text-align: center;
+            padding: 24px 16px;
+            aspect-ratio: 1 / 0.8;
+            justify-content: center;
+        }
+        
+        .grid.mode-grid .card-icon { margin-bottom: 12px; margin-right: 0; width: 48px; height: 48px; }
+        .grid.mode-grid .card-content { width: 100%; }
+
+        /* Card Elements */
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background-color: var(--md-surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            flex-shrink: 0;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--md-primary);
+        }
+        .card-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+        .folder-card .card-icon { background-color: var(--md-primary-container); color: var(--md-on-primary-container); }
+
+        .card-content { flex: 1; min-width: 0; overflow: hidden; }
+        .card-title { font-size: 1rem; color: var(--md-on-surface); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-desc { font-size: 0.8rem; color: var(--md-on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; }
+
+        /* Delete Button */
+        .card-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(var(--md-error-container), 0.8);
+            color: var(--md-error);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .card-delete:hover { background: var(--md-error); color: white; }
+        .card:hover .card-delete { opacity: 1; }
+        .grid.mode-grid .card-delete { top: 8px; right: 8px; }
+
+        /* --- Settings & Dialogs --- */
+        .dialog-backdrop {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .dialog-backdrop.open { opacity: 1; pointer-events: auto; }
+
+        .dialog {
+            background: var(--md-surface-container-high);
+            padding: 24px;
+            border-radius: 28px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: var(--elevation-3);
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+        .dialog-backdrop.open .dialog { transform: scale(1); }
+
+        .setting-group { margin-bottom: 24px; }
+        .setting-title { font-size: 0.9rem; color: var(--md-primary); font-weight: 500; margin-bottom: 12px; }
+        
+        .segmented-control {
+            display: flex;
+            background: var(--md-surface);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .segment-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: none;
+            color: var(--md-on-surface-variant);
+            cursor: pointer;
+            border-right: 1px solid var(--md-outline-variant);
+            transition: background 0.2s;
+        }
+        .segment-btn:last-child { border-right: none; }
+        .segment-btn.active { background: var(--md-secondary-container); color: var(--md-on-secondary-container); font-weight: 600; }
+
+        /* --- Upload Zone --- */
+        .upload-zone {
+            border: 2px dashed var(--md-outline-variant);
+            border-radius: var(--radius-l);
+            padding: 40px;
+            text-align: center;
+            margin: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-zone:hover { background-color: var(--md-primary-container); border-color: var(--md-primary); }
+
+        /* --- FAB (Back to Top) --- */
+        .fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background-color: var(--md-primary-container);
+            color: var(--md-on-primary-container);
+            border: none;
+            box-shadow: var(--elevation-2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s, opacity 0.3s;
+            opacity: 0;
+            transform: translateY(20px);
+            z-index: 90;
+        }
+        .fab.visible { opacity: 1; transform: translateY(0); }
+        .fab:hover { box-shadow: var(--elevation-3); }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: var(--md-on-surface); color: var(--md-surface);
+            padding: 12px 24px; border-radius: 24px;
+            opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2000;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header class="top-app-bar">
+        <div class="logo-area">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="var(--md-primary)"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+            <span>Favorites</span>
+        </div>
+        <div class="top-actions">
+            <button class="icon-btn" onclick="openSettings()" title="设置">
+                <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.04.24.24.41.48.41h3.84c.24 0 .43-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="hero-section">
+        <div class="engine-tabs" id="engineTabs">
+            <div class="engine-tab active" onclick="setEngine('baidu')">百度</div>
+            <div class="engine-tab" onclick="setEngine('google')">Google</div>
+            <div class="engine-tab" onclick="setEngine('bing')">Bing</div>
+        </div>
+        <div class="main-search-box">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="var(--md-on-surface-variant)"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" id="searchInput" class="main-search-input" placeholder="搜索网络或输入书签名称..." onkeydown="handleSearch(event)">
+        </div>
+    </div>
+
+    <div class="container" id="mainContainer">
+        <div class="upload-zone" id="uploadZone">
+            <h3>还没有书签数据</h3>
+            <p>请将 favorites.html 拖放到此处，或点击选择文件</p>
+            <input type="file" id="fileInput" accept=".html" style="display:none">
+        </div>
+        
+        <div class="breadcrumb-bar" id="breadcrumbs" style="display:none;"></div>
+
+        <div class="grid mode-grid" id="bookmarkGrid"></div>
+    </div>
+
+    <button class="fab" id="fab" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
+    </button>
+
+    <div class="dialog-backdrop" id="settingsModal" onclick="if(event.target === this) closeSettings()">
+        <div class="dialog">
+            <h2 style="margin-bottom: 24px; font-size: 1.5rem;">设置</h2>
+            
+            <div class="setting-group">
+                <div class="setting-title">主题外观</div>
+                <div class="segmented-control">
+                    <button class="segment-btn" id="theme-system" onclick="setTheme('system')">自动</button>
+                    <button class="segment-btn" id="theme-light" onclick="setTheme('light')">浅色</button>
+                    <button class="segment-btn" id="theme-dark" onclick="setTheme('dark')">深色</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-title">卡片布局</div>
+                <div class="segmented-control">
+                    <button class="segment-btn" id="layout-grid" onclick="setLayout('grid')">网格</button>
+                    <button class="segment-btn" id="layout-list" onclick="setLayout('list')">列表</button>
+                    <button class="segment-btn" id="layout-detail" onclick="setLayout('detail')">详情</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-title">数据管理</div>
+                <button class="filled-btn" style="width: 100%; justify-content: center; background-color: var(--md-error-container); color: var(--md-on-error-container);" onclick="resetData()">
+                    清除缓存并重置
+                </button>
+            </div>
+
+            <div style="text-align: right;">
+                <button class="filled-btn" style="display: inline-flex;" onclick="closeSettings()">完成</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+<script>
+    // --- Configuration & State ---
+    const engines = {
+        baidu: { url: 'https://www.baidu.com/s?wd=', placeholder: '百度一下...' },
+        google: { url: 'https://www.google.com/search?q=', placeholder: 'Google 搜索...' },
+        bing: { url: 'https://www.bing.com/search?q=', placeholder: 'Bing 搜索...' }
+    };
+    
+    let state = {
+        currentEngine: 'baidu',
+        theme: 'system', // system, light, dark
+        layout: 'grid', // grid, list, detail
+        rootFolder: [],
+        currentFolder: [],
+        flatBookmarks: [], // For search
+        breadcrumbs: []
+    };
+
+    // --- DOM Elements ---
+    const els = {
+        uploadZone: document.getElementById('uploadZone'),
+        mainContainer: document.getElementById('mainContainer'),
+        grid: document.getElementById('bookmarkGrid'),
+        breadcrumbs: document.getElementById('breadcrumbs'),
+        input: document.getElementById('searchInput'),
+        settings: document.getElementById('settingsModal'),
+        fab: document.getElementById('fab'),
+        fileInput: document.getElementById('fileInput')
+    };
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSettings();
+        applySettings();
+        
+        // Check for data
+        const cached = localStorage.getItem('bm_data');
+        if (cached) {
+            try {
+                const parsed = JSON.parse(cached);
+                state.rootFolder = parsed.tree;
+                state.flatBookmarks = parsed.flat;
+                state.currentFolder = state.rootFolder;
+                state.breadcrumbs = [{title: '首页', folder: state.rootFolder}];
+                els.uploadZone.style.display = 'none';
+                els.breadcrumbs.style.display = 'flex';
+                render();
+            } catch(e) { console.error("Cache Error", e); }
+        } else {
+            // Try fetch for local file server
+            fetch('favorites.html').then(r => {
+                if(r.ok) return r.text();
+                throw new Error('No file');
+            }).then(txt => processHTML(txt))
+            .catch(() => els.uploadZone.style.display = 'block');
+        }
+    });
+
+    // --- File Handling ---
+    els.uploadZone.addEventListener('click', () => els.fileInput.click());
+    els.uploadZone.addEventListener('dragover', e => { e.preventDefault(); els.uploadZone.style.backgroundColor = 'var(--md-surface-container)'; });
+    els.uploadZone.addEventListener('dragleave', e => { els.uploadZone.style.backgroundColor = ''; });
+    els.uploadZone.addEventListener('drop', e => {
+        e.preventDefault();
+        if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+    els.fileInput.addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
+
+    function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = e => processHTML(e.target.result);
+        reader.readAsText(file);
+    }
+
+    function processHTML(html) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const dl = doc.querySelector('dl');
+        
+        state.flatBookmarks = [];
+        state.rootFolder = parseDL(dl);
+        
+        // Persist
+        try {
+            localStorage.setItem('bm_data', JSON.stringify({
+                tree: state.rootFolder,
+                flat: state.flatBookmarks
+            }));
+            showToast('书签已导入并缓存');
+        } catch(e) { showToast('文件过大，仅本次会话有效'); }
+
+        state.currentFolder = state.rootFolder;
+        state.breadcrumbs = [{title: '首页', folder: state.rootFolder}];
+        els.uploadZone.style.display = 'none';
+        els.breadcrumbs.style.display = 'flex';
+        render();
+    }
+
+    function parseDL(dl) {
+        const items = [];
+        if (!dl) return items;
+        for (const node of Array.from(dl.children)) {
+            if (node.tagName === 'DT') {
+                const h3 = node.querySelector('h3');
+                const a = node.querySelector('a');
+                const subDl = node.querySelector('dl');
+                
+                if (h3 && subDl) {
+                    items.push({
+                        id: Date.now() + Math.random(),
+                        type: 'folder',
+                        title: h3.textContent,
+                        addDate: h3.getAttribute('ADD_DATE'),
+                        children: parseDL(subDl)
+                    });
+                } else if (a) {
+                    const bm = {
+                        id: Date.now() + Math.random(),
+                        type: 'link',
+                        title: a.textContent,
+                        url: a.getAttribute('HREF'),
+                        icon: a.getAttribute('ICON'),
+                        addDate: a.getAttribute('ADD_DATE')
+                    };
+                    items.push(bm);
+                    state.flatBookmarks.push(bm);
+                }
+            }
+        }
+        return items;
+    }
+
+    // --- Rendering ---
+    function render() {
+        renderBreadcrumbs();
+        
+        // Filter logic if searching inside bookmarks (optional, currently input is dual purpose)
+        // But main grid displays current folder
+        els.grid.innerHTML = '';
+        
+        if (state.currentFolder.length === 0) {
+            els.grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--md-outline);">空文件夹</div>`;
+            return;
+        }
+
+        const folders = state.currentFolder.filter(i => i.type === 'folder');
+        const files = state.currentFolder.filter(i => i.type === 'link');
+
+        [...folders, ...files].forEach((item, idx) => {
+            const el = document.createElement(item.type === 'link' ? 'a' : 'div');
+            el.className = `card ${item.type === 'folder' ? 'folder-card' : ''}`;
+            el.style.animationDelay = `${idx * 0.05}s`;
+            
+            if (item.type === 'link') {
+                el.href = item.url;
+                el.target = '_blank';
+            } else {
+                el.onclick = (e) => {
+                    if(e.target.closest('.card-delete')) return;
+                    openFolder(item);
+                };
+            }
+
+            // Icon
+            let iconHtml = '';
+            if (item.type === 'folder') {
+                iconHtml = `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`;
+            } else if (item.icon) {
+                iconHtml = `<img src="${item.icon}" onerror="this.style.display='none'">`;
+            } else {
+                iconHtml = (item.title || '?')[0].toUpperCase();
+            }
+
+            el.innerHTML = `
+                <div class="card-icon">${iconHtml}</div>
+                <div class="card-content">
+                    <div class="card-title">${item.title}</div>
+                    <div class="card-desc">${item.type === 'link' ? cleanUrl(item.url) : item.children.length + ' 项'}</div>
+                </div>
+                <button class="card-delete" onclick="deleteItem(event, '${item.id}')" title="删除">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </button>
+            `;
+            
+            // Ripple
+            el.addEventListener('mousedown', createRipple);
+            els.grid.appendChild(el);
+        });
+    }
+
+    function renderBreadcrumbs() {
+        els.breadcrumbs.innerHTML = '';
+        state.breadcrumbs.forEach((crumb, idx) => {
+            if (idx > 0) {
+                const sep = document.createElement('span');
+                sep.className = 'crumb-separator';
+                sep.textContent = '/';
+                els.breadcrumbs.appendChild(sep);
+            }
+            const el = document.createElement('div');
+            el.className = 'crumb';
+            el.textContent = crumb.title;
+            el.onclick = () => {
+                state.breadcrumbs = state.breadcrumbs.slice(0, idx + 1);
+                state.currentFolder = crumb.folder;
+                render();
+            };
+            els.breadcrumbs.appendChild(el);
+        });
+    }
+
+    function openFolder(folder) {
+        state.currentFolder = folder.children;
+        state.breadcrumbs.push({title: folder.title, folder: folder.children});
+        render();
+    }
+
+    // --- Search Logic ---
+    function setEngine(name) {
+        state.currentEngine = name;
+        document.querySelectorAll('.engine-tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        els.input.placeholder = engines[name].placeholder;
+        saveSettings();
+    }
+
+    function handleSearch(e) {
+        // If Enter is pressed
+        if (e.key === 'Enter') {
+            const val = els.input.value.trim();
+            if (!val) return;
+            
+            // If it looks like a URL, go there
+            if (val.includes('.') && !val.includes(' ')) {
+                window.open(val.startsWith('http') ? val : 'https://' + val, '_blank');
+            } else {
+                // Perform web search
+                window.open(engines[state.currentEngine].url + encodeURIComponent(val), '_blank');
+            }
+        } else {
+            // Live Local Search (Debounce could be added)
+            setTimeout(() => {
+                const val = els.input.value.toLowerCase();
+                if (val.length === 0) {
+                    state.currentFolder = state.breadcrumbs[state.breadcrumbs.length-1].folder;
+                    render();
+                    return;
+                }
+                // Search flat array
+                const results = state.flatBookmarks.filter(b => 
+                    b.title.toLowerCase().includes(val) || 
+                    (b.url && b.url.toLowerCase().includes(val))
+                );
+                // Temporary render results
+                els.grid.innerHTML = '';
+                results.forEach((item, idx) => {
+                    const el = document.createElement('a');
+                    el.className = 'card';
+                    el.href = item.url;
+                    el.target = '_blank';
+                    el.style.animationDelay = `${idx * 0.03}s`;
+                    let iconHtml = item.icon ? `<img src="${item.icon}">` : (item.title||'?')[0];
+                    el.innerHTML = `
+                        <div class="card-icon">${iconHtml.startsWith('<')?iconHtml:`<div class="txt">${iconHtml}</div>`}</div>
+                        <div class="card-content"><div class="card-title">${item.title}</div><div class="card-desc">${cleanUrl(item.url)}</div></div>
+                    `;
+                    els.grid.appendChild(el);
+                });
+            }, 100);
+        }
+    }
+
+    // --- Utilities & Actions ---
+    function deleteItem(e, id) {
+        e.preventDefault();
+        e.stopPropagation();
+        if(!confirm('确定要在缓存中删除此书签吗？(原始文件不会被修改)')) return;
+
+        // Recursively remove from tree (or simple filter if in currentFolder view)
+        // Since we render from state.currentFolder, modifying it is enough for view, 
+        // but to persist we need to remove from structure.
+        // Simplified: Remove from current view array and update persistence
+        const idx = state.currentFolder.findIndex(i => i.id === id || i.id == id); // Loose eq for safety
+        if (idx > -1) {
+            state.currentFolder.splice(idx, 1);
+            
+            // Also remove from flatBookmarks if link
+            const flatIdx = state.flatBookmarks.findIndex(i => i.id == id);
+            if(flatIdx > -1) state.flatBookmarks.splice(flatIdx, 1);
+
+            // Save
+            localStorage.setItem('bm_data', JSON.stringify({
+                tree: state.rootFolder,
+                flat: state.flatBookmarks
+            }));
+            render();
+            showToast('已删除 (仅本地缓存)');
+        }
+    }
+
+    function cleanUrl(url) {
+        try { return new URL(url).hostname; } catch { return url; }
+    }
+
+    function createRipple(event) {
+        const button = event.currentTarget;
+        const circle = document.createElement("span");
+        const diameter = Math.max(button.clientWidth, button.clientHeight);
+        const radius = diameter / 2;
+        circle.style.width = circle.style.height = `${diameter}px`;
+        circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+        circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+        circle.classList.add("ripple"); // Need CSS for this if strict MD3, but standard hover is good enough
+        setTimeout(() => circle.remove(), 600);
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.style.opacity = 1;
+        setTimeout(() => t.style.opacity = 0, 3000);
+    }
+
+    // --- Settings Logic ---
+    function openSettings() { els.settings.classList.add('open'); }
+    function closeSettings() { els.settings.classList.remove('open'); }
+    
+    function setTheme(mode) {
+        state.theme = mode;
+        const doc = document.documentElement;
+        if (mode === 'dark') doc.setAttribute('data-theme', 'dark');
+        else if (mode === 'light') doc.removeAttribute('data-theme');
+        else {
+            // System
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                doc.setAttribute('data-theme', 'dark');
+            } else {
+                doc.removeAttribute('data-theme');
+            }
+        }
+        updateSegmentUI('theme', mode);
+        saveSettings();
+    }
+
+    function setLayout(mode) {
+        state.layout = mode;
+        els.grid.className = `grid mode-${mode}`;
+        updateSegmentUI('layout', mode);
+        saveSettings();
+    }
+
+    function updateSegmentUI(prefix, val) {
+        document.querySelectorAll(`[id^="${prefix}-"]`).forEach(b => b.classList.remove('active'));
+        const btn = document.getElementById(`${prefix}-${val}`);
+        if(btn) btn.classList.add('active');
+    }
+
+    function resetData() {
+        if(confirm('确定重置？所有数据将清空，需重新上传 favorites.html')) {
+            localStorage.removeItem('bm_data');
+            localStorage.removeItem('bm_settings');
+            location.reload();
+        }
+    }
+
+    function saveSettings() {
+        localStorage.setItem('bm_settings', JSON.stringify({
+            theme: state.theme,
+            layout: state.layout,
+            engine: state.currentEngine
+        }));
+    }
+
+    function loadSettings() {
+        const saved = JSON.parse(localStorage.getItem('bm_settings') || '{}');
+        if(saved.theme) setTheme(saved.theme);
+        if(saved.layout) setLayout(saved.layout);
+        if(saved.engine) setEngine(saved.engine);
+        else setEngine('baidu');
+    }
+
+    // Back to top scroll listener
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) els.fab.classList.add('visible');
+        else els.fab.classList.remove('visible');
+    });
+
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (state.theme === 'system') setTheme('system');
+    });
+
+</script>
+</body>
+</html>
