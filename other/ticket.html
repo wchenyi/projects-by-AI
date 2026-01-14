@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>车票详情</title>
+    <style>
+        /* --- 基础样式 --- */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* 模拟手机容器 */
+        .phone-container {
+            width: 100%;
+            max-width: 450px;
+            min-height: 100vh;
+            background-color: #f2f2f6;
+            position: relative;
+        }
+
+        /* --- 顶部时间 (北京时间) --- */
+        .status-bar {
+            background-color: #fff;
+            padding: 10px 15px;
+            font-size: 14px;
+            color: #333;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* --- 车票卡片容器 --- */
+        .ticket-card {
+            margin: 15px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        /* 日期行 */
+        .date-row {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        /* 车站与车次行 */
+        .main-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .station {
+            font-size: 22px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .train-no {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+
+        .arrow-icon {
+            width: 80px;
+            height: 1px;
+            background: #ccc;
+            position: relative;
+            margin: 5px auto;
+        }
+
+        .arrow-icon::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -3px;
+            width: 6px;
+            height: 6px;
+            border-right: 1px solid #ccc;
+            border-top: 1px solid #ccc;
+            transform: rotate(45deg);
+        }
+
+        /* 时间行 */
+        .time-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .time {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            font-family: "Arial";
+        }
+
+        .arrival-time {
+            position: relative;
+        }
+
+        /* 上标显示 +1 天 */
+        .day-plus {
+            font-size: 12px;
+            color: #ff5500;
+            position: absolute;
+            top: 0;
+            right: -25px;
+        }
+
+        /* 价格与标签 */
+        .footer-info {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price {
+            font-size: 18px;
+            color: #ff5a00;
+            font-weight: bold;
+        }
+
+        .price::before {
+            content: "￥";
+            font-size: 12px;
+        }
+
+        .student-tag {
+            border: 1px solid #ff5a00;
+            color: #ff5a00;
+            font-size: 11px;
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-container">
+        <div class="status-bar" id="beijing-time">2026-01-14 12:00:00</div>
+
+        <div class="ticket-card">
+            <div class="date-row" id="ticket-date">--</div>
+            
+            <div class="main-info">
+                <div class="station" id="start-station">--</div>
+                <div class="train-no">
+                    <div id="train-number">--</div>
+                    <div class="arrow-icon"></div>
+                </div>
+                <div class="station" id="end-station">--</div>
+            </div>
+
+            <div class="time-row">
+                <div class="time" id="start-time">00:00</div>
+                <div class="time arrival-time">
+                    <span id="end-time">00:00</span>
+                    <span id="day-plus" class="day-plus hidden">+1天</span>
+                </div>
+            </div>
+
+            <div class="footer-info">
+                <div class="price" id="ticket-price">0</div>
+                <div id="student-label" class="student-tag hidden">学生票</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ==========================================
+         * 修改区域：在这里自定义你的车票信息
+         * ==========================================
+         */
+        const ticketConfig = {
+            date: "2026年01月14日",       // 日期
+            trainNumber: "G1234",        // 车次
+            startStation: "北京南",       // 起始站
+            endStation: "上海虹桥",       // 终点站
+            startTime: "08:00",          // 发车时间
+            endTime: "13:15",            // 到站时间
+            isNextDay: true,             // 是否跨天显示+1 (true显示, false不显示)
+            price: "553.0",              // 价格
+            isStudent: true              // 是否显示学生票标签 (true显示, false隐藏)
+        };
+
+        /**
+         * ==========================================
+         * 核心逻辑：渲染函数
+         * ==========================================
+         */
+        function renderTicket() {
+            document.getElementById('ticket-date').innerText = ticketConfig.date;
+            document.getElementById('train-number').innerText = ticketConfig.trainNumber;
+            document.getElementById('start-station').innerText = ticketConfig.startStation;
+            document.getElementById('end-station').innerText = ticketConfig.endStation;
+            document.getElementById('start-time').innerText = ticketConfig.startTime;
+            document.getElementById('end-time').innerText = ticketConfig.endTime;
+            document.getElementById('ticket-price').innerText = ticketConfig.price;
+
+            // 处理是否跨天
+            const dayPlus = document.getElementById('day-plus');
+            if (ticketConfig.isNextDay) {
+                dayPlus.classList.remove('hidden');
+            } else {
+                dayPlus.classList.add('hidden');
+            }
+
+            // 处理学生票标签
+            const studentLabel = document.getElementById('student-label');
+            if (ticketConfig.isStudent) {
+                studentLabel.classList.remove('hidden');
+            } else {
+                studentLabel.classList.add('hidden');
+            }
+        }
+
+        // 动态时钟函数：更新北京时间
+        function updateClock() {
+            const now = new Date();
+            // 简单处理北京时间格式化
+            const timeString = now.toLocaleString('zh-CN', { 
+                hour12: false,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }).replace(/\//g, '-');
+            
+            document.getElementById('beijing-time').innerText = timeString;
+        }
+
+        // 初始化运行
+        renderTicket();
+        setInterval(updateClock, 1000); // 每秒更新一次时间
+        updateClock();
+    </script>
+</body>
+</html>
