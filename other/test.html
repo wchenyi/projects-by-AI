@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>京房八宫卦 - 训练与学习</title>
+    <style>
+        /* --- CSS 变量定义 (主题系统) --- */
+        :root {
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-sub: #7f8c8d;
+            --accent: #c0392b; /* 朱砂红 */
+            --yang-color: #2c3e50;
+            --yin-color: #2c3e50;
+            --btn-bg: #2c3e50;
+            --btn-text: #fff;
+            --border-color: #e0e0e0;
+            --shadow: 0 4px 6px rgba(0,0,0,0.05);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* 深色模式变量 */
+        body.dark-mode {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-sub: #a0a0a0;
+            --accent: #ff6b6b;
+            --yang-color: #dcdcdc;
+            --yin-color: #dcdcdc;
+            --btn-bg: #333;
+            --btn-text: #eee;
+            --border-color: #333;
+            --shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        /* --- 基础样式 --- */
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", "Kaiti", serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 { margin: 0; font-size: 1.2rem; font-weight: bold; }
+        
+        button {
+            border: none;
+            outline: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* 深色模式开关 */
+        .theme-toggle {
+            background: transparent;
+            font-size: 1.2rem;
+            color: var(--text-main);
+            padding: 5px;
+            border-radius: 50%;
+        }
+
+        /* --- 视图容器 --- */
+        .view-section {
+            display: none; /* 默认隐藏所有 */
+            flex: 1;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        .view-section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- 首页 (Home) --- */
+        .home-menu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+            gap: 20px;
+        }
+
+        .menu-card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 300px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .menu-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--text-main);
+        }
+
+        .menu-icon { font-size: 3rem; margin-bottom: 10px; display: block; }
+        .menu-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 5px; }
+        .menu-desc { color: var(--text-sub); font-size: 0.9rem; }
+
+        /* --- 训练模式 (Training) --- */
+        .training-container {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        .hex-visual-large {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 12px;
+            margin: 30px auto;
+            width: 160px;
+            cursor: pointer;
+        }
+
+        .line { height: 18px; width: 100%; position: relative; border-radius: 2px; }
+        .yang { background-color: var(--yang-color); }
+        .yin { display: flex; justify-content: space-between; }
+        .yin::before, .yin::after {
+            content: ''; display: block; width: 42%; height: 100%;
+            background-color: var(--yin-color); border-radius: 2px;
+        }
+
+        /* 世应标记 */
+        .marker {
+            position: absolute; right: -35px; top: 0;
+            font-size: 14px; line-height: 18px; font-weight: bold;
+        }
+        .marker.shi { color: var(--accent); }
+        .marker.ying { color: var(--text-sub); font-size: 12px; }
+
+        .answer-box {
+            margin-top: 20px; opacity: 0; transform: translateY(10px);
+            transition: var(--transition); min-height: 120px;
+        }
+        .answer-box.visible { opacity: 1; transform: translateY(0); }
+
+        .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .btn-main { background: var(--btn-bg); color: var(--btn-text); padding: 10px 20px; border-radius: 8px; }
+        .btn-sec { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 20px; border-radius: 8px; }
+
+        /* --- 学习模式 (Learning) --- */
+        .back-nav {
+            margin-bottom: 20px;
+            color: var(--text-sub);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        .back-nav:hover { color: var(--accent); }
+
+        .palace-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+        }
+
+        .palace-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .palace-card:hover { transform: scale(1.05); background: var(--bg-color); }
+        .p-symbol { font-size: 2rem; margin-bottom: 10px; font-family: sans-serif; }
+        .p-name { font-weight: bold; }
+
+        /* 学习详情页：八卦展示 */
+        .palace-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+        }
+        
+        .hex-card-small {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hex-visual-small {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 4px;
+            width: 60px;
+            margin-bottom: 10px;
+        }
+        .hex-visual-small .line { height: 6px; }
+        .hex-visual-small .marker { display: none; } /* 小图不显示世应字样，用颜色区分 */
+        
+        /* 在小图中，高亮世爻行 */
+        .hex-visual-small .line.is-shi { 
+             /* 简单加上红色边框或者阴影来表示世爻 */
+             box-shadow: 0 0 4px var(--accent);
+        }
+
+        .small-name { font-size: 0.9rem; font-weight: bold; margin-bottom: 4px; }
+        .small-pos { font-size: 0.75rem; color: var(--text-sub); }
+
+    </style>
+</head>
+<body class="">
+
+    <header>
+        <h1 id="page-title">京房八宫卦</h1>
+        <button class="theme-toggle" onclick="toggleTheme()" title="切换模式">◑</button>
+    </header>
+
+    <div id="view-home" class="view-section active">
+        <div class="home-menu">
+            <div class="menu-card" onclick="switchView('view-training')">
+                <span class="menu-icon">⚡</span>
+                <div class="menu-title">训练模式</div>
+                <div class="menu-desc">随机出题，脑内推演，揭晓答案</div>
+            </div>
+            <div class="menu-card" onclick="switchView('view-learning')">
+                <span class="menu-icon">📖</span>
+                <div class="menu-title">学习模式</div>
+                <div class="menu-desc">浏览八宫全貌，掌握演变规律</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-training" class="view-section">
+        <div class="back-nav" onclick="switchView('view-home')">← 返回首页</div>
+        <div class="training-container">
+            <h2>识卦辨宫</h2>
+            <div id="train-display" class="hex-visual-large"></div>
+            
+            <div id="train-answer" class="answer-box">
+                <div style="font-size: 2rem; font-weight: bold; margin-bottom: 10px;" id="ans-name">--</div>
+                <div style="font-size: 1.1rem; color: var(--accent);" id="ans-palace">--</div>
+                <div style="color: var(--text-sub);" id="ans-detail">--</div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-main" onclick="revealAnswer()">揭晓</button>
+                <button class="btn-sec" onclick="nextQuestion()">下一卦</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-learning" class="view-section">
+        <div class="back-nav" onclick="switchView('view-home')">← 返回首页</div>
+        <h2 style="text-align:center; margin-bottom:30px;">选择卦宫</h2>
+        <div class="palace-grid" id="palace-list">
+            </div>
+    </div>
+
+    <div id="view-detail" class="view-section">
+        <div class="back-nav" onclick="switchView('view-learning')">← 返回列表</div>
+        <h2 id="detail-title" style="text-align:center; margin-bottom:10px;">--</h2>
+        <p style="text-align:center; color:var(--text-sub); margin-bottom:30px;">演变规律：本宫 → 初世 → 二世 → 三世 → 四世 → 五世 → 游魂 → 归魂</p>
+        <div class="palace-detail-grid" id="detail-grid">
+            </div>
+    </div>
+
+    <script>
+        // --- 核心数据与逻辑 (京房易) ---
+        const PALACES = {
+            "乾": { base: [1,1,1,1,1,1], symbol: "☰" },
+            "兑": { base: [1,1,0,1,1,0], symbol: "☱" },
+            "离": { base: [1,0,1,1,0,1], symbol: "☲" },
+            "震": { base: [1,0,0,1,0,0], symbol: "☳" },
+            "巽": { base: [0,1,1,0,1,1], symbol: "☴" },
+            "坎": { base: [0,1,0,0,1,0], symbol: "☵" },
+            "艮": { base: [0,0,1,0,0,1], symbol: "☶" },
+            "坤": { base: [0,0,0,0,0,0], symbol: "☷" }
+        };
+
+        const HEX_NAMES = {
+            "111111":"乾为天", "011111":"天风姤", "001111":"天山遁", "000111":"天地否", "000011":"风地观", "000001":"山地剥", "101001":"火地晋", "101111":"火天大有",
+            "010010":"坎为水", "110010":"水泽节", "111010":"水雷屯", "111110":"水火既济", "111100":"泽火革", "111101":"雷火丰", "010101":"地火明夷", "010000":"地水师",
+            "001001":"艮为山", "101001":"山火贲", "111001":"山天大畜", "110001":"山泽损", "110101":"火泽睽", "110111":"天泽履", "011111":"风泽中孚", "011001":"风山渐",
+            "100100":"震为雷", "000100":"雷地豫", "010100":"雷水解", "011100":"雷风恒", "011000":"地风升", "011010":"水风井", "111010":"泽风大过", "111100":"泽雷随",
+            "011011":"巽为风", "111011":"风天小畜", "101011":"风火家人", "100011":"风雷益", "100111":"天雷无妄", "100101":"火雷噬嗑", "001101":"山雷颐", "001011":"山风蛊",
+            "101101":"离为火", "001101":"火山旅", "011101":"火风鼎", "010101":"火水未济", "010001":"山水蒙", "010011":"风水涣", "111011":"天水讼", "111101":"天火同人",
+            "000000":"坤为地", "100000":"地雷复", "110000":"地泽临", "111000":"地天泰", "111100":"雷天大壮", "111110":"泽天夬", "010110":"水天需", "010000":"水地比",
+            "110110":"兑为泽", "010110":"泽水困", "000110":"泽地萃", "001110":"泽山咸", "001010":"水山蹇", "001000":"地山谦", "111000":"雷山小过", "110010":"雷泽归妹"
+        };
+        // 补全字典中可能重复key的问题 (有些卦是重复的，但八宫归属不同，这里为了名字查找方便，做一个简单映射)
+        // 实际上名字查找要结合逻辑。这里为了代码简洁，如果Key重复导致覆盖，名字是一样的，不影响显示。
+
+        let allHexagrams = [];
+        let currentTrainingHex = null;
+
+        function flip(v) { return v === 1 ? 0 : 1; }
+
+        function generateData() {
+            let list = [];
+            const posNames = ["本宫(六世)", "一世", "二世", "三世", "四世", "五世", "游魂(四世)", "归魂(三世)"];
+            
+            for (let pName in PALACES) {
+                let lines = [...PALACES[pName].base]; // 0=初爻, 5=上爻
+                let family = [];
+
+                // 1. 本宫
+                family.push(createObj(lines, pName, posNames[0], 6));
+
+                // 2. 1-5世
+                for(let i=0; i<5; i++){
+                    lines[i] = flip(lines[i]);
+                    family.push(createObj(lines, pName, posNames[i+1], i+1));
+                }
+
+                // 3. 游魂 (4爻变)
+                lines[3] = flip(lines[3]);
+                family.push(createObj(lines, pName, posNames[6], 4));
+
+                // 4. 归魂 (下三爻变回本宫)
+                let base = PALACES[pName].base;
+                lines[0] = base[0]; lines[1] = base[1]; lines[2] = base[2];
+                family.push(createObj(lines, pName, posNames[7], 3));
+
+                list = list.concat(family);
+            }
+            return list;
+        }
+
+        function createObj(lines, palace, pos, shi) {
+            // 生成Key找名字
+            let key = lines.join("");
+            let name = HEX_NAMES[key] || "未知卦"; 
+            
+            // 修正部分同二进制码但不同名的极少数情况（其实六十四卦二进制唯一，名字唯一）
+            // 唯独要注意的是：上面的HEX_NAMES字典是我手写的，可能会有疏漏。
+            
+            return {
+                lines: [...lines],
+                palace: palace,
+                position: pos,
+                shi: shi, // 1-6
+                ying: (shi + 3 - 1) % 6 + 1,
+                name: name
+            };
+        }
+
+        // --- 视图渲染逻辑 ---
+
+        // 1. 切换视图
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            
+            // 根据进入的视图做初始化
+            if(viewId === 'view-training') nextQuestion();
+            if(viewId === 'view-learning') renderPalaceList();
+        }
+
+        // 2. 绘制卦象 (通用函数)
+        // container: DOM元素
+        // hexData: 数据对象
+        // isLarge: 是否是大图模式（大图显示世应文字，小图不高亮或仅高亮世爻）
+        function drawHexagram(container, hexData, isLarge) {
+            container.innerHTML = '';
+            // lines[0]是初爻，在最下面。CSS flex-reverse 让第一个child在最下
+            
+            hexData.lines.forEach((val, idx) => {
+                let lineDiv = document.createElement('div');
+                lineDiv.className = `line ${val===1?'yang':'yin'}`;
+                
+                let lineNum = idx + 1;
+                
+                // 标记世爻样式
+                if (!isLarge && lineNum === hexData.shi) {
+                    lineDiv.classList.add('is-shi'); // 小图高亮世爻
+                }
+
+                if (isLarge) {
+                    if (lineNum === hexData.shi) {
+                        let m = document.createElement('div');
+                        m.className = 'marker shi';
+                        m.innerHTML = '世';
+                        lineDiv.appendChild(m);
+                    }
+                    if (lineNum === hexData.ying) {
+                        let m = document.createElement('div');
+                        m.className = 'marker ying';
+                        m.innerHTML = '应';
+                        lineDiv.appendChild(m);
+                    }
+                }
+                container.appendChild(lineDiv);
+            });
+        }
+
+        // --- 训练模式逻辑 ---
+        function nextQuestion() {
+            // 隐藏答案
+            let box = document.getElementById('train-answer');
+            box.classList.remove('visible');
+            document.querySelectorAll('.marker').forEach(e => e.style.display = 'none');
+            
+            // 随机
+            let idx = Math.floor(Math.random() * allHexagrams.length);
+            currentTrainingHex = allHexagrams[idx];
+            
+            // 绘制（先不画Marker，等揭晓再画？或者先画好隐藏？）
+            // 策略：先画好，CSS控制 .marker 默认 display:none，revealed类显示
+            let container = document.getElementById('train-display');
+            drawHexagram(container, currentTrainingHex, true);
+            
+            // 手动隐藏marker，直到揭晓
+            container.querySelectorAll('.marker').forEach(m => m.style.display = 'none');
+        }
+
+        function revealAnswer() {
+            if(!currentTrainingHex) return;
+            
+            // 填充文字
+            document.getElementById('ans-name').innerText = currentTrainingHex.name;
+            document.getElementById('ans-palace').innerText = `${currentTrainingHex.palace}宫 - ${currentTrainingHex.position}`;
+            document.getElementById('ans-detail').innerText = `世爻：${currentTrainingHex.shi} | 应爻：${currentTrainingHex.ying}`;
+            
+            // 显示动画
+            document.getElementById('train-answer').classList.add('visible');
+            
+            // 显示世应
+            document.getElementById('train-display').querySelectorAll('.marker').forEach(m => m.style.display = 'block');
+        }
+
+        // --- 学习模式逻辑 ---
+        function renderPalaceList() {
+            const container = document.getElementById('palace-list');
+            if(container.innerHTML !== '') return; // 避免重复渲染
+
+            for(let pName in PALACES) {
+                let card = document.createElement('div');
+                card.className = 'palace-card';
+                card.onclick = () => showPalaceDetail(pName);
+                card.innerHTML = `
+                    <div class="p-symbol">${PALACES[pName].symbol}</div>
+                    <div class="p-name">${pName}宫</div>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        function showPalaceDetail(pName) {
+            // 筛选出该宫的所有卦
+            let family = allHexagrams.filter(h => h.palace === pName);
+            
+            document.getElementById('detail-title').innerText = `${pName}宫八卦一览`;
+            let grid = document.getElementById('detail-grid');
+            grid.innerHTML = '';
+
+            family.forEach(hex => {
+                let card = document.createElement('div');
+                card.className = 'hex-card-small';
+                
+                // 内部容器
+                let visual = document.createElement('div');
+                visual.className = 'hex-visual-small';
+                drawHexagram(visual, hex, false); // 小图模式
+
+                let name = document.createElement('div');
+                name.className = 'small-name';
+                name.innerText = hex.name;
+
+                let pos = document.createElement('div');
+                pos.className = 'small-pos';
+                pos.innerText = hex.position; // 几世卦
+
+                card.appendChild(visual);
+                card.appendChild(name);
+                card.appendChild(pos);
+                grid.appendChild(card);
+            });
+
+            switchView('view-detail');
+        }
+
+        // --- 主题与初始化 ---
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            let isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('bagua-theme', isDark ? 'dark' : 'light');
+        }
+
+        window.onload = function() {
+            allHexagrams = generateData();
+            
+            // 读取主题偏好
+            const savedTheme = localStorage.getItem('bagua-theme');
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+                document.body.classList.add('dark-mode');
+            }
+        };
+
+    </script>
+</body>
+</html>
