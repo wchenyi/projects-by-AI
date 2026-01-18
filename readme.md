@@ -22,8 +22,8 @@
 - [netdisk](https://projects.wangcy.site/netdisk/assets/index.html)
 - [appstore-CL](https://projects.wangcy.site/appstore-CL/index.html)
 - [八卦知识](https://projects.wangcy.site/other/bagua)
+  - [世应训练](https://projects.wangcy.site/other/shiying)
 - [法考主观模拟网站](https://projects.wangcy.site/fakao/c/index)
-- [ticket](https://projects.wangcy.site/other/ticket)
 
 > ChatGPT
 - [起始页生成](https://wchenyi.github.io/Auto-search)
