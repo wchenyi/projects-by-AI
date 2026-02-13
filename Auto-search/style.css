@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+/* 新增搜索容器样式 */
+#search-container {
+    position: relative;
+    display: inline-block;
+}
+
+#selected-engine-display {
+    width: 600px;
+    height: 270px;
+    margin-bottom: 20px;
+    font-size: 48px;
+    text-align: center;
+    line-height: 270px;
+}
+
+.container {
+    text-align: center;
+}
+
+#search-input {
+    width: 100%;
+    max-width: 600px; /* 拉长搜索框 */
+    padding: 12px 40px 12px 20px; /* 修改内边距以腾出空间给搜索按钮 */
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 25px; /* 设置圆角弧度 */
+    box-sizing: border-box;
+}
+
+.options {
+    display: flex;
+    justify-content: center;
+}
+
+.option {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 25px; /* 设置圆角弧度 */
+}
+
+#search-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.option:hover {
+    background-color: #45a049;
+}
+
+/* 新增选中搜索引擎的样式 */
+.option.selected {
+    background-color: #ff9800;
+}
