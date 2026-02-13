@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>京房六十四卦 - 全能训练版</title>
+    <style>
+        /* --- CSS 变量 (主题) --- */
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-sub: #7f8c8d;
+            --accent: #c0392b; /* 红色：世爻/火 */
+            --highlight: #2980b9; /* 蓝色：高亮 */
+            --border-color: #ecf0f1;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            
+            /* 五行颜色 */
+            --metal: #f1c40f; /* 金 (用暗黄代替白以适应白底) */
+            --wood: #27ae60;  /* 木 */
+            --water: #2980b9; /* 水 */
+            --fire: #c0392b;  /* 火 */
+            --earth: #95a5a6; /* 土 */
+        }
+
+        body.dark-mode {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-main: #ecf0f1;
+            --text-sub: #bdc3c7;
+            --border-color: #444;
+            --shadow: 0 4px 12px rgba(0,0,0,0.4);
+            --metal: #f1c40f; 
+        }
+
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 15px 20px;
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        h1 { margin: 0; font-size: 1.1rem; }
+        
+        button { cursor: pointer; border: none; outline: none; font-family: inherit; }
+        
+        .theme-btn {
+            background: transparent; font-size: 1.2rem; color: var(--text-main);
+        }
+
+        /* --- 视图切换 --- */
+        .view-section {
+            display: none;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .view-section.active { display: block; animation: fadeUp 0.3s ease; }
+        
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 首页 --- */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+        .menu-card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .menu-card:hover { transform: translateY(-5px); }
+        .menu-icon { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+        .menu-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; }
+
+        /* --- 通用：卦象行样式 (核心部分) --- */
+        .hex-row {
+            display: flex;
+            align-items: center;
+            height: 30px; /* 行高 */
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+        
+        /* 左侧：六亲与地支 */
+        .hex-info-left {
+            width: 90px;
+            text-align: right;
+            padding-right: 10px;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            display: flex;
+            justify-content: flex-end;
+            gap: 5px;
+        }
+        
+        /* 中间：阴阳爻画 */
+        .hex-line-visual {
+            width: 100px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .line-shape {
+            width: 100%;
+            height: 12px;
+            border-radius: 2px;
+        }
+        .yang { background-color: var(--text-main); }
+        .yin {
+            display: flex; justify-content: space-between;
+        }
+        .yin::before, .yin::after {
+            content: ''; display: block; width: 42%; height: 100%;
+            background-color: var(--text-main); border-radius: 2px;
+        }
+
+        /* 变色逻辑：世爻红色，应爻灰色 */
+        .is-shi .line-shape, .is-shi .yin::before, .is-shi .yin::after { background-color: var(--accent); }
+        .is-ying .line-shape, .is-ying .yin::before, .is-ying .yin::after { opacity: 0.6; }
+
+        /* 右侧：世应标记 */
+        .hex-info-right {
+            width: 40px;
+            padding-left: 10px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .text-shi { color: var(--accent); }
+        .text-ying { color: var(--text-sub); }
+
+        /* 五行着色 helper */
+        .c-metal { color: #d4ac0d; } /* 金 */
+        .c-wood { color: #27ae60; } /* 木 */
+        .c-water { color: #2980b9; } /* 水 */
+        .c-fire { color: #c0392b; } /* 火 */
+        .c-earth { color: #7f8c8d; } /* 土 */
+
+        /* --- 训练模式 --- */
+        .train-area {
+            background: var(--card-bg);
+            padding: 30px 10px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        /* 训练时，未揭晓前隐藏两侧信息 */
+        .hidden-mode .hex-info-left, 
+        .hidden-mode .hex-info-right { visibility: hidden; }
+
+        .answer-panel {
+            margin-top: 20px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .answer-panel.visible { opacity: 1; }
+
+        .btn-group { margin-top: 20px; display: flex; gap: 15px; }
+        .btn {
+            padding: 10px 25px; border-radius: 6px; font-weight: bold; transition: opacity 0.2s;
+        }
+        .btn-primary { background: var(--text-main); color: var(--card-bg); }
+        .btn-outline { border: 1px solid var(--text-main); background: transparent; color: var(--text-main); }
+        .btn:active { opacity: 0.7; }
+
+        /* --- 学习模式 --- */
+        .nav-header { display: flex; align-items: center; margin-bottom: 20px; color: var(--text-sub); cursor: pointer; }
+        .nav-header:hover { color: var(--text-main); }
+        
+        .palace-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4列 */
+            gap: 15px;
+        }
+        @media(max-width: 600px) { .palace-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        .palace-select-card {
+            background: var(--card-bg);
+            padding: 20px; border-radius: 8px; text-align: center;
+            box-shadow: var(--shadow); cursor: pointer;
+        }
+        .palace-select-card:hover { background: var(--border-color); }
+
+        .detail-list {
+            display: flex; flex-direction: column; gap: 20px;
+        }
+        
+        .detail-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .detail-header {
+            width: 100%; border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .detail-name { font-size: 1.1rem; font-weight: bold; }
+        .detail-pos { font-size: 0.9rem; color: var(--text-sub); }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>京房八宫研习</h1>
+    <button class="theme-btn" onclick="toggleTheme()">◑</button>
+</header>
+
+<div id="view-home" class="view-section active">
+    <div class="menu-grid">
+        <div class="menu-card" onclick="startTraining()">
+            <span class="menu-icon">⚡</span>
+            <div class="menu-title">随机训练</div>
+            <div style="color:var(--text-sub)">隐去信息，心算宫位世应</div>
+        </div>
+        <div class="menu-card" onclick="startLearning()">
+            <span class="menu-icon">📖</span>
+            <div class="menu-title">系统学习</div>
+            <div style="color:var(--text-sub)">全览八宫，详解纳甲六亲</div>
+        </div>
+    </div>
+</div>
+
+<div id="view-train" class="view-section">
+    <div class="nav-header" onclick="goHome()">← 返回首页</div>
+    
+    <div class="train-area" id="train-container">
+        <div id="train-hex-visual" class="hidden-mode"></div>
+        
+        <div id="train-answer" class="answer-panel">
+            <h2 id="ans-name" style="margin:5px 0">--</h2>
+            <div id="ans-palace" style="color:var(--accent); font-weight:bold;">--</div>
+            <div id="ans-desc" style="font-size:0.9rem; color:var(--text-sub); margin-top:5px;">--</div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="revealAnswer()">揭晓答案</button>
+            <button class="btn btn-outline" onclick="nextQuestion()">下一卦</button>
+        </div>
+    </div>
+</div>
+
+<div id="view-learn-list" class="view-section">
+    <div class="nav-header" onclick="goHome()">← 返回首页</div>
+    <h3 style="text-align:center;">选择卦宫</h3>
+    <div class="palace-grid" id="palace-select-area">
+        </div>
+</div>
+
+<div id="view-learn-detail" class="view-section">
+    <div class="nav-header" onclick="switchView('view-learn-list')">← 返回八宫列表</div>
+    <h3 id="detail-title" style="text-align:center; margin-bottom:20px;">--</h3>
+    <div class="detail-list" id="detail-area">
+        </div>
+</div>
+
+<script>
+    // ==========================================
+    // 1. 基础数据定义 (The Data Layer)
+    // ==========================================
+
+    // 八卦基础二进制 (初爻->上爻)
+    // 1=阳, 0=阴
+    const TRIGRAMS = {
+        "乾": [1,1,1], "兑": [1,1,0], "离": [1,0,1], "震": [1,0,0],
+        "巽": [0,1,1], "坎": [0,1,0], "艮": [0,0,1], "坤": [0,0,0]
+    };
+
+    // 五行属性
+    const WU_XING = {
+        "乾": "金", "兑": "金", "离": "火", "震": "木", "巽": "木", "坎": "水", "艮": "土", "坤": "土",
+        "子": "水", "丑": "土", "寅": "木", "卯": "木", "辰": "土", "巳": "火",
+        "午": "火", "未": "土", "申": "金", "酉": "金", "戌": "土", "亥": "水"
+    };
+
+    // 纳甲歌诀映射 (内卦三爻, 外卦三爻)
+    // 乾金甲子外壬午, 坎水戊寅外戊申, 艮土丙辰外丙戌, 震木庚子外庚午
+    // 巽木辛丑外辛未, 离火己卯外己酉, 坤土乙未外癸丑, 兑金丁巳外丁亥
+    const NA_JIA_MAP = {
+        "乾": { inner: ["子","寅","辰"], outer: ["午","申","戌"] },
+        "坎": { inner: ["寅","辰","午"], outer: ["申","戌","子"] }, // 坎寅申
+        "艮": { inner: ["辰","午","申"], outer: ["戌","子","寅"] }, // 艮辰戌
+        "震": { inner: ["子","寅","辰"], outer: ["午","申","戌"] }, // 震庚子午 (同乾)
+        "巽": { inner: ["丑","亥","酉"], outer: ["未","巳","卯"] }, // 巽辛丑未 (阴卦逆行)
+        "离": { inner: ["卯","丑","亥"], outer: ["酉","未","巳"] }, // 离己卯酉 (阴卦逆行)
+        "坤": { inner: ["未","巳","卯"], outer: ["丑","亥","酉"] }, // 坤乙未癸丑 (阴卦逆行)
+        "兑": { inner: ["巳","卯","丑"], outer: ["亥","酉","未"] }  // 兑丁巳亥 (阴卦逆行)
+    };
+
+    // 64卦名查询表 (Key: 6位二进制字符串)
+    const HEX_NAMES = {
+        "111111":"乾为天", "011111":"天风姤", "001111":"天山遁", "000111":"天地否", "000011":"风地观", "000001":"山地剥", "101001":"火地晋", "101111":"火天大有",
+        "010010":"坎为水", "110010":"水泽节", "111010":"水雷屯", "111110":"水火既济", "111100":"泽火革", "111101":"雷火丰", "010101":"地火明夷", "010000":"地水师",
+        "001001":"艮为山", "101001":"山火贲", "111001":"山天大畜", "110001":"山泽损", "110101":"火泽睽", "110111":"天泽履", "011111":"风泽中孚", "011001":"风山渐",
+        "100100":"震为雷", "000100":"雷地豫", "010100":"雷水解", "011100":"雷风恒", "011000":"地风升", "011010":"水风井", "111010":"泽风大过", "111100":"泽雷随",
+        "011011":"巽为风", "111011":"风天小畜", "101011":"风火家人", "100011":"风雷益", "100111":"天雷无妄", "100101":"火雷噬嗑", "001101":"山雷颐", "001011":"山风蛊",
+        "101101":"离为火", "001101":"火山旅", "011101":"火风鼎", "010101":"火水未济", "010001":"山水蒙", "010011":"风水涣", "111011":"天水讼", "111101":"天火同人",
+        "000000":"坤为地", "100000":"地雷复", "110000":"地泽临", "111000":"地天泰", "111100":"雷天大壮", "111110":"泽天夬", "010110":"水天需", "010000":"水地比",
+        "110110":"兑为泽", "010110":"泽水困", "000110":"泽地萃", "001110":"泽山咸", "001010":"水山蹇", "001000":"地山谦", "111000":"雷山小过", "110010":"雷泽归妹"
+    };
+
+    let allHexagrams = []; // 存储生成的64卦详细数据
+    let currentQuizHex = null;
+
+    // ==========================================
+    // 2. 核心逻辑 (Calculation Logic)
+    // ==========================================
+
+    // 获取生克关系
+    function getRelation(palaceEl, lineEl) {
+        const relations = {
+            "同": "兄弟",
+            "生我": "父母",
+            "我生": "子孙",
+            "克我": "官鬼",
+            "我克": "妻财"
+        };
+        
+        if (palaceEl === lineEl) return "兄弟";
+
+        // 五行生克表
+        const cycles = {
+            "金": { 生: "水", 克: "木" },
+            "水": { 生: "木", 克: "火" },
+            "木": { 生: "火", 克: "土" },
+            "火": { 生: "土", 克: "金" },
+            "土": { 生: "金", 克: "水" }
+        };
+
+        if (cycles[lineEl].生 === palaceEl) return "父母"; // 线生宫 -> 父母(错)，其实是生我者父母。线的五行 生 宫的五行？不，是 线生宫(线泄宫气)? 不对。
+        // 修正逻辑：
+        // 生我者父母：Line 生 Palace -> Line是父母? 不，是 Line 的五行 生 Palace 的五行 -> Line是父母。 (Line=水, Palace=木, 水生木, Line是父母)
+        if (cycles[lineEl].生 === palaceEl) return "父母"; 
+        
+        // 我生者子孙：Palace 生 Line
+        if (cycles[palaceEl].生 === lineEl) return "子孙";
+        
+        // 克我者官鬼：Line 克 Palace
+        if (cycles[lineEl].克 === palaceEl) return "官鬼";
+        
+        // 我克者妻财：Palace 克 Line
+        if (cycles[palaceEl].克 === lineEl) return "妻财";
+
+        return "未知";
+    }
+
+    // 根据三爻找到八卦名
+    function getTrigramName(threeLines) {
+        const key = threeLines.join(""); // e.g. "111"
+        for (let name in TRIGRAMS) {
+            if (TRIGRAMS[name].join("") === key) return name;
+        }
+        return "未知";
+    }
+
+    // 生成完整数据
+    function generateAllData() {
+        const list = [];
+        const palaceOrder = ["乾","兑","离","震","巽","坎","艮","坤"];
+        const positions = ["本宫(六世)", "一世", "二世", "三世", "四世", "五世", "游魂(四世)", "归魂(三世)"];
+
+        palaceOrder.forEach(pName => {
+            let lines = [...TRIGRAMS[pName]]; // 下卦
+            lines = lines.concat(TRIGRAMS[pName]); // 上卦 (六纯卦)
+            
+            // 变爻逻辑 helper
+            const flip = (idx) => { lines[idx] = lines[idx]===1?0:1; };
+
+            // 1. 本宫
+            list.push(createHexObj(lines, pName, positions[0], 6));
+
+            // 2. 一世到五世
+            for(let i=0; i<5; i++){
+                flip(i);
+                list.push(createHexObj(lines, pName, positions[i+1], i+1));
+            }
+
+            // 3. 游魂 (第4爻变) -> 此时是五世状态(0-4已变), 变回3(第四爻)
+            flip(3); 
+            list.push(createHexObj(lines, pName, positions[6], 4));
+
+            // 4. 归魂 (下三爻变回本宫)
+            let base = TRIGRAMS[pName];
+            lines[0]=base[0]; lines[1]=base[1]; lines[2]=base[2];
+            list.push(createHexObj(lines, pName, positions[7], 3));
+        });
+        return list;
+    }
+
+    function createHexObj(lines, palaceName, posName, shiIdx) {
+        const key = lines.join("");
+        const name = HEX_NAMES[key] || "未知";
+        const palaceEl = WU_XING[palaceName];
+
+        // 分割上下卦
+        const innerLines = lines.slice(0, 3);
+        const outerLines = lines.slice(3, 6);
+        const innerName = getTrigramName(innerLines);
+        const outerName = getTrigramName(outerLines);
+
+        // 计算纳甲地支
+        // 注意：lines[0]是初爻。NA_JIA_MAP.inner[0]也是初爻。
+        const innerBranches = NA_JIA_MAP[innerName].inner;
+        const outerBranches = NA_JIA_MAP[outerName].outer;
+        const allBranches = [...innerBranches, ...outerBranches];
+
+        // 构建每一爻的详情
+        const lineDetails = lines.map((val, idx) => {
+            const branch = allBranches[idx];
+            const el = WU_XING[branch];
+            const relation = getRelation(palaceEl, el);
+            return {
+                val: val, // 0 or 1
+                branch: branch,
+                element: el,
+                relation: relation,
+                isShi: (idx + 1) === shiIdx,
+                isYing: (idx + 1) === ((shiIdx + 3 - 1) % 6 + 1)
+            };
+        });
+
+        return {
+            key, name, palaceName, palaceEl, posName, shiIdx, lineDetails
+        };
+    }
+
+    // ==========================================
+    // 3. 视图渲染 (View Layer)
+    // ==========================================
+
+    function switchView(id) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        window.scrollTo(0,0);
+    }
+
+    function goHome() { switchView('view-home'); }
+
+    // 渲染：单个卦象 (通用组件)
+    // mode: 'simple' | 'full' (显示六亲文字) | 'hidden' (训练用，隐藏文字)
+    function renderHexagram(container, hexData, mode) {
+        let html = '';
+        // 倒序渲染：DOM上第一个元素是上爻(索引5)，最下面是初爻(索引0)
+        // 使用 flex-direction: column 正常布局，数据倒序循环即可
+        
+        for(let i=5; i>=0; i--) {
+            const line = hexData.lineDetails[i];
+            const isShi = line.isShi ? 'is-shi' : '';
+            const isYing = line.isYing ? 'is-ying' : '';
+            
+            // 左侧文字
+            let leftText = '';
+            if (mode !== 'hidden') {
+                leftText = `
+                    <span>${line.relation}</span>
+                    <span class="c-${getElClass(line.element)}">${line.branch}${line.element}</span>
+                `;
+            }
+
+            // 右侧文字
+            let rightText = '';
+            if (line.isShi) rightText = '<span class="text-shi">世</span>';
+            else if (line.isYing) rightText = '<span class="text-ying">应</span>';
+            
+            if (mode === 'hidden') rightText = ''; // 训练未揭晓前隐藏
+
+            html += `
+                <div class="hex-row ${isShi} ${isYing}">
+                    <div class="hex-info-left">${leftText}</div>
+                    <div class="hex-line-visual">
+                        <div class="line-shape ${line.val===1?'yang':'yin'}"></div>
+                    </div>
+                    <div class="hex-info-right">${rightText}</div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        // 训练模式下，需要根据 class 再次控制显隐
+        if(mode === 'hidden') container.classList.add('hidden-mode');
+        else container.classList.remove('hidden-mode');
+    }
+
+    function getElClass(elChar) {
+        if(elChar==='金') return 'metal';
+        if(elChar==='木') return 'wood';
+        if(elChar==='水') return 'water';
+        if(elChar==='火') return 'fire';
+        if(elChar==='土') return 'earth';
+        return '';
+    }
+
+    // --- 训练模式逻辑 ---
+    function startTraining() {
+        switchView('view-train');
+        nextQuestion();
+    }
+
+    function nextQuestion() {
+        document.getElementById('train-answer').classList.remove('visible');
+        const idx = Math.floor(Math.random() * allHexagrams.length);
+        currentQuizHex = allHexagrams[idx];
+        
+        const container = document.getElementById('train-hex-visual');
+        renderHexagram(container, currentQuizHex, 'hidden');
+    }
+
+    function revealAnswer() {
+        if(!currentQuizHex) return;
+        const container = document.getElementById('train-hex-visual');
+        // 重新渲染为 full 模式
+        renderHexagram(container, currentQuizHex, 'full');
+        
+        document.getElementById('ans-name').innerText = currentQuizHex.name;
+        document.getElementById('ans-palace').innerText = 
+            `${currentQuizHex.palaceName}宫 (${currentQuizHex.palaceEl}) - ${currentQuizHex.posName}`;
+        document.getElementById('ans-desc').innerText = "六亲已标于左侧，世应标于右侧";
+        document.getElementById('train-answer').classList.add('visible');
+    }
+
+    // --- 学习模式逻辑 ---
+    function startLearning() {
+        const container = document.getElementById('palace-select-area');
+        // 只渲染一次
+        if(container.children.length === 0) {
+            ["乾","兑","离","震","巽","坎","艮","坤"].forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'palace-select-card';
+                div.innerHTML = `<div style="font-size:1.5rem;font-weight:bold;">${p}</div><div style="font-size:0.8rem;color:var(--text-sub)">${WU_XING[p]}宫</div>`;
+                div.onclick = () => showDetail(p);
+                container.appendChild(div);
+            });
+        }
+        switchView('view-learn-list');
+    }
+
+    function showDetail(pName) {
+        const family = allHexagrams.filter(h => h.palaceName === pName);
+        const container = document.getElementById('detail-area');
+        container.innerHTML = '';
+        
+        document.getElementById('detail-title').innerText = `${pName}宫八卦详解 (${WU_XING[pName]})`;
+
+        family.forEach(hex => {
+            const card = document.createElement('div');
+            card.className = 'detail-card';
+            
+            const header = `
+                <div class="detail-header">
+                    <span class="detail-name">${hex.name}</span>
+                    <span class="detail-pos">${hex.posName}</span>
+                </div>
+            `;
+            
+            const body = document.createElement('div');
+            // 在学习模式，直接显示完整信息
+            renderHexagram(body, hex, 'full');
+            
+            card.innerHTML = header;
+            card.appendChild(body);
+            container.appendChild(card);
+        });
+
+        switchView('view-learn-detail');
+    }
+
+    // --- 主题切换 ---
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+    }
+
+    // 初始化
+    window.onload = function() {
+        try {
+            allHexagrams = generateAllData();
+        } catch (e) {
+            alert("数据初始化失败，请检查代码或刷新页面。");
+            console.error(e);
+        }
+    };
+
+</script>
+</body>
+</html>

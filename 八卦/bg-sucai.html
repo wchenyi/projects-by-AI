@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>八卦素材生成器 - I Ching Hexagram Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --md-sys-color-primary: #6750A4;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #EADDFF;
+            --md-sys-color-on-primary-container: #21005D;
+            --md-sys-color-secondary: #625B71;
+            --md-sys-color-secondary-container: #E8DEF8;
+            --md-sys-color-on-secondary-container: #1D192B;
+            --md-sys-color-tertiary: #7D5260;
+            --md-sys-color-tertiary-container: #FFD8E4;
+            --md-sys-color-on-tertiary-container: #31111D;
+            --md-sys-color-error-container: #F9DEDC;
+            --md-sys-color-on-error-container: #410E0B;
+            --md-sys-color-background: #FFFBFE;
+            --md-sys-color-on-background: #1C1B1F;
+            --md-sys-color-surface: #FFFBFE;
+            --md-sys-color-on-surface: #1C1B1F;
+            --md-sys-color-surface-variant: #E7E0EC;
+            --md-sys-color-on-surface-variant: #49454F;
+            --md-sys-color-outline-variant: #CAC4D0;
+            --text-color: #1C1B1F;
+            --card-bg: #FFFFFF;
+            --elevation-1: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+            --elevation-2: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
+            --elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+            
+            --wuxing-jin: #FFB74D;
+            --wuxing-mu: #66BB6A;
+            --wuxing-shui: #42A5F5;
+            --wuxing-huo: #EF5350;
+            --wuxing-tu: #8D6E63;
+        }
+
+        [data-theme="dark"] {
+            --md-sys-color-primary: #D0BCFF;
+            --md-sys-color-on-primary: #381E72;
+            --md-sys-color-primary-container: #4F378B;
+            --md-sys-color-on-primary-container: #EADDFF;
+            --md-sys-color-secondary-container: #4A4458;
+            --md-sys-color-on-secondary-container: #E8DEF8;
+            --md-sys-color-tertiary: #EFB8C8;
+            --md-sys-color-tertiary-container: #633B48;
+            --md-sys-color-on-tertiary-container: #FFD8E4;
+            --md-sys-color-error-container: #8C1D18;
+            --md-sys-color-on-error-container: #F9DEDC;
+            --md-sys-color-background: #1C1B1F;
+            --md-sys-color-on-background: #E6E1E5;
+            --md-sys-color-surface: #1C1B1F;
+            --md-sys-color-on-surface: #E6E1E5;
+            --md-sys-color-surface-variant: #49454F;
+            --md-sys-color-on-surface-variant: #CAC4D0;
+            --md-sys-color-outline-variant: #49454F;
+            --text-color: #E6E1E5;
+            --card-bg: #2B2930;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans SC', -apple-system, sans-serif;
+            background: var(--md-sys-color-background);
+            color: var(--md-sys-color-on-background);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+        header {
+            background: var(--md-sys-color-surface);
+            box-shadow: var(--elevation-1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        h1 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 600;
+            color: var(--md-sys-color-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .theme-toggle {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: var(--elevation-1);
+        }
+
+        .theme-toggle:hover {
+            box-shadow: var(--elevation-2);
+            transform: translateY(-2px);
+        }
+
+        .instructions {
+            background: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+            padding: 24px;
+            border-radius: 24px;
+            margin-bottom: 32px;
+            box-shadow: var(--elevation-1);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .instructions h2 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+        }
+
+        .instructions ul { list-style: none; }
+
+        .instructions li {
+            padding: 8px 0 8px 24px;
+            position: relative;
+        }
+
+        .instructions li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--md-sys-color-primary);
+            font-weight: bold;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        @media (min-width: 1024px) {
+            .main-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--elevation-2);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover { box-shadow: var(--elevation-3); }
+
+        .card-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--md-sys-color-on-surface);
+            border-bottom: 2px solid var(--md-sys-color-outline-variant);
+            padding-bottom: 12px;
+        }
+
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: clamp(16px, 4vw, 32px);
+            background: var(--md-sys-color-surface-variant);
+            border-radius: 16px;
+            min-height: 400px;
+            overflow-x: auto;
+        }
+
+        #hexagramCanvas {
+            background: transparent;
+            cursor: pointer;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .controls-grid { 
+            display: grid; 
+            gap: 12px;
+            font-size: 0.95rem;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+        }
+
+        input[type="color"] {
+            width: 50px;
+            height: 35px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        input[type="color"]:hover { transform: scale(1.1); }
+
+        .color-value {
+            font-family: 'Consolas', monospace;
+            padding: 6px 10px;
+            background: var(--md-sys-color-surface-variant);
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 28px;
+        }
+
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--md-sys-color-surface-variant);
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--md-sys-color-on-surface-variant);
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: var(--md-sys-color-primary); }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+            background-color: var(--md-sys-color-on-primary);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-family: 'Noto Sans SC', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            box-shadow: var(--elevation-2);
+        }
+
+        .btn-primary:hover {
+            box-shadow: var(--elevation-3);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+            box-shadow: var(--elevation-1);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: var(--elevation-2);
+            transform: translateY(-2px);
+        }
+
+        .line-customization { margin-top: 20px; }
+        .line-controls { display: grid; gap: 10px; margin-top: 12px; }
+
+        .line-control {
+            display: grid;
+            grid-template-columns: 70px 1fr auto;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            background: var(--md-sys-color-surface-variant);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .line-control:hover { background: var(--md-sys-color-primary-container); }
+
+        .line-label {
+            font-weight: 500;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .special-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .tag {
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .tag-youhun {
+            background: var(--md-sys-color-tertiary-container);
+            color: var(--md-sys-color-on-tertiary-container);
+        }
+
+        .tag-guihun {
+            background: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
+        }
+
+        .tag-biyue {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+        }
+
+        .tag-liuhe { background: #E8F5E9; color: #1B5E20; }
+        .tag-liuchong { background: #FFF3E0; color: #E65100; }
+        .tag-bengong { background: #E3F2FD; color: #0D47A1; }
+
+        [data-theme="dark"] .tag-liuhe { background: #1B5E20; color: #C8E6C9; }
+        [data-theme="dark"] .tag-liuchong { background: #E65100; color: #FFE0B2; }
+        [data-theme="dark"] .tag-bengong { background: #0D47A1; color: #BBDEFB; }
+
+        footer {
+            text-align: center;
+            padding: 32px;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 0.9rem;
+            margin-top: 48px;
+        }
+
+        @keyframes lineToggle {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .line-toggling { animation: lineToggle 0.3s ease; }
+
+        .info-display {
+            margin-top: 16px;
+            padding: 16px;
+            background: var(--md-sys-color-surface-variant);
+            border-radius: 12px;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .info-row {
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--md-sys-color-primary);
+        }
+
+        .info-value { font-weight: 500; }
+
+        .symbol-display {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .symbol-text {
+            font-size: 2rem;
+            font-family: serif;
+        }
+
+        .copy-btn {
+            padding: 8px 16px;
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            transform: scale(1.05);
+            box-shadow: var(--elevation-1);
+        }
+
+        .copy-btn.copied {
+            background: #4CAF50;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 12px; }
+            .card { padding: 16px; }
+            .button-group { flex-direction: column; }
+            .btn { width: 100%; min-width: auto; }
+            .line-control {
+                grid-template-columns: 60px 1fr auto;
+                gap: 8px;
+                padding: 8px;
+                font-size: 0.85rem;
+            }
+            .canvas-container { 
+                padding: 12px;
+                min-height: 300px;
+            }
+            #hexagramCanvas {
+                transform-origin: center;
+            }
+            .info-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .symbol-display {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        .section-compact {
+            margin-top: 16px;
+        }
+
+        .section-compact .card-title {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1><span style="font-size: 2em;">☰</span>八卦素材生成器</h1>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <span id="themeIcon">🌙</span> <span id="themeText">深色模式</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="instructions">
+            <h2>📖 使用说明</h2>
+            <ul>
+                <li><strong>切换爻：</strong>点击画布中的任意爻，阴爻会变阳爻，阳爻会变阴爻</li>
+                <li><strong>动态更新：</strong>切换爻后，卦名、地支、世应、六亲会自动更新</li>
+                <li><strong>自定义颜色：</strong>可以为每一爻设置独特的颜色</li>
+                <li><strong>五行颜色：</strong>启用后，地支和卦宫会按五行显示颜色</li>
+                <li><strong>复制符号：</strong>点击右上方复制按钮复制卦象符号</li>
+            </ul>
+        </div>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2 class="card-title">卦象预览</h2>
+                <div class="canvas-container">
+                    <canvas id="hexagramCanvas"></canvas>
+                </div>
+                <div id="hexagramInfo" class="info-display"></div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">显示设置</h2>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showName" checked onchange="updateCanvas()">
+                                <span class="slider"></span>
+                            </label>
+                            显示卦名
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showEarthlyBranches" checked onchange="updateCanvas()">
+                                <span class="slider"></span>
+                            </label>
+                            显示地支
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showShiYing" checked onchange="updateCanvas()">
+                                <span class="slider"></span>
+                            </label>
+                            显示世应
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showPalace" checked onchange="updateCanvas()">
+                                <span class="slider"></span>
+                            </label>
+                            显示卦宫
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showWuxing" checked onchange="updateCanvas()">
+                                <span class="slider"></span>
+                            </label>
+                            显示五行
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showLiuqin" checked onchange="updateCanvas()">
+                                <span class="slider"></span>
+                            </label>
+                            显示六亲
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="useWuxingColors" onchange="updateCanvas()">
+                                <span class="slider"></span>
+                            </label>
+                            使用五行颜色
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showSpecialTags" checked onchange="updateCanvas()">
+                                <span class="slider"></span>
+                            </label>
+                            显示特殊卦标签
+                        </label>
+                    </div>
+                </div>
+
+                <div class="line-customization section-compact">
+                    <h3 class="card-title">爻的颜色设置</h3>
+                    <div class="line-controls" id="lineColors"></div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="copySymbol()">📋 复制符号</button>
+                    <button class="btn btn-primary" onclick="downloadPNG()">📥 下载PNG</button>
+                    <button class="btn btn-secondary" onclick="resetColors()">🔄 重置颜色</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>八卦素材生成器 · Made with ❤️ · Material You Design</p>
+        <p style="margin-top: 8px; font-size: 0.85rem;">点击画布中的爻可以切换阴阳</p>
+    </footer>
+
+    <script>
+        // 卦宫配置
+        const palaces = {
+            '乾': {
+                element: '金',
+                hexagrams: ['乾为天', '天风姤', '天山遁', '天地否', '风地观', '山地剥', '火地晋', '火天大有']
+            },
+            '坎': {
+                element: '水',
+                hexagrams: ['坎为水', '水泽节', '水雷屯', '水火既济', '泽火革', '雷火丰', '地火明夷', '地水师']
+            },
+            '艮': {
+                element: '土',
+                hexagrams: ['艮为山', '山火贲', '山天大畜', '山泽损', '火泽睽', '天泽履', '风泽中孚', '风山渐']
+            },
+            '震': {
+                element: '木',
+                hexagrams: ['震为雷', '雷地豫', '雷水解', '雷风恒', '地风升', '水风井', '泽风大过', '泽雷随']
+            },
+            '巽': {
+                element: '木',
+                hexagrams: ['巽为风', '风天小畜', '风火家人', '风雷益', '天雷无妄', '火雷噬嗑', '山雷颐', '山风蛊']
+            },
+            '离': {
+                element: '火',
+                hexagrams: ['离为火', '火山旅', '火风鼎', '火水未济', '山水蒙', '风水涣', '天水讼', '天火同人']
+            },
+            '坤': {
+                element: '土',
+                hexagrams: ['坤为地', '地雷复', '地泽临', '地天泰', '雷天大壮', '泽天夬', '水天需', '水地比']
+            },
+            '兑': {
+                element: '金',
+                hexagrams: ['兑为泽', '泽水困', '泽地萃', '泽山咸', '水山蹇', '地山谦', '雷山小过', '雷泽归妹']
+            }
+        };
+
+        // 卦象符号映射
+        const hexagramSymbols = {
+            '乾为天': '䷀', '坤为地': '䷁', '水雷屯': '䷂', '山水蒙': '䷃',
+            '水天需': '䷄', '天水讼': '䷅', '地水师': '䷆', '水地比': '䷇',
+            '风天小畜': '䷈', '天泽履': '䷉', '地天泰': '䷊', '天地否': '䷋',
+            '天火同人': '䷌', '火天大有': '䷍', '地山谦': '䷎', '雷地豫': '䷏',
+            '泽雷随': '䷐', '山风蛊': '䷑', '地泽临': '䷒', '风地观': '䷓',
+            '火雷噬嗑': '䷔', '山火贲': '䷕', '山地剥': '䷖', '地雷复': '䷗',
+            '天雷无妄': '䷘', '山天大畜': '䷙', '山雷颐': '䷚', '泽风大过': '䷛',
+            '坎为水': '䷜', '离为火': '䷝', '泽山咸': '䷞', '雷风恒': '䷟',
+            '天山遁': '䷠', '雷天大壮': '䷡', '火地晋': '䷢', '地火明夷': '䷣',
+            '风火家人': '䷤', '火泽睽': '䷥', '水山蹇': '䷦', '雷水解': '䷧',
+            '山泽损': '䷨', '风雷益': '䷩', '泽天夬': '䷪', '天风姤': '䷫',
+            '泽地萃': '䷬', '地风升': '䷭', '泽水困': '䷮', '水风井': '䷯',
+            '泽火革': '䷰', '火风鼎': '䷱', '震为雷': '䷲', '艮为山': '䷳',
+            '风山渐': '䷴', '雷泽归妹': '䷵', '雷火丰': '䷶', '火山旅': '䷷',
+            '巽为风': '䷸', '兑为泽': '䷹', '风水涣': '䷺', '水泽节': '䷻',
+            '风泽中孚': '䷼', '雷山小过': '䷽', '水火既济': '䷾', '火水未济': '䷿'
+        };
+
+        // 地支配置（从下往上）
+        const earthlyBranchesConfig = {
+'111': ['子', '寅', '辰', '午', '申', '戌'], // 乾/震
+'001': ['子', '寅', '辰', '午', '申', '戌'],
+'010': ['寅', '辰', '午', '申', '戌', '子'], // 坎
+'100': ['辰', '午', '申', '戌', '子', '寅'], // 艮
+'000': ['未', '巳', '卯', '丑', '亥', '酉'], // 坤
+'011': ['巳', '卯', '丑', '亥', '酉', '未'], // 兑
+'110': ['丑', '亥', '酉', '未', '巳', '卯'], // 巽
+'101': ['卯', '丑', '亥', '酉', '未', '巳']  // 离
+        };
+
+        // 地支五行
+        const branchElements = {
+            '子': '水', '丑': '土', '寅': '木', '卯': '木', '辰': '土', '巳': '火',
+            '午': '火', '未': '土', '申': '金', '酉': '金', '戌': '土', '亥': '水'
+        };
+
+        // 五行颜色
+        const wuxingColors = {
+            '金': '#FFB74D',
+            '木': '#66BB6A',
+            '水': '#42A5F5',
+            '火': '#EF5350',
+            '土': '#8D6E63'
+        };
+
+        // 五行生克关系
+        function getLiuqin(branchElement, palaceElement) {
+            const shengke = {
+                '金': { sheng: '水', ke: '木' },
+                '木': { sheng: '火', ke: '土' },
+                '水': { sheng: '木', ke: '火' },
+                '火': { sheng: '土', ke: '金' },
+                '土': { sheng: '金', ke: '水' }
+            };
+
+            if (branchElement === palaceElement) return '兄弟';
+            if (shengke[palaceElement].sheng === branchElement) return '子孙';
+            if (shengke[branchElement].sheng === palaceElement) return '父母';
+            if (shengke[palaceElement].ke === branchElement) return '妻财';
+            if (shengke[branchElement].ke === palaceElement) return '官鬼';
+            
+            return '兄弟';
+        }
+
+        // 64卦数据库
+        const hexagramDatabase = {
+            '111111': '乾为天', '000000': '坤为地', '010001': '水雷屯', '100010': '山水蒙',
+            '010111': '水天需', '111010': '天水讼', '000010': '地水师', '010000': '水地比',
+            '110111': '风天小畜', '111011': '天泽履', '000111': '地天泰', '111000': '天地否',
+            '111101': '天火同人', '101111': '火天大有', '000100': '地山谦', '001000': '雷地豫',
+            '011001': '泽雷随', '100110': '山风蛊', '000011': '地泽临', '110000': '风地观',
+            '101001': '火雷噬嗑', '100101': '山火贲', '100000': '山地剥', '000001': '地雷复',
+            '111001': '天雷无妄', '100111': '山天大畜', '100001': '山雷颐', '011110': '泽风大过',
+            '010010': '坎为水', '101101': '离为火', '011100': '泽山咸', '001110': '雷风恒',
+            '111100': '天山遁', '001111': '雷天大壮', '101000': '火地晋', '000101': '地火明夷',
+            '110101': '风火家人', '101011': '火泽睽', '010100': '水山蹇', '001010': '雷水解',
+            '100011': '山泽损', '110001': '风雷益', '011111': '泽天夬', '111110': '天风姤',
+            '011000': '泽地萃', '000110': '地风升', '011010': '泽水困', '010110': '水风井',
+            '011101': '泽火革', '101110': '火风鼎', '001001': '震为雷', '100100': '艮为山',
+            '110100': '风山渐', '001011': '雷泽归妹', '001101': '雷火丰', '101001': '火山旅',
+            '110110': '巽为风', '011011': '兑为泽', '110010': '风水涣', '010011': '水泽节',
+            '110011': '风泽中孚', '001100': '雷山小过', '010101': '水火既济', '101010': '火水未济'
+        };
+
+        // 特殊卦
+        const specialHexagrams = {
+            biyue: {
+                '地雷复': '建子 十一月', '地泽临': '建丑 十二月', '地天泰': '建寅 正月',
+                '雷天大壮': '建卯 二月', '泽天夬': '建辰 三月', '乾为天': '建巳 四月',
+                '天风姤': '建午 五月', '天山遁': '建未 六月', '天地否': '建申 七月',
+                '风地观': '建酉 八月', '山地剥': '建戌 九月', '坤为地': '建亥 十月'
+            },
+            liuhe: ['天地否', '地天泰', '地雷复', '雷地豫', '山火贲', '火山旅', '泽水困', '水泽节'],
+            liuchong: ['乾为天', '兑为泽', '离为火', '震为雷', '巽为风', '坎为水', '艮为山', '坤为地', '天雷无妄', '雷天大壮']
+        };
+
+        let currentLines = [1,1,1,1,1,1];
+        let lineColors = Array(6).fill('#6750A4');
+        let canvas, ctx;
+        let currentSymbol = '䷀';
+
+        function init() {
+            canvas = document.getElementById('hexagramCanvas');
+            ctx = canvas.getContext('2d');
+            
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeButton();
+            
+            renderLineColorControls();
+            updateCanvas();
+            canvas.addEventListener('click', handleCanvasClick);
+        }
+
+        function getHexagramName(lines) {
+            const key = [lines[5], lines[4], lines[3], lines[2], lines[1], lines[0]].join('');
+            return hexagramDatabase[key] || '未知卦';
+        }
+
+        function getPalaceInfo(hexagramName) {
+            for (const [palace, data] of Object.entries(palaces)) {
+                const index = data.hexagrams.indexOf(hexagramName);
+                if (index !== -1) {
+                    let shi;
+                    if (index === 0) shi = 5;
+                    else if (index >= 1 && index <= 5) shi = index - 1;
+                    else if (index === 6) shi = 3;
+                    else if (index === 7) shi = 2;
+                    
+                    const ying = (shi + 3) % 6;
+                    
+                    return {
+                        palace: palace + '宫',
+                        palaceName: palace,
+                        element: data.element,
+                        shi,
+                        ying,
+                        isYouhun: index === 6,
+                        isGuihun: index === 7,
+                        isBengong: index === 0
+                    };
+                }
+            }
+            return null;
+        }
+
+        function getEarthlyBranches(lines) {
+            // 下卦三爻：lines[0], lines[1], lines[2]
+            // 上卦三爻：lines[3], lines[4], lines[5]
+            const lowerKey = [lines[2], lines[1], lines[0]].join(''); // 从上往下读
+            const upperKey = [lines[5], lines[4], lines[3]].join('');
+            
+            const lowerBranches = earthlyBranchesConfig[lowerKey] || [];
+            const upperBranches = earthlyBranchesConfig[upperKey] || [];
+            
+            // 返回从下往上的地支（初爻到上爻）
+            return [
+                lowerBranches[0] || '', // 初爻
+                lowerBranches[1] || '', // 二爻
+                lowerBranches[2] || '', // 三爻
+                upperBranches[3] || '', // 四爻
+                upperBranches[4] || '', // 五爻
+                upperBranches[5] || ''  // 上爻
+            ];
+        }
+
+        function getLiuqinForHexagram(hexagramName, branches) {
+            const palaceInfo = getPalaceInfo(hexagramName);
+            if (!palaceInfo) return { liuqins: Array(6).fill(''), missingInfo: [] };
+            
+            const palaceElement = palaceInfo.element;
+            const liuqins = branches.map(branch => {
+                if (!branch) return '';
+                const branchElement = branchElements[branch];
+                return getLiuqin(branchElement, palaceElement);
+            });
+
+            const required = ['父母', '兄弟', '官鬼', '妻财', '子孙'];
+            const missing = required.filter(lq => !liuqins.includes(lq));
+            
+            const missingInfo = {};
+            if (missing.length > 0) {
+                const bengongName = palaces[palaceInfo.palaceName].hexagrams[0];
+                const bengongKey = Object.entries(hexagramDatabase).find(([k, v]) => v === bengongName)?.[0];
+                
+                if (bengongKey) {
+                    const bengongLines = bengongKey.split('').map(Number);
+                    const bengongBranches = getEarthlyBranches(bengongLines);
+                    const bengongLiuqins = bengongBranches.map(branch => {
+                        const branchElement = branchElements[branch];
+                        return getLiuqin(branchElement, palaceElement);
+                    });
+                    
+                    missing.forEach(lq => {
+                        const idx = bengongLiuqins.indexOf(lq);
+                        if (idx !== -1) {
+                            // 找到当前卦中重复最多的六亲对应的爻位
+                            const counts = {};
+                            liuqins.forEach((l, i) => {
+                                if (l) counts[l] = (counts[l] || []).concat(i);
+                            });
+                            const maxCount = Math.max(...Object.values(counts).map(arr => arr.length));
+                            const mostCommon = Object.entries(counts).find(([k, v]) => v.length === maxCount);
+                            
+                            if (mostCommon && mostCommon[1].length > 1) {
+                                // 显示在第一个重复的爻位
+                                const targetIdx = mostCommon[1][0];
+                                missingInfo[targetIdx] = `${bengongBranches[idx]} ${lq}`;
+                            }
+                        }
+                    });
+                }
+            }
+            
+            return { liuqins, missingInfo };
+        }
+
+        function checkSpecialHexagram(hexagramName, palaceInfo) {
+            const tags = [];
+            
+            if (palaceInfo?.isYouhun) tags.push({ type: 'youhun', text: '游魂卦' });
+            if (palaceInfo?.isGuihun) tags.push({ type: 'guihun', text: '归魂卦' });
+            if (palaceInfo?.isBengong) tags.push({ type: 'bengong', text: '本宫卦' });
+            if (specialHexagrams.biyue[hexagramName]) {
+                tags.push({ type: 'biyue', text: '辟卦 ' + specialHexagrams.biyue[hexagramName] });
+            }
+            if (specialHexagrams.liuhe.includes(hexagramName)) tags.push({ type: 'liuhe', text: '六合卦' });
+            if (specialHexagrams.liuchong.includes(hexagramName)) tags.push({ type: 'liuchong', text: '六冲卦' });
+            
+            return tags;
+        }
+
+        function updateHexagramInfo() {
+            const hexagramName = getHexagramName(currentLines);
+            const palaceInfo = getPalaceInfo(hexagramName);
+            const specialTags = checkSpecialHexagram(hexagramName, palaceInfo);
+            const showSpecial = document.getElementById('showSpecialTags').checked;
+            const symbol = hexagramSymbols[hexagramName] || '?';
+            currentSymbol = symbol;
+            
+            let html = `
+                <div class="info-row">
+                    <span class="info-label">卦象符号：</span>
+                    <span class="symbol-text">${symbol}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">卦名：</span>
+                    <span class="info-value">${hexagramName}</span>
+                </div>
+            `;
+            
+            if (palaceInfo) {
+                html += `
+                    <div class="info-row">
+                        <span class="info-label">卦宫：</span>
+                        <span class="info-value">${palaceInfo.palace}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">五行：</span>
+                        <span class="info-value">${palaceInfo.element}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">世应：</span>
+                        <span class="info-value">世${palaceInfo.shi + 1} 应${palaceInfo.ying + 1}</span>
+                    </div>
+                `;
+            }
+            
+            if (showSpecial && specialTags.length > 0) {
+                html += `
+                    <div class="info-row" style="flex-direction: column; align-items: flex-start;">
+                        <span class="info-label" style="margin-bottom: 8px;">特殊属性：</span>
+                        <div class="special-tags">
+                            ${specialTags.map(tag => `<span class="tag tag-${tag.type}">${tag.text}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('hexagramInfo').innerHTML = html;
+        }
+
+        function copySymbol() {
+            navigator.clipboard.writeText(currentSymbol).then(() => {
+                const buttons = document.querySelectorAll('.btn-primary');
+                const btn = buttons[0];
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✓ 已复制';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function renderLineColorControls() {
+            const container = document.getElementById('lineColors');
+            const lineNames = ['初爻', '二爻', '三爻', '四爻', '五爻', '上爻'];
+            
+            container.innerHTML = lineNames.map((name, i) => `
+                <div class="line-control">
+                    <span class="line-label">${name}</span>
+                    <input type="color" value="${lineColors[i]}" onchange="updateLineColor(${i}, this.value)">
+                    <span class="color-value">${lineColors[i]}</span>
+                </div>
+            `).join('');
+        }
+
+        function updateLineColor(index, color) {
+            lineColors[index] = color;
+            document.querySelectorAll('.color-value')[index].textContent = color;
+            updateCanvas();
+        }
+
+        function resetColors() {
+            const defaultColor = getComputedStyle(document.documentElement).getPropertyValue('--md-sys-color-primary').trim();
+            lineColors = Array(6).fill(defaultColor);
+            
+            document.querySelectorAll('#lineColors input[type="color"]').forEach((input, i) => {
+                input.value = defaultColor;
+            });
+            document.querySelectorAll('.color-value').forEach((span, i) => {
+                span.textContent = defaultColor;
+            });
+            
+            updateCanvas();
+        }
+
+        function updateCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            const baseWidth = window.innerWidth < 768 ? 500 : 700;
+            const width = baseWidth;
+            const height = 900;
+            
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            
+            ctx.scale(dpr, dpr);
+            ctx.clearRect(0, 0, width, height);
+            
+            const showName = document.getElementById('showName').checked;
+            const showBranches = document.getElementById('showEarthlyBranches').checked;
+            const showShiYing = document.getElementById('showShiYing').checked;
+            const showPalace = document.getElementById('showPalace').checked;
+            const showWuxing = document.getElementById('showWuxing').checked;
+            const showLiuqin = document.getElementById('showLiuqin').checked;
+            const useWuxingColors = document.getElementById('useWuxingColors').checked;
+            
+            const hexagramName = getHexagramName(currentLines);
+            const palaceInfo = getPalaceInfo(hexagramName);
+            const earthlyBranches = getEarthlyBranches(currentLines);
+            const liuqinData = getLiuqinForHexagram(hexagramName, earthlyBranches);
+            
+            updateHexagramInfo();
+            
+            let yOffset = 80;
+            if (showName) {
+                ctx.font = 'bold 36px "Noto Serif SC", serif';
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
+                ctx.textAlign = 'center';
+                ctx.fillText(hexagramName, width / 2, yOffset);
+                yOffset += 50;
+                
+                if (showPalace && palaceInfo) {
+                    ctx.font = '22px "Noto Serif SC", serif';
+                    let palaceText = `【${palaceInfo.palace}】`;
+                    if (showWuxing) palaceText += ` ${palaceInfo.element}`;
+                    
+                    if (useWuxingColors) {
+                        ctx.fillStyle = wuxingColors[palaceInfo.element];
+                    } else {
+                        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--md-sys-color-primary').trim();
+                    }
+                    ctx.fillText(palaceText, width / 2, yOffset);
+                    yOffset += 50;
+                }
+            } else {
+                yOffset = 40;
+            }
+            
+            const lineHeight = 30, lineGap = 70;
+            const lineWidth = window.innerWidth < 768 ? 250 : 300;
+            const gapWidth = 60;
+            
+            for (let i = 0; i < 6; i++) {
+                const y = yOffset + (5 - i) * (lineHeight + lineGap);
+                const isYang = currentLines[i] === 1;
+                
+                ctx.strokeStyle = lineColors[i];
+                ctx.lineWidth = lineHeight;
+                ctx.lineCap = 'round';
+                
+                if (isYang) {
+                    ctx.beginPath();
+                    ctx.moveTo((width - lineWidth) / 2, y);
+                    ctx.lineTo((width + lineWidth) / 2, y);
+                    ctx.stroke();
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo((width - lineWidth) / 2, y);
+                    ctx.lineTo((width - gapWidth) / 2, y);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo((width + gapWidth) / 2, y);
+                    ctx.lineTo((width + lineWidth) / 2, y);
+                    ctx.stroke();
+                }
+                
+                // 右侧：地支和六亲
+                let rightText = '';
+                const fontSize = window.innerWidth < 768 ? 18 : 22;
+                
+                if (showBranches && earthlyBranches[i]) {
+                    rightText = earthlyBranches[i];
+                }
+                if (showLiuqin && liuqinData.liuqins[i]) {
+                    rightText += ' ' + liuqinData.liuqins[i];
+                }
+                
+                // 显示伏神（在重复的六亲旁边）
+                if (showLiuqin && liuqinData.missingInfo[i]) {
+                    rightText += ' (伏神：' + liuqinData.missingInfo[i] + ')';
+                }
+                
+                if (rightText) {
+                    ctx.font = `bold ${fontSize}px "Noto Serif SC", serif`;
+                    
+                    if (useWuxingColors && earthlyBranches[i]) {
+                        const branchElement = branchElements[earthlyBranches[i]];
+                        ctx.fillStyle = wuxingColors[branchElement];
+                    } else {
+                        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
+                    }
+                    
+                    ctx.textAlign = 'left';
+                    ctx.fillText(rightText, (width + lineWidth) / 2 + 40, y + 10);
+                }
+                
+                // 左侧：世应
+                if (showShiYing && palaceInfo) {
+                    ctx.font = `bold ${fontSize + 4}px "Noto Serif SC", serif`;
+                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--md-sys-color-tertiary').trim();
+                    ctx.textAlign = 'right';
+                    
+                    if (i === palaceInfo.shi) ctx.fillText('世', (width - lineWidth) / 2 - 40, y + 10);
+                    if (i === palaceInfo.ying) ctx.fillText('应', (width - lineWidth) / 2 - 40, y + 10);
+                }
+            }
+        }
+
+        function handleCanvasClick(event) {
+            const rect = canvas.getBoundingClientRect();
+            const y = event.clientY - rect.top;
+            
+            const showName = document.getElementById('showName').checked;
+            const showPalace = document.getElementById('showPalace').checked;
+            
+            let yOffset = showName ? (showPalace ? 180 : 130) : 40;
+            
+            const lineHeight = 30, lineGap = 70;
+            
+            for (let i = 0; i < 6; i++) {
+                const lineY = yOffset + (5 - i) * (lineHeight + lineGap);
+                if (Math.abs(y - lineY) < lineHeight + 25) {
+                    currentLines[i] = currentLines[i] === 1 ? 0 : 1;
+                    canvas.classList.add('line-toggling');
+                    setTimeout(() => canvas.classList.remove('line-toggling'), 300);
+                    updateCanvas();
+                    break;
+                }
+            }
+        }
+
+        function downloadPNG() {
+            const hexagramName = getHexagramName(currentLines);
+            const link = document.createElement('a');
+            link.download = `${hexagramName}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton();
+            resetColors();
+        }
+
+        function updateThemeButton() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            document.getElementById('themeIcon').textContent = theme === 'dark' ? '☀️' : '🌙';
+            document.getElementById('themeText').textContent = theme === 'dark' ? '浅色模式' : '深色模式';
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+        window.addEventListener('resize', updateCanvas);
+    </script>
+</body>
+</html>
