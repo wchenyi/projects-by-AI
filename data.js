@@ -140,7 +140,7 @@ const projects = [
         icon: '🏪',
         tags: ['Gemini'],
         versions: [
-            { name: 'Gemini 版', url: 'https://projects.wangcy.site/appstore/index.html' }
+            { name: 'Gemini 版', url: '#' }
         ]
     },
     {
@@ -239,4 +239,5 @@ const categoryInfo = {
         icon: '⭐' 
     }
 };
+
 
