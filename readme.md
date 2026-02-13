@@ -26,7 +26,7 @@
 - [法考主观模拟网站](https://projects.wangcy.site/fakao/c/index)
 
 > ChatGPT
-- [起始页生成](https://wchenyi.github.io/Auto-search)
+- [起始页生成](https://projects.wangcy.site/Auto-search)
 
 > Gemini
 - [appstore](https://projects.wangcy.site/appstore/index.html)
