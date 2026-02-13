@@ -48,11 +48,11 @@ const projects = [
         id: 5,
         category: 'entertainment',
         name: '道家小六壬起卦',
-        description: '传统占卜工具',
+        description: '道家小六壬排盘工具',
         icon: '☯️',
         tags: ['Claude'],
         versions: [
-            { name: '开始起卦', url: 'https://dao6.wangcy.cam' }
+            { name: '开始起卦', url: 'https://dao6.wangcy.online' }
         ]
     },
     {
@@ -102,12 +102,12 @@ const projects = [
     {
         id: 10,
         category: 'entertainment',
-        name: '八卦知识',
-        description: '中国传统文化学习',
-        icon: '📖',
-        tags: ['Claude'],
+        name: '道家小六壬起卦2',
+        description: '另一种风格的道家小六壬起卦',
+        icon: '☯️',
+        tags: ['Gemini'],
         versions: [
-            { name: '学习页面', url: 'https://projects.wangcy.site/other/bagua' }
+            { name: '开始起卦', url: 'https://dao6.dpdns.org' }
         ]
     },
     {
@@ -129,7 +129,7 @@ const projects = [
         icon: '🔍',
         tags: ['ChatGPT'],
         versions: [
-            { name: '访问页面', url: 'https://wchenyi.github.io/Auto-search' }
+            { name: '访问页面', url: 'https://projects.wangcy.site/Auto-search' }
         ]
     },
     {
@@ -152,6 +152,61 @@ const projects = [
         tags: ['Gemini'],
         versions: [
             { name: 'Gemini 版', url: 'https://projects.wangcy.site/fakao/g/index' }
+        ]
+    },
+    {
+        id: 15,
+        category: 'office',
+        name: '收藏夹转网页',
+        description: '浏览器收藏夹转MD3风格网页',
+        icon: '🔖',
+        tags: ['Gemini'],
+        versions: [
+            { name: '访问页面', url: 'https://projects.wangcy.site/favorite/index' }
+        ]
+    },
+    {
+        id: 16,
+        category: 'entertainment',
+        name: '六十四卦学习',
+        description: '六十四卦的相关知识学习',
+        icon: '📖',
+        tags: ['Claude'],
+        versions: [
+            { name: '开始起卦', url: 'https://projects.wangcy.site/八卦/bg-xuexi' }
+        ]
+    },
+    {
+        id: 17,
+        category: 'entertainment',
+        name: '六十四卦素材',
+        description: '六十四卦素材PNG下载，符号复制',
+        icon: '☯️',
+        tags: ['Claude'],
+        versions: [
+            { name: '开始起卦', url: 'https://projects.wangcy.site/八卦/bg-sucai' }
+        ]
+    },
+    {
+        id: 18,
+        category: 'entertainment',
+        name: '京房卦训练',
+        description: '京房六十四卦训练',
+        icon: '☯️',
+        tags: ['Claude'],
+        versions: [
+            { name: '开始起卦', url: 'https://projects.wangcy.site/八卦/bg-jingfang' }
+        ]
+    },
+    {
+        id: 19,
+        category: 'entertainment',
+        name: '世应训练',
+        description: '六十四卦的世爻和应爻训练',
+        icon: '☯️',
+        tags: ['Claude'],
+        versions: [
+            { name: '开始起卦', url: 'https://projects.wangcy.site/八卦/bg-xunlian' }
         ]
     }
 ];
@@ -184,3 +239,4 @@ const categoryInfo = {
         icon: '⭐' 
     }
 };
+
