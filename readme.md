@@ -21,9 +21,13 @@
 - [startpage](https://projects.wangcy.site/start-page/index.html)
 - [netdisk](https://projects.wangcy.site/netdisk/assets/index.html)
 - [appstore-CL](https://projects.wangcy.site/appstore-CL/index.html)
-- [八卦知识](https://projects.wangcy.site/other/bagua)
-  - [世应训练](https://projects.wangcy.site/other/shiying)
+- 八卦类
+  - [世应训练](https://projects.wangcy.site/八卦/bg-xunlian)
+  - [京房卦训练](https://projects.wangcy.site/八卦/bg-jingfang)
+  - [八卦学习](https://projects.wangcy.site/八卦/bg-xuexi)
+  - [八卦素材下载](https://projects.wangcy.site/八卦/bg-sucai)
 - [法考主观模拟网站](https://projects.wangcy.site/fakao/c/index)
+- [道家小六壬](https://dao6.dpdns.org)
 
 > ChatGPT
 - [起始页生成](https://projects.wangcy.site/Auto-search)
@@ -32,3 +36,4 @@
 - [appstore](https://projects.wangcy.site/appstore/index.html)
 - [法考主观题模拟](https://projects.wangcy.site/fakao/g/index)
 - [favorite](https://projects.wangcy.site/favorite/index)
+- [道家小六壬](http://dao6.wangcy.online/)
