@@ -28,6 +28,7 @@
   - [八卦素材下载](https://projects.wangcy.site/八卦/bg-sucai)
 - [法考主观模拟网站](https://projects.wangcy.site/fakao/c/index)
 - [道家小六壬](https://dao6.dpdns.org)
+- [Sub工具](https://projects.wangcy.site/Sub/indexC)
 
 > ChatGPT
 - [起始页生成](https://projects.wangcy.site/Auto-search)
@@ -37,3 +38,4 @@
 - [法考主观题模拟](https://projects.wangcy.site/fakao/g/index)
 - [favorite](https://projects.wangcy.site/favorite/index)
 - [道家小六壬](http://dao6.wangcy.online/)
+
