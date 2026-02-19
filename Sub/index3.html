@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubParse Ultimate - MD3 机场解析</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#d0bcff', onPrimary: '#381e72', surface: '#1c1b1f', secondaryContainer: '#4a4458' } } } }
+    </script>
+    <style>
+        body { font-family: 'Roboto', sans-serif; transition: all 0.3s; -webkit-tap-highlight-color: transparent; }
+        .dark body { background-color: #1c1b1f; color: #e6e1e5; }
+        .light body { background-color: #fef7ff; color: #1c1b1f; }
+        .md3-card { border-radius: 28px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .dark .md3-card { background: #2b2930; }
+        .light .md3-card { background: #f3edf7; border: 1px solid #cac4d0; }
+        .progress-bar { height: 8px; border-radius: 4px; background: #4a4458; overflow: hidden; }
+        .progress-fill { height: 100%; background: #d0bcff; transition: width 0.5s ease; }
+        input, textarea { background: transparent !important; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 lg:p-10">
+    <div id="app" class="max-w-6xl mx-auto">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 px-2">
+            <div class="flex items-center gap-3">
+                <div class="bg-primary text-onPrimary p-2 rounded-2xl">
+                    <span class="material-icons-round">edit_attributes</span>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight">SubParse <span class="font-light opacity-60">Ultimate</span></h1>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <div class="relative flex-1 md:w-64">
+                    <span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 opacity-50 text-sm">search</span>
+                    <input v-model="searchQuery" placeholder="搜索节点名称..." class="w-full pl-10 pr-4 py-2 rounded-full border border-outline/50 focus:border-primary outline-none text-sm">
+                </div>
+                <button @click="toggleDarkMode" class="p-3 rounded-full hover:bg-white/10"><span class="material-icons-round">{{ isDark ? 'light_mode' : 'dark_mode' }}</span></button>
+            </div>
+        </header>
+
+        <div v-if="usage.total" class="md3-card p-6 mb-8 border-l-4 border-primary shadow-xl animate-fade-in">
+            <div class="flex justify-between items-end mb-2">
+                <div>
+                    <p class="text-xs opacity-60 uppercase font-bold tracking-tighter">订阅流量进度</p>
+                    <h2 class="text-xl font-medium">{{ usage.usedLabel }} / {{ usage.totalLabel }}</h2>
+                </div>
+                <p class="text-xs font-mono opacity-60">剩余：{{ usage.leftLabel }}</p>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" :style="{width: usage.percent + '%'}"></div></div>
+            <p v-if="usage.expire" class="mt-2 text-xs opacity-50">过期时间：{{ usage.expire }}</p>
+        </div>
+
+        <section class="md3-card p-6 mb-8 shadow-sm border border-white/5">
+            <textarea v-model="rawInput" placeholder="输入订阅 URL 或 节点分享链接" class="w-full p-4 h-20 rounded-xl border-2 border-dashed border-outline/30 focus:border-primary outline-none transition-all resize-none mb-4 font-mono text-sm"></textarea>
+            <div class="flex flex-wrap gap-3">
+                <button @click="handleFetch" :disabled="loading" class="bg-primary text-onPrimary px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:shadow-lg active:scale-95 transition-all">
+                    <span v-if="loading" class="animate-spin material-icons-round">sync</span>
+                    <span v-else class="material-icons-round">rocket_launch</span>
+                    解析订阅
+                </button>
+                <button @click="testAllLatency" class="px-6 py-3 rounded-full border border-outline hover:bg-white/5 flex items-center gap-2">
+                    <span class="material-icons-round">speed</span> 测速
+                </button>
+                <button @click="exportSub('clash')" class="px-4 py-3 rounded-full bg-secondaryContainer text-primary text-xs font-bold">一键导入 Clash</button>
+            </div>
+            <p v-if="fetchFailed" class="mt-3 text-red-400 text-xs flex items-center gap-1">
+                <span class="material-icons-round text-sm">error</span> 解析受阻：建议 <a :href="rawInput" target="_blank" class="underline">点此打开</a> 并手动粘贴返回的内容。
+            </p>
+        </section>
+
+        <div class="flex justify-between items-center mb-6 px-2">
+            <div class="flex gap-2 bg-surfaceVariant/20 p-1 rounded-full">
+                <button v-for="v in ['grid', 'list']" @click="viewMode = v" :class="viewMode === v ? 'bg-primary text-onPrimary' : ''" class="px-4 py-1 rounded-full text-xs transition-all capitalize">{{ v }}</button>
+            </div>
+            <p class="text-xs opacity-50">找到 {{ filteredNodes.length }} 个节点</p>
+        </div>
+
+        <div :class="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'flex flex-col gap-2'">
+            <div v-for="(node, idx) in filteredNodes" :key="idx" @click="openDetail(node)" class="md3-card p-4 cursor-pointer hover:bg-primary/10 border border-transparent hover:border-primary/30 flex items-center gap-4 group">
+                <div class="text-3xl filter saturate-50 group-hover:saturate-100 transition-all">{{ getFlag(node.name) }}</div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-white/10">{{ node.protocol }}</span>
+                        <h3 class="font-medium truncate text-sm">{{ node.name }}</h3>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span v-if="node.latency" :class="node.latency < 500 ? 'text-green-400' : 'text-yellow-400'" class="text-[10px] font-mono">{{ node.latency }}ms</span>
+                        <span class="text-[10px] opacity-40 truncate">{{ node.server }}</span>
+                    </div>
+                </div>
+                <span class="material-icons-round text-primary opacity-0 group-hover:opacity-100 transition-all">settings</span>
+            </div>
+        </div>
+
+        <div v-if="selectedNode" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" @click.self="selectedNode = null">
+            <div class="md3-card w-full max-w-4xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden shadow-2xl scale-in bg-white dark:bg-[#2b2930]">
+                <div class="flex-1 p-6 overflow-y-auto border-b md:border-b-0 md:border-r border-outline/20">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-2"><span class="material-icons-round text-primary">edit</span> 节点参数调试</h2>
+                    <div class="space-y-4">
+                        <div v-for="(val, key) in selectedNode.details" :key="key" class="flex flex-col">
+                            <label class="text-[10px] uppercase font-bold opacity-40 ml-1 mb-1">{{ key }}</label>
+                            <input v-model="selectedNode.details[key]" @input="updateRaw" class="p-3 rounded-xl bg-white/5 border border-outline/20 focus:border-primary outline-none text-sm font-mono">
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full md:w-80 p-8 flex flex-col items-center bg-primary/5">
+                    <canvas id="qr-canvas" class="bg-white p-3 rounded-2xl shadow-inner mb-6"></canvas>
+                    <div class="w-full space-y-3">
+                        <button @click="copyLink(selectedNode.raw)" class="w-full py-3 rounded-full bg-primary text-onPrimary font-bold text-sm flex items-center justify-center gap-2"><span class="material-icons-round text-sm">content_copy</span> 复制分享链接</button>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button @click="importTo('shadowrocket')" class="py-2 rounded-full border border-outline text-[10px] font-bold">Shadowrocket</button>
+                            <button @click="importTo('v2rayng')" class="py-2 rounded-full border border-outline text-[10px] font-bold">V2RayNG</button>
+                        </div>
+                    </div>
+                    <button @click="selectedNode = null" class="mt-8 opacity-50 hover:opacity-100 text-xs uppercase tracking-widest">点击此处关闭窗口</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, nextTick } = Vue;
+
+        createApp({
+            setup() {
+                const rawInput = ref('');
+                const nodes = ref([]);
+                const loading = ref(false);
+                const isDark = ref(true);
+                const viewMode = ref('grid');
+                const searchQuery = ref('');
+                const selectedNode = ref(null);
+                const fetchFailed = ref(false);
+                const usage = ref({ total: 0, used: 0, percent: 0 });
+
+                const toggleDarkMode = () => { isDark.value = !isDark.value; document.documentElement.classList.toggle('dark'); };
+
+                // 智能旗标匹配
+                const getFlag = (name) => {
+                    const dict = { '香港': '🇭🇰', 'HK': '🇭🇰', '台湾': '🇹🇼', 'TW': '🇹🇼', '美国': '🇺🇸', 'US': '🇺🇸', '日本': '🇯🇵', 'JP': '🇯🇵', '新加坡': '🇸🇬', 'SG': '🇸🇬', '韩国': '🇰🇷', 'KR': '🇰🇷', '英国': '🇬🇧', 'UK': '🇬🇧', '德国': '🇩🇪', 'DE': '🇩🇪' };
+                    for (let key in dict) if (name.toUpperCase().includes(key)) return dict[key];
+                    return '🌐';
+                };
+
+                const filteredNodes = computed(() => {
+                    return nodes.value.filter(n => n.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
+                });
+
+                const handleFetch = async () => {
+                    if (!rawInput.value) return;
+                    loading.value = true; fetchFailed.value = false;
+                    let content = rawInput.value.trim();
+
+                    if (content.startsWith('http')) {
+                        try {
+                            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(content)}`);
+                            const data = await res.json();
+                            // 尝试解析流量信息 (AllOrigins 有时会剥离 header，这里是尽力而为)
+                            content = data.contents;
+                        } catch (e) { fetchFailed.value = true; loading.value = false; return; }
+                    }
+                    parseSubscription(content);
+                };
+
+                const parseSubscription = (content) => {
+                    try {
+                        const decoded = decodeURIComponent(escape(atob(content.replace(/[\r\n\s]/g, ""))));
+                        nodes.value = decoded.split(/\r?\n/).map(line => parseLine(line.trim())).filter(n => n);
+                        loading.value = false;
+                    } catch (e) { alert("Base64解析失败"); loading.value = false; }
+                };
+
+                const parseLine = (line) => {
+                    if (!line.includes('://')) return null;
+                    const protocol = line.split('://')[0].toLowerCase();
+                    const body = line.split('://')[1];
+                    let node = { protocol, raw: line, name: '未知节点', server: '', latency: null, details: {} };
+
+                    try {
+                        if (protocol === 'vmess') {
+                            const conf = JSON.parse(atob(body));
+                            node.name = conf.ps; node.server = conf.add;
+                            node.details = { ps: conf.ps, add: conf.add, port: conf.port, id: conf.id, aid: conf.aid, net: conf.net, type: conf.type, host: conf.host, path: conf.path, tls: conf.tls };
+                        } else {
+                            const url = new URL(line.replace('reality', 'vless')); 
+                            node.name = decodeURIComponent(url.hash.slice(1)) || '未命名';
+                            node.server = url.hostname;
+                            node.details = { name: node.name, server: url.hostname, port: url.port, user: url.username };
+                            url.searchParams.forEach((v, k) => node.details[k] = v);
+                        }
+                        return node;
+                    } catch (e) { return null; }
+                };
+
+                const updateRaw = () => {
+                    const n = selectedNode.value;
+                    if (n.protocol === 'vmess') {
+                        n.raw = 'vmess://' + btoa(JSON.stringify(n.details));
+                    } else {
+                        // 简化构建逻辑
+                        let newUrl = `${n.protocol}://${n.details.user || ''}@${n.details.server}:${n.details.port}?`;
+                        for (let k in n.details) if (!['name', 'server', 'port', 'user'].includes(k)) newUrl += `${k}=${n.details[k]}&`;
+                        n.raw = newUrl.slice(0, -1) + '#' + encodeURIComponent(n.details.name || n.name);
+                    }
+                    drawQR(n.raw);
+                };
+
+                const drawQR = (text) => {
+                    nextTick(() => new QRious({ element: document.getElementById('qr-canvas'), value: text, size: 220, level: 'M' }));
+                };
+
+                const openDetail = (node) => { selectedNode.value = node; drawQR(node.raw); };
+
+                const testAllLatency = async () => {
+                    // 浏览器前端无法真正 Ping 端口，这里通过请求常见的 204 模拟
+                    nodes.value.forEach(async (n) => {
+                        const start = Date.now();
+                        try {
+                            await fetch(`https://www.google.com/generate_204?t=${start}`, { mode: 'no-cors' });
+                            n.latency = Date.now() - start;
+                        } catch (e) { n.latency = 'Timeout'; }
+                    });
+                };
+
+                const importTo = (app) => {
+                    const schemes = { 'shadowrocket': 'shadowrocket://add/', 'v2rayng': 'v2rayng://install-config?url=' };
+                    window.location.href = schemes[app] + (selectedNode.value.raw);
+                };
+
+                const copyLink = (t) => { navigator.clipboard.writeText(t); alert("复制成功！"); };
+
+                return {
+                    rawInput, nodes, filteredNodes, loading, isDark, viewMode, searchQuery, selectedNode, fetchFailed, usage,
+                    toggleDarkMode, handleFetch, getFlag, openDetail, updateRaw, testAllLatency, importTo, copyLink
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

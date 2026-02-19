@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubParse MD3 - 订阅解析工具</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto', sans-serif; background-color: #1c1b1f; color: #e6e1e5; }
+        .md3-card { background: #2b2930; border-radius: 24px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .md3-card:hover { background: #35333a; transform: translateY(-2px); }
+        .md3-input { background: #49454f; border-radius: 4px 4px 0 0; border-bottom: 2px solid #d0bcff; }
+        .btn-primary { background: #d0bcff; color: #381e72; border-radius: 100px; }
+        .btn-primary:hover { background: #e8def8; }
+        .modal-bg { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div id="app" class="max-w-4xl mx-auto">
+        <header class="flex items-center justify-between mb-8">
+            <h1 class="text-3xl font-medium text-[#d0bcff]">SubParse <span class="text-sm opacity-50 font-light">MD3 Edition</span></h1>
+            <span class="material-icons-round text-3xl">settings_input_antenna</span>
+        </header>
+
+        <div class="md3-card p-6 mb-8 shadow-lg">
+            <div class="flex flex-col gap-4">
+                <label class="text-sm font-medium text-[#d0bcff] ml-1">订阅链接 / Base64 内容</label>
+                <textarea 
+                    v-model="rawInput"
+                    placeholder="在此粘贴 https://... 或直接输入订阅的 Base64 文本"
+                    class="md3-input w-full p-4 h-32 outline-none focus:bg-[#5a5662] transition-colors"
+                ></textarea>
+                <div class="flex gap-3 overflow-x-auto py-2">
+                    <button @click="parseSub" :disabled="loading" class="btn-primary px-8 py-3 font-medium flex items-center gap-2 flex-shrink-0">
+                        <span v-if="loading" class="animate-spin material-icons-round text-sm">sync</span>
+                        {{ loading ? '解析中...' : '开始解析' }}
+                    </button>
+                    <button @click="rawInput = ''" class="border border-[#938f99] text-[#d0bcff] px-6 py-3 rounded-full hover:bg-[#49454f]">清空</button>
+                </div>
+                <p class="text-xs text-[#938f99]">注：直接请求链接受 CORS 限制，若解析失败请手动粘贴链接返回的 Base64 内容。</p>
+            </div>
+        </div>
+
+        <div v-if="nodes.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div 
+                v-for="(node, index) in nodes" 
+                :key="index"
+                @click="openDetail(node)"
+                class="md3-card p-4 cursor-pointer flex items-center gap-4 group"
+            >
+                <div :class="getProtocolClass(node.protocol)" class="w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xs">
+                    {{ node.protocol.toUpperCase() }}
+                </div>
+                <div class="flex-1 overflow-hidden">
+                    <h3 class="font-medium truncate">{{ node.name }}</h3>
+                    <p class="text-sm text-[#938f99] truncate">{{ node.server }}</p>
+                </div>
+                <span class="material-icons-round opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+            </div>
+        </div>
+
+        <div v-if="selectedNode" class="fixed inset-0 modal-bg z-50 flex items-center justify-center p-4" @click.self="selectedNode = null">
+            <div class="md3-card w-full max-w-lg overflow-hidden shadow-2xl scale-in">
+                <div class="p-6 border-b border-[#49454f] flex justify-between items-start">
+                    <div>
+                        <span class="text-xs uppercase tracking-widest text-[#d0bcff]">{{ selectedNode.protocol }}</span>
+                        <h2 class="text-xl font-bold">{{ selectedNode.name }}</h2>
+                    </div>
+                    <button @click="selectedNode = null" class="material-icons-round">close</button>
+                </div>
+                <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                    <div v-for="(val, key) in selectedNode.details" :key="key" class="flex flex-col border-b border-[#49454f] pb-2">
+                        <span class="text-xs text-[#938f99]">{{ key }}</span>
+                        <span class="break-all">{{ val }}</span>
+                    </div>
+                    <div class="mt-4">
+                        <span class="text-xs text-[#938f99]">原始配置</span>
+                        <pre class="bg-[#1c1b1f] p-3 rounded-lg text-[10px] break-all whitespace-pre-wrap mt-2">{{ selectedNode.raw }}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue;
+
+        createApp({
+            setup() {
+                const rawInput = ref('');
+                const nodes = ref([]);
+                const loading = ref(false);
+                const selectedNode = ref(null);
+
+                // 万能 Base64 解码（支持 UTF-8）
+                const universalAtob = (str) => {
+                    try {
+                        return decodeURIComponent(atob(str).split('').map(c => 
+                            '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                        ).join(''));
+                    } catch (e) {
+                        return atob(str);
+                    }
+                };
+
+                const parseSub = async () => {
+                    if (!rawInput.value) return;
+                    loading.value = true;
+                    nodes.value = [];
+
+                    let content = rawInput.value.trim();
+
+                    // 尝试通过代理获取内容 (如果输入的是 URL)
+                    if (content.startsWith('http')) {
+                        try {
+                            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(content)}`;
+                            const resp = await fetch(proxyUrl);
+                            const data = await resp.json();
+                            content = data.contents;
+                        } catch (e) {
+                            alert("跨域请求失败，请尝试手动粘贴订阅内容。");
+                        }
+                    }
+
+                    try {
+                        // 解码最外层
+                        const decoded = universalAtob(content.replace(/[\r\n]/g, ""));
+                        const lines = decoded.split(/\r?\n/);
+                        
+                        nodes.value = lines.map(line => parseProxyLine(line)).filter(n => n !== null);
+                    } catch (e) {
+                        alert("解析失败，请确保输入的是有效的 Base64 订阅内容。");
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+
+                const parseProxyLine = (line) => {
+                    if (!line.includes('://')) return null;
+                    const protocol = line.split('://')[0].toLowerCase();
+                    let name = '未知节点';
+                    let server = '';
+                    let details = {};
+
+                    try {
+                        if (protocol === 'vmess') {
+                            const config = JSON.parse(universalAtob(line.split('://')[1]));
+                            name = config.ps;
+                            server = config.add;
+                            details = config;
+                        } else {
+                            // 处理 SS/Trojan/VLESS 等带 # 备注的协议
+                            const parts = line.split('#');
+                            if (parts[1]) name = decodeURIComponent(parts[1]);
+                            const mainPart = parts[0].split('://')[1];
+                            server = mainPart.split('@')[1] || mainPart;
+                            details = { info: mainPart };
+                        }
+                    } catch (e) {
+                        name = "解析出错节点";
+                    }
+
+                    return { protocol, name, server, details, raw: line };
+                };
+
+                const getProtocolClass = (p) => {
+                    const colors = {
+                        vmess: 'bg-blue-900 text-blue-200',
+                        ss: 'bg-orange-900 text-orange-200',
+                        trojan: 'bg-purple-900 text-purple-200',
+                        vless: 'bg-emerald-900 text-emerald-200'
+                    };
+                    return colors[p] || 'bg-zinc-700 text-zinc-300';
+                };
+
+                const openDetail = (node) => {
+                    selectedNode.value = node;
+                };
+
+                return { rawInput, nodes, loading, parseSub, getProtocolClass, selectedNode, openDetail };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

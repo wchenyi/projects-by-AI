@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubParse Ultimate v2</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#d0bcff', onPrimary: '#381e72', surface: '#1c1b1f', secondaryContainer: '#4a4458', error: '#f2b8b5' } } } }
+    </script>
+    <style>
+        body { font-family: 'Roboto', sans-serif; transition: all 0.3s; }
+        .dark body { background-color: #1c1b1f; color: #e6e1e5; }
+        .light body { background-color: #fef7ff; color: #1c1b1f; }
+        .md3-card { border-radius: 28px; transition: all 0.2s cubic-bezier(0, 0, 0.2, 1); }
+        .dark .md3-card { background: #2b2930; }
+        .light .md3-card { background: #f3edf7; border: 1px solid #cac4d0; }
+        .radial-progress { transform: rotate(-90deg); }
+        input, textarea { background: rgba(255,255,255,0.05) !important; border-radius: 8px; padding: 8px 12px; outline: none; border: 1px solid rgba(150,150,150,0.2); }
+        .dark input { color: white; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div id="app" class="max-w-6xl mx-auto">
+        
+        <header class="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
+            <div class="flex items-center gap-4">
+                <div class="bg-primary text-onPrimary p-3 rounded-3xl shadow-lg">
+                    <span class="material-icons-round text-3xl">settings_ethernet</span>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-tighter">SubParse <span class="font-thin opacity-50">V2</span></h1>
+                    <p class="text-[10px] uppercase tracking-[0.2em] opacity-40">Ultimate Node Manager</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <div class="relative flex-1 md:w-80">
+                    <span class="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 opacity-40">search</span>
+                    <input v-model="searchQuery" placeholder="搜索节点或协议..." class="w-full pl-12 pr-4 py-3 rounded-full border-none ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-primary transition-all">
+                </div>
+                <button @click="toggleDarkMode" class="p-3 rounded-full hover:bg-primary/10 transition-colors">
+                    <span class="material-icons-round">{{ isDark ? 'light_mode' : 'dark_mode' }}</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-4 space-y-6">
+                <div class="md3-card p-6 flex items-center gap-6 shadow-xl relative overflow-hidden">
+                    <div class="relative w-24 h-24 flex-shrink-0">
+                        <svg class="radial-progress w-full h-full" viewBox="0 0 36 36">
+                            <path class="stroke-current opacity-10 text-primary" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="stroke-current text-primary" :stroke-dasharray="usage.percent + ', 100'" stroke-width="3" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span class="text-lg font-bold">{{ usage.percent }}%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-sm opacity-50 font-bold uppercase">已用流量</h3>
+                        <p class="text-xl font-medium">{{ usage.used || '0GB' }} / {{ usage.total || '1TB' }}</p>
+                        <p class="text-xs text-primary mt-1">剩余：{{ usage.left || '未知' }}</p>
+                    </div>
+                </div>
+
+                <div class="md3-card p-6 shadow-sm border border-white/5">
+                    <h3 class="text-xs font-bold mb-4 opacity-40 uppercase tracking-widest">订阅解析</h3>
+                    <textarea v-model="rawInput" placeholder="支持：Base64 / Clash YAML / 订阅链接" class="w-full h-32 text-xs font-mono mb-4 resize-none"></textarea>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button @click="handleParse" :disabled="loading" class="bg-primary text-onPrimary py-3 rounded-full font-bold flex items-center justify-center gap-2">
+                            <span v-if="loading" class="animate-spin material-icons-round text-sm">sync</span>
+                            <span v-else class="material-icons-round text-sm">bolt</span> 解析
+                        </button>
+                        <button @click="addNewNode" class="bg-secondaryContainer text-primary py-3 rounded-full font-bold flex items-center justify-center gap-2">
+                            <span class="material-icons-round text-sm">add</span> 手动新增
+                        </button>
+                    </div>
+                    <button @click="exportFullSubscription" class="w-full mt-3 py-2 rounded-full border border-primary/30 text-primary text-xs font-bold hover:bg-primary/5 transition-all">导出所有节点 (Base64)</button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex gap-2 p-1 bg-white/5 rounded-full">
+                        <button v-for="m in ['grid', 'list']" @click="viewMode = m" :class="viewMode === m ? 'bg-primary text-onPrimary' : ''" class="px-5 py-1.5 rounded-full text-xs font-bold capitalize transition-all">{{ m }}</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button @click="testAllLatency" class="text-xs bg-white/5 px-4 py-2 rounded-full hover:bg-white/10 flex items-center gap-2">
+                            <span class="material-icons-round text-sm">speed</span> 批量测速
+                        </button>
+                        <button @click="clearAll" class="text-xs text-error/60 hover:text-error px-4 py-2 rounded-full">清空全部</button>
+                    </div>
+                </div>
+
+                <div :class="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'flex flex-col gap-2'">
+                    <div v-for="(node, idx) in filteredNodes" :key="idx" @click="openDetail(node)" class="md3-card p-5 cursor-pointer border border-white/5 hover:border-primary/50 group flex items-center gap-4 relative overflow-hidden">
+                        <div class="text-4xl group-hover:scale-110 transition-transform">{{ getFlag(node.name) }}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-primary/10 text-primary">{{ node.protocol }}</span>
+                                <h3 class="font-medium truncate text-sm">{{ node.name }}</h3>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-[10px] opacity-40 font-mono truncate">{{ node.server }}</span>
+                                <span v-if="node.latency" :class="node.latency === 'Error' ? 'text-error' : 'text-green-400'" class="text-[10px] font-mono">
+                                    {{ node.latency }}{{ typeof node.latency === 'number' ? 'ms' : '' }}
+                                </span>
+                            </div>
+                        </div>
+                        <span class="material-icons-round text-primary/30 group-hover:text-primary transition-colors">tune</span>
+                    </div>
+                </div>
+                
+                <div v-if="filteredNodes.length === 0" class="py-32 text-center opacity-20">
+                    <span class="material-icons-round text-6xl">cloud_off</span>
+                    <p class="mt-4">没有发现节点，请先解析或新增</p>
+                </div>
+            </div>
+        </main>
+
+        <div v-if="selectedNode" class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-10 bg-black/90 backdrop-blur-xl" @click.self="selectedNode = null">
+            <div class="md3-card w-full max-w-5xl max-h-full flex flex-col md:flex-row overflow-hidden shadow-2xl scale-in bg-[#1c1b1f] border border-white/10">
+                <div class="flex-1 p-8 overflow-y-auto custom-scrollbar">
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 class="text-2xl font-bold flex items-center gap-3 text-primary">
+                            <span class="material-icons-round">analytics</span> 节点详情配置
+                        </h2>
+                        <button @click="deleteNode" class="text-error flex items-center gap-1 text-xs font-bold bg-error/10 px-4 py-2 rounded-full">
+                            <span class="material-icons-round text-sm">delete</span> 删除节点
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div v-for="(val, key) in selectedNode.details" :key="key" class="flex flex-col gap-2">
+                            <label class="text-[10px] uppercase tracking-widest font-black opacity-30 ml-1">{{ key }}</label>
+                            <input v-model="selectedNode.details[key]" @input="updateFromEditor" class="text-sm font-mono focus:ring-1 ring-primary/50">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full md:w-96 p-8 bg-white/5 flex flex-col items-center justify-center border-l border-white/10">
+                    <canvas id="qr-canvas" class="bg-white p-4 rounded-3xl shadow-2xl mb-8"></canvas>
+                    
+                    <div class="w-full space-y-4">
+                        <div class="flex gap-2">
+                            <button @click="importTo('shadowrocket')" class="flex-1 bg-white/10 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-white/20">小火箭</button>
+                            <button @click="importTo('v2rayng')" class="flex-1 bg-white/10 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-white/20">V2RayNG</button>
+                        </div>
+                        <button @click="copyText(selectedNode.raw)" class="w-full bg-primary text-onPrimary py-4 rounded-3xl font-bold flex items-center justify-center gap-3 shadow-lg">
+                            <span class="material-icons-round">content_copy</span> 复制分享链接
+                        </button>
+                        <p class="text-[10px] text-center opacity-30 px-6 italic">修改左侧参数，二维码和链接将实时同步更新</p>
+                    </div>
+                    <button @click="selectedNode = null" class="mt-8 text-xs opacity-50 underline underline-offset-8">关闭预览</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, watch, nextTick, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const rawInput = ref('');
+                const nodes = ref([]);
+                const loading = ref(false);
+                const isDark = ref(true);
+                const viewMode = ref('grid');
+                const searchQuery = ref('');
+                const selectedNode = ref(null);
+                const usage = ref({ used: '124GB', total: '512GB', percent: 24, left: '388GB' });
+
+                // 初始化：从 LocalStorage 读取
+                onMounted(() => {
+                    const saved = localStorage.getItem('subparse_nodes');
+                    if (saved) nodes.value = JSON.parse(saved);
+                    if (!isDark.value) document.documentElement.classList.remove('dark');
+                });
+
+                // 自动保存
+                watch(nodes, (newVal) => {
+                    localStorage.setItem('subparse_nodes', JSON.stringify(newVal));
+                }, { deep: true });
+
+                const toggleDarkMode = () => {
+                    isDark.value = !isDark.value;
+                    document.documentElement.classList.toggle('dark');
+                };
+
+                const getFlag = (name) => {
+                    const dict = { 'HK': '🇭🇰', '香港': '🇭🇰', 'TW': '🇹🇼', '台湾': '🇹🇼', 'US': '🇺🇸', '美国': '🇺🇸', 'JP': '🇯🇵', '日本': '🇯🇵', 'SG': '🇸🇬', '新加坡': '🇸🇬', 'KR': '🇰🇷', '韩国': '🇰🇷', 'CN': '🇨🇳', '中国': '🇨🇳' };
+                    for (let k in dict) if (name.toUpperCase().includes(k)) return dict[k];
+                    return '🚀';
+                };
+
+                const filteredNodes = computed(() => {
+                    const q = searchQuery.value.toLowerCase();
+                    return nodes.value.filter(n => n.name.toLowerCase().includes(q) || n.protocol.includes(q));
+                });
+
+                const handleParse = async () => {
+                    if (!rawInput.value) return;
+                    loading.value = true;
+                    let content = rawInput.value.trim();
+
+                    if (content.startsWith('http')) {
+                        try {
+                            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(content)}`);
+                            const data = await res.json();
+                            content = data.contents;
+                        } catch (e) { alert("远程获取失败，请手动粘贴内容"); loading.value = false; return; }
+                    }
+
+                    // 识别格式：Clash YAML 还是 Base64
+                    if (content.includes('proxies:')) {
+                        parseClash(content);
+                    } else {
+                        parseBase64(content);
+                    }
+                    loading.value = false;
+                };
+
+                const parseClash = (yamlStr) => {
+                    try {
+                        const doc = jsyaml.load(yamlStr);
+                        if (doc.proxies) {
+                            const newNodes = doc.proxies.map(p => ({
+                                protocol: p.type,
+                                name: p.name,
+                                server: p.server,
+                                latency: null,
+                                details: { ...p },
+                                raw: `${p.type}://${p.server}:${p.port}` // 简化
+                            }));
+                            nodes.value = [...newNodes, ...nodes.value];
+                        }
+                    } catch (e) { alert("Clash解析错误"); }
+                };
+
+                const parseBase64 = (str) => {
+                    try {
+                        const decoded = decodeURIComponent(escape(atob(str.replace(/[\r\n\s]/g, ""))));
+                        const lines = decoded.split(/\r?\n/);
+                        const newNodes = lines.map(l => parseProtocolLine(l.trim())).filter(n => n);
+                        nodes.value = [...newNodes, ...nodes.value];
+                    } catch (e) { alert("订阅内容解析失败"); }
+                };
+
+                const parseProtocolLine = (line) => {
+                    if (!line.includes('://')) return null;
+                    const protocol = line.split('://')[0];
+                    const body = line.split('://')[1];
+                    let node = { protocol, raw: line, name: '未命名', server: '', details: {} };
+                    try {
+                        if (protocol === 'vmess') {
+                            const c = JSON.parse(atob(body));
+                            node.name = c.ps; node.server = c.add; node.details = c;
+                        } else {
+                            const url = new URL(line.replace('reality', 'vless'));
+                            node.name = decodeURIComponent(url.hash.slice(1));
+                            node.server = url.hostname;
+                            node.details = { name: node.name, server: url.hostname, port: url.port, id: url.username };
+                            url.searchParams.forEach((v, k) => node.details[k] = v);
+                        }
+                        return node;
+                    } catch(e) { return null; }
+                };
+
+                const updateFromEditor = () => {
+                    const n = selectedNode.value;
+                    if (n.protocol === 'vmess') {
+                        n.name = n.details.ps; n.server = n.details.add;
+                        n.raw = 'vmess://' + btoa(JSON.stringify(n.details));
+                    } else {
+                        n.name = n.details.name; n.server = n.details.server;
+                        let uri = `${n.protocol}://${n.details.id}@${n.details.server}:${n.details.port}?`;
+                        for(let k in n.details) if(!['name','server','port','id'].includes(k)) uri += `${k}=${n.details[k]}&`;
+                        n.raw = uri.slice(0,-1) + '#' + encodeURIComponent(n.name);
+                    }
+                    drawQR(n.raw);
+                };
+
+                const drawQR = (text) => {
+                    nextTick(() => new QRious({ element: document.getElementById('qr-canvas'), value: text, size: 240, level: 'M' }));
+                };
+
+                const openDetail = (node) => { selectedNode.value = node; drawQR(node.raw); };
+
+                const addNewNode = () => {
+                    const newNode = { protocol: 'vmess', name: '新节点', server: '0.0.0.0', raw: '', details: { ps: '新节点', add: '127.0.0.1', port: 443, id: 'uuid-here', net: 'ws', tls: 'tls' } };
+                    nodes.value.unshift(newNode);
+                    openDetail(newNode);
+                };
+
+                const exportFullSubscription = () => {
+                    const fullStr = nodes.value.map(n => n.raw).join('\n');
+                    copyText(btoa(unescape(encodeURIComponent(fullStr))));
+                };
+
+                const testAllLatency = () => {
+                    nodes.value.forEach(async n => {
+                        const s = Date.now();
+                        try {
+                            await fetch(`https://www.google.com/generate_204?t=${s}`, { mode: 'no-cors' });
+                            n.latency = Date.now() - s;
+                        } catch(e) { n.latency = 'Error'; }
+                    });
+                };
+
+                const deleteNode = () => {
+                    nodes.value = nodes.value.filter(n => n !== selectedNode.value);
+                    selectedNode.value = null;
+                };
+
+                const copyText = (t) => { navigator.clipboard.writeText(t); alert("已复制到剪贴板"); };
+
+                const importTo = (app) => {
+                    const base = app === 'shadowrocket' ? 'shadowrocket://add/' : 'v2rayng://install?url=';
+                    window.location.href = base + encodeURIComponent(selectedNode.value.raw);
+                };
+
+                return {
+                    rawInput, nodes, filteredNodes, loading, isDark, viewMode, searchQuery, selectedNode, usage,
+                    toggleDarkMode, handleParse, getFlag, openDetail, updateFromEditor, addNewNode, exportFullSubscription, testAllLatency, deleteNode, copyText, importTo, clearAll: () => nodes.value = []
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

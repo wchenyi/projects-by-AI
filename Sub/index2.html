@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubParse Pro - MD3 订阅解析</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#d0bcff',
+                        onPrimary: '#381e72',
+                        surface: '#1c1b1f',
+                        surfaceVariant: '#49454f',
+                        outline: '#938f99'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Roboto', sans-serif; transition: background-color 0.3s; }
+        .dark body { background-color: #1c1b1f; color: #e6e1e5; }
+        .light body { background-color: #fef7ff; color: #1c1b1f; }
+        .md3-card { border-radius: 16px; transition: all 0.2s ease; }
+        .dark .md3-card { background: #2b2930; }
+        .light .md3-card { background: #f3edf7; border: 1px solid #cac4d0; }
+        .scale-in { animation: scaleIn 0.2s ease-out; }
+        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div id="app" class="max-w-5xl mx-auto">
+        <header class="flex items-center justify-between mb-8 px-2">
+            <div class="flex items-center gap-3">
+                <span class="material-icons-round text-primary text-3xl">hub</span>
+                <h1 class="text-2xl font-medium tracking-tight">SubParse <span class="text-primary font-bold">Pro</span></h1>
+            </div>
+            <div class="flex gap-2">
+                <button @click="toggleView" class="p-3 rounded-full hover:bg-surfaceVariant/20" :title="viewMode === 'grid' ? '列表视图' : '网格视图'">
+                    <span class="material-icons-round">{{ viewMode === 'grid' ? 'view_list' : 'grid_view' }}</span>
+                </button>
+                <button @click="toggleDarkMode" class="p-3 rounded-full hover:bg-surfaceVariant/20">
+                    <span class="material-icons-round">{{ isDark ? 'light_mode' : 'dark_mode' }}</span>
+                </button>
+            </div>
+        </header>
+
+        <section class="md3-card p-6 mb-8 shadow-sm">
+            <div class="flex flex-col gap-4">
+                <div class="relative">
+                    <textarea 
+                        v-model="rawInput"
+                        placeholder="输入订阅链接 (https://...) 或 Base64 内容"
+                        class="w-full p-4 h-24 rounded-xl bg-transparent border-2 border-outline focus:border-primary outline-none transition-all resize-none"
+                    ></textarea>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <button @click="handleFetch" :disabled="loading" class="bg-primary text-onPrimary px-8 py-3 rounded-full font-bold flex items-center gap-2 shadow-md hover:opacity-90 active:scale-95 transition-all">
+                        <span v-if="loading" class="animate-spin material-icons-round">sync</span>
+                        <span v-else class="material-icons-round">bolt</span>
+                        {{ loading ? '获取中...' : '解析内容' }}
+                    </button>
+                    <button @click="clearInput" class="px-6 py-3 rounded-full border border-outline hover:bg-surfaceVariant/10">清空</button>
+                    
+                    <div v-if="fetchFailed" class="flex items-center gap-2 text-orange-400 text-sm animate-pulse">
+                        <span class="material-icons-round text-sm">warning</span>
+                        自动获取失败，请尝试
+                        <a :href="rawInput" target="_blank" class="underline font-bold text-primary">点击打开链接</a> 
+                        后复制内容到此处。
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div v-if="nodes.length > 0">
+            <div class="flex justify-between items-center mb-4 px-2">
+                <h2 class="text-sm font-bold uppercase tracking-widest opacity-60">已发现 {{ nodes.length }} 个节点</h2>
+                <button @click="copyAllLinks" class="text-primary text-sm flex items-center gap-1">
+                    <span class="material-icons-round text-sm">content_copy</span> 全部导出
+                </button>
+            </div>
+
+            <div :class="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'flex flex-col gap-2'">
+                <div 
+                    v-for="(node, index) in nodes" 
+                    :key="index"
+                    @click="openDetail(node)"
+                    class="md3-card p-4 cursor-pointer flex items-center gap-4 hover:ring-2 ring-primary/50 group relative overflow-hidden"
+                >
+                    <div :class="getProtocolColor(node.protocol)" class="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-[10px] flex-shrink-0">
+                        {{ node.protocol.toUpperCase() }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-medium truncate text-sm mb-0.5">{{ node.name }}</h3>
+                        <p class="text-xs opacity-50 truncate">{{ node.server }}:{{ node.port }}</p>
+                    </div>
+                    <span class="material-icons-round opacity-0 group-hover:opacity-100 transition-opacity text-primary">qr_code_2</span>
+                </div>
+            </div>
+        </div>
+
+        <div v-else-if="!loading" class="py-20 text-center opacity-30">
+            <span class="material-icons-round text-6xl mb-4">dataset_lock</span>
+            <p>暂无数据，请输入订阅内容并解析</p>
+        </div>
+
+        <div v-if="selectedNode" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" @click.self="selectedNode = null">
+            <div class="md3-card w-full max-w-md overflow-hidden shadow-2xl scale-in bg-white dark:bg-[#2b2930]">
+                <div class="p-6 flex flex-col items-center border-b border-outline/20">
+                    <canvas id="qr-canvas" class="bg-white p-2 rounded-lg mb-4"></canvas>
+                    <div class="text-center">
+                        <span class="px-3 py-1 rounded-full bg-primary/20 text-primary text-[10px] font-bold uppercase">{{ selectedNode.protocol }}</span>
+                        <h2 class="text-xl font-bold mt-2 truncate max-w-[300px]">{{ selectedNode.name }}</h2>
+                    </div>
+                </div>
+                <div class="p-6 space-y-3 max-h-60 overflow-y-auto">
+                    <div v-for="(v, k) in selectedNode.details" class="flex justify-between text-sm">
+                        <span class="opacity-50 capitalize">{{ k }}</span>
+                        <span class="font-mono text-xs">{{ v }}</span>
+                    </div>
+                </div>
+                <div class="p-4 bg-surfaceVariant/10 flex gap-2">
+                    <button @click="copyLink(selectedNode.raw)" class="flex-1 bg-primary text-onPrimary py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+                        <span class="material-icons-round text-sm">content_copy</span> 复制分享链接
+                    </button>
+                    <button @click="selectedNode = null" class="px-4 py-3 rounded-xl border border-outline">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted, nextTick, watch } = Vue;
+
+        createApp({
+            setup() {
+                const rawInput = ref('');
+                const nodes = ref([]);
+                const loading = ref(false);
+                const isDark = ref(true);
+                const viewMode = ref('grid');
+                const selectedNode = ref(null);
+                const fetchFailed = ref(false);
+
+                const toggleDarkMode = () => {
+                    isDark.value = !isDark.value;
+                    document.documentElement.classList.toggle('dark');
+                };
+
+                const toggleView = () => {
+                    viewMode.value = viewMode.value === 'grid' ? 'list' : 'grid';
+                };
+
+                const clearInput = () => {
+                    rawInput.value = '';
+                    nodes.value = [];
+                    fetchFailed.value = false;
+                };
+
+                // 跨域抓取逻辑
+                const handleFetch = async () => {
+                    let content = rawInput.value.trim();
+                    if (!content) return;
+                    
+                    loading.value = true;
+                    fetchFailed.value = false;
+
+                    if (content.startsWith('http')) {
+                        try {
+                            // 尝试使用 AllOrigins 代理
+                            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(content)}`);
+                            const data = await res.json();
+                            if (data.contents) {
+                                content = data.contents;
+                            } else {
+                                throw new Error("Empty content");
+                            }
+                        } catch (e) {
+                            console.error("Fetch Error:", e);
+                            fetchFailed.value = true;
+                            loading.value = false;
+                            return;
+                        }
+                    }
+                    parseNodes(content);
+                };
+
+                const parseNodes = (content) => {
+                    try {
+                        // 清洗数据，防止换行导致的解码错误
+                        const cleanBase64 = content.replace(/[\r\n\s]/g, "");
+                        const decoded = decodeURIComponent(escape(atob(cleanBase64)));
+                        const lines = decoded.split(/\r?\n/);
+                        
+                        nodes.value = lines
+                            .map(line => parseProtocol(line.trim()))
+                            .filter(n => n !== null);
+                        
+                        loading.value = false;
+                    } catch (e) {
+                        alert("解析失败：请确保输入的是正确的 Base64 订阅内容");
+                        loading.value = false;
+                    }
+                };
+
+                const parseProtocol = (line) => {
+                    if (!line.includes('://')) return null;
+                    const protocol = line.split('://')[0].toLowerCase();
+                    const body = line.split('://')[1];
+                    let node = { protocol, raw: line, details: {}, name: '未命名节点', server: '', port: '' };
+
+                    try {
+                        if (protocol === 'vmess') {
+                            const config = JSON.parse(atob(body));
+                            node.name = config.ps;
+                            node.server = config.add;
+                            node.port = config.port;
+                            node.details = config;
+                        } else {
+                            // 适用于 vless, trojan, ss, reality
+                            const parts = body.split('#');
+                            if (parts[1]) node.name = decodeURIComponent(parts[1]);
+                            
+                            const main = parts[0];
+                            // 提取 [user@]server:port
+                            const urlObj = new URL(line.replace('reality', 'vless')); // 兼容性伪装
+                            node.server = urlObj.hostname;
+                            node.port = urlObj.port;
+                            
+                            // 提取参数
+                            urlObj.searchParams.forEach((v, k) => {
+                                node.details[k] = v;
+                            });
+                        }
+                        return node;
+                    } catch (e) {
+                        return null;
+                    }
+                };
+
+                const getProtocolColor = (p) => {
+                    const map = {
+                        vmess: 'bg-blue-500/20 text-blue-400',
+                        vless: 'bg-emerald-500/20 text-emerald-400',
+                        trojan: 'bg-purple-500/20 text-purple-400',
+                        ss: 'bg-orange-500/20 text-orange-400'
+                    };
+                    return map[p] || 'bg-gray-500/20 text-gray-400';
+                };
+
+                const openDetail = (node) => {
+                    selectedNode.value = node;
+                    nextTick(() => {
+                        new QRious({
+                            element: document.getElementById('qr-canvas'),
+                            value: node.raw,
+                            size: 200,
+                            level: 'L'
+                        });
+                    });
+                };
+
+                const copyLink = (text) => {
+                    navigator.clipboard.writeText(text);
+                    alert("已复制到剪贴板");
+                };
+
+                const copyAllLinks = () => {
+                    const all = nodes.value.map(n => n.raw).join('\n');
+                    copyLink(all);
+                };
+
+                return {
+                    rawInput, nodes, loading, isDark, viewMode, selectedNode, fetchFailed,
+                    toggleDarkMode, toggleView, handleFetch, clearInput, getProtocolColor, openDetail, copyLink, copyAllLinks
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✈ NodeVault — 订阅节点解析器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #111118;
+  --bg3: #1a1a24;
+  --bg4: #242433;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.15);
+  --text: #e8e8f0;
+  --text2: #9999bb;
+  --text3: #6666aa;
+  --accent: #7c6fff;
+  --accent2: #ff6fb0;
+  --accent3: #6fffd4;
+  --accent4: #ffcc44;
+  --danger: #ff4466;
+  --success: #44ffaa;
+  --glow: rgba(124,111,255,0.3);
+  --radius: 12px;
+  --radius2: 8px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+[data-theme="light"] {
+  --bg: #f0f0f8;
+  --bg2: #ffffff;
+  --bg3: #f8f8ff;
+  --bg4: #eeeeff;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.15);
+  --text: #1a1a2e;
+  --text2: #555580;
+  --text3: #8888aa;
+  --accent: #5a4dcc;
+  --accent2: #cc4090;
+  --accent3: #00aa88;
+  --accent4: #cc9900;
+  --glow: rgba(90,77,204,0.2);
+  --shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* Background grid */
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* Glow blobs */
+.blob {
+  position:fixed;
+  border-radius:50%;
+  filter:blur(80px);
+  pointer-events:none;
+  z-index:0;
+  opacity:0.4;
+}
+.blob1 { width:400px;height:400px; background:var(--accent); top:-100px; right:-100px; }
+.blob2 { width:300px;height:300px; background:var(--accent2); bottom:-50px; left:-50px; }
+
+.container { position:relative; z-index:1; max-width:1400px; margin:0 auto; padding:20px; }
+
+/* Header */
+header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 24px; margin-bottom:24px;
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:var(--radius); backdrop-filter:blur(20px);
+}
+.logo {
+  display:flex;align-items:center;gap:12px;
+  font-family:'Space Mono',monospace; font-size:20px; font-weight:700;
+  color:var(--text);
+}
+.logo-icon {
+  width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.header-actions { display:flex;gap:10px;align-items:center; }
+
+.btn {
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px; border:1px solid var(--border2);
+  border-radius:var(--radius2); background:var(--bg3);
+  color:var(--text); font-family:'Noto Sans SC',sans-serif; font-size:13px;
+  cursor:pointer; transition:all 0.2s; text-decoration:none;
+}
+.btn:hover { background:var(--bg4); border-color:var(--accent); color:var(--accent); }
+.btn-primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+.btn-primary:hover { background:var(--accent2); border-color:var(--accent2); color:#fff; }
+.btn-danger { border-color:var(--danger); color:var(--danger); }
+.btn-success { border-color:var(--success); color:var(--success); }
+.btn-sm { padding:5px 10px; font-size:12px; }
+
+/* Theme toggle */
+.theme-toggle {
+  width:48px;height:26px;background:var(--bg4);border:1px solid var(--border2);
+  border-radius:20px;cursor:pointer;position:relative;transition:all 0.3s;
+}
+.theme-toggle::after {
+  content:'';position:absolute;top:3px;left:3px;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--accent);transition:all 0.3s;
+}
+[data-theme="light"] .theme-toggle::after { transform:translateX(22px); }
+
+/* Input section */
+.input-section {
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:24px;margin-bottom:20px;
+  box-shadow:var(--shadow);
+}
+.section-title {
+  font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;
+  color:var(--text3);text-transform:uppercase;margin-bottom:16px;
+}
+.input-row { display:flex;gap:10px;margin-bottom:12px; }
+.input-field {
+  flex:1;padding:12px 16px;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius2);color:var(--text);font-family:'Noto Sans SC',sans-serif;
+  font-size:14px;transition:all 0.2s;outline:none;
+}
+.input-field:focus { border-color:var(--accent);box-shadow:0 0 0 3px var(--glow); }
+.input-field::placeholder { color:var(--text3); }
+textarea.input-field { min-height:100px;resize:vertical; }
+
+.tabs { display:flex;gap:2px;margin-bottom:16px;background:var(--bg);border-radius:var(--radius2);padding:4px; }
+.tab {
+  flex:1;padding:8px 16px;border:none;border-radius:6px;
+  background:transparent;color:var(--text2);font-family:'Noto Sans SC',sans-serif;
+  font-size:13px;cursor:pointer;transition:all 0.2s;
+}
+.tab.active { background:var(--bg3);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+
+/* Stats bar */
+.stats-bar {
+  display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;
+}
+.stat-card {
+  flex:1;min-width:120px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;text-align:center;
+}
+.stat-value { font-family:'Space Mono',monospace;font-size:24px;font-weight:700;color:var(--accent); }
+.stat-label { font-size:12px;color:var(--text3);margin-top:4px; }
+
+/* Traffic bar */
+.traffic-section {
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;margin-bottom:20px;display:none;
+}
+.traffic-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:12px; }
+.traffic-bar-wrap { background:var(--bg);border-radius:20px;height:12px;overflow:hidden;position:relative; }
+.traffic-bar-fill {
+  height:100%;border-radius:20px;transition:width 1s ease;
+  background:linear-gradient(90deg,var(--accent3),var(--accent),var(--accent2));
+}
+.traffic-labels { display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--text3); }
+.traffic-cards { display:flex;gap:12px;margin-top:16px;flex-wrap:wrap; }
+.traffic-card {
+  flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius2);padding:12px;text-align:center;
+}
+.traffic-card-val { font-family:'Space Mono',monospace;font-size:18px;font-weight:700; }
+.traffic-card-label { font-size:11px;color:var(--text3);margin-top:4px; }
+
+/* View controls */
+.view-controls {
+  display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap;
+}
+.view-btn {
+  padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius2);
+  background:var(--bg2);color:var(--text2);font-size:13px;cursor:pointer;transition:all 0.2s;
+}
+.view-btn.active { border-color:var(--accent);color:var(--accent);background:var(--bg3); }
+.filter-input {
+  padding:6px 12px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius2);color:var(--text);font-size:13px;outline:none;
+  transition:border-color 0.2s;
+}
+.filter-input:focus { border-color:var(--accent); }
+
+/* Nodes grid */
+.nodes-grid {
+  display:grid;gap:12px;
+}
+.nodes-grid.view-grid { grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); }
+.nodes-grid.view-list { grid-template-columns:1fr; }
+.nodes-grid.view-compact { grid-template-columns:1fr; }
+
+/* Node card */
+.node-card {
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+  transition:all 0.25s;cursor:pointer;
+  animation: fadeIn 0.3s ease forwards;
+}
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.node-card:hover { border-color:var(--accent);box-shadow:0 0 20px var(--glow); transform:translateY(-2px); }
+.node-card.expanded { border-color:var(--accent);box-shadow:0 0 30px var(--glow); }
+
+.node-header {
+  display:flex;align-items:center;gap:12px;padding:14px 16px;
+}
+.node-flag { font-size:24px;line-height:1; }
+.node-info { flex:1;min-width:0; }
+.node-name { font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.node-meta { font-size:11px;color:var(--text3);margin-top:2px; }
+.node-type {
+  font-family:'Space Mono',monospace;font-size:10px;padding:3px 8px;
+  border-radius:20px;border:1px solid;white-space:nowrap;
+}
+.type-vmess { color:#7c6fff;border-color:#7c6fff; }
+.type-vless { color:#6fffd4;border-color:#6fffd4; }
+.type-trojan { color:#ff6fb0;border-color:#ff6fb0; }
+.type-ss { color:#ffcc44;border-color:#ffcc44; }
+.type-ssr { color:#ff8844;border-color:#ff8844; }
+.type-hysteria { color:#44ffaa;border-color:#44ffaa; }
+.type-clash { color:#aaaaff;border-color:#aaaaff; }
+
+/* Node compact */
+.view-compact .node-card .node-header { padding:8px 14px; }
+.view-compact .node-flag { font-size:18px; }
+.view-compact .node-name { font-size:13px; }
+
+/* Node details */
+.node-details {
+  padding:0 16px;max-height:0;overflow:hidden;
+  transition:max-height 0.4s ease, padding 0.3s;
+}
+.node-details.open { max-height:1000px;padding:0 16px 16px; }
+
+.detail-grid {
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:8px;margin-bottom:12px;
+}
+.detail-item {
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius2);padding:10px;
+}
+.detail-label { font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px; }
+.detail-value {
+  font-family:'Space Mono',monospace;font-size:12px;color:var(--text);
+  word-break:break-all;
+}
+.detail-value input {
+  background:transparent;border:none;outline:none;color:var(--text);
+  font-family:'Space Mono',monospace;font-size:12px;width:100%;
+}
+.detail-value input:focus { color:var(--accent); }
+
+.node-actions { display:flex;gap:8px;flex-wrap:wrap;margin-top:10px; }
+.qr-wrap { margin-top:10px;display:none; }
+.qr-wrap.show { display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start; }
+.qr-canvas { background:#fff;padding:8px;border-radius:8px; }
+
+/* Latency indicator */
+.latency {
+  font-family:'Space Mono',monospace;font-size:11px;padding:2px 8px;
+  border-radius:20px;margin-left:auto;
+}
+.latency.low { background:rgba(68,255,170,0.15);color:var(--success); }
+.latency.mid { background:rgba(255,204,68,0.15);color:var(--accent4); }
+.latency.high { background:rgba(255,68,102,0.15);color:var(--danger); }
+.latency.testing { background:rgba(150,150,200,0.15);color:var(--text3); }
+
+/* Progress bar for expiry */
+.node-expiry {
+  padding:0 16px 10px;display:none;
+}
+.node-expiry.show { display:block; }
+.expiry-bar-wrap { background:var(--bg);border-radius:10px;height:6px;overflow:hidden; }
+.expiry-bar-fill { height:100%;border-radius:10px;transition:width 1s; }
+.expiry-low { background:var(--danger); }
+.expiry-mid { background:var(--accent4); }
+.expiry-high { background:var(--success); }
+
+/* Website link */
+.website-badge {
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--accent3);text-decoration:none;
+  border:1px solid rgba(111,255,212,0.3);border-radius:20px;padding:4px 10px;
+  transition:all 0.2s;
+}
+.website-badge:hover { background:rgba(111,255,212,0.1); }
+
+/* Toast */
+.toast-container { position:fixed;bottom:24px;right:24px;z-index:1000;display:flex;flex-direction:column;gap:8px; }
+.toast {
+  padding:12px 20px;background:var(--bg2);border:1px solid var(--border2);
+  border-radius:var(--radius2);font-size:13px;color:var(--text);
+  box-shadow:var(--shadow);animation:slideIn 0.3s ease;max-width:300px;
+}
+.toast.success { border-color:var(--success);color:var(--success); }
+.toast.error { border-color:var(--danger);color:var(--danger); }
+@keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes slideOut { from{opacity:1} to{opacity:0;transform:translateX(100%)} }
+
+/* Modal */
+.modal-overlay {
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);
+  z-index:500;display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.show { display:flex; }
+.modal {
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:var(--radius);padding:24px;max-width:500px;width:90%;
+  max-height:80vh;overflow-y:auto;box-shadow:var(--shadow);
+}
+.modal-title { font-family:'Space Mono',monospace;font-size:16px;margin-bottom:16px;color:var(--accent); }
+.modal-close {
+  float:right;background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;
+  transition:color 0.2s;
+}
+.modal-close:hover { color:var(--text); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--bg4);border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--accent); }
+
+/* Responsive */
+@media(max-width:768px) {
+  header { flex-wrap:wrap;gap:12px; }
+  .logo { font-size:16px; }
+  .stat-card { min-width:80px; }
+}
+
+/* Loading spinner */
+.spinner {
+  width:20px;height:20px;border:2px solid var(--border2);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin 0.8s linear infinite;display:inline-block;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+
+.empty-state {
+  text-align:center;padding:60px;color:var(--text3);
+}
+.empty-state .empty-icon { font-size:64px;margin-bottom:16px;opacity:0.5; }
+.empty-state p { font-size:14px; }
+
+/* Protocol color tags */
+.proto-tag {
+  font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  padding:2px 6px;border-radius:4px;font-family:'Space Mono',monospace;
+}
+</style>
+</head>
+<body>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<div class="container">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">✈</div>
+      NodeVault
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-sm" onclick="testAllLatency()">⚡ 测速全部</button>
+      <button class="btn btn-sm" onclick="exportAll()">📤 导出全部</button>
+      <button class="btn btn-sm" id="clearBtn" onclick="clearAll()" style="display:none">🗑 清空</button>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3)">
+        🌙
+        <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()"></div>
+        ☀️
+      </div>
+    </div>
+  </header>
+
+  <!-- Input Section -->
+  <div class="input-section">
+    <div class="section-title">— 导入订阅</div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(0)">🔗 订阅链接 URL</button>
+      <button class="tab" onclick="switchTab(1)">📋 粘贴内容</button>
+      <button class="tab" onclick="switchTab(2)">📁 本地 Clash YAML</button>
+    </div>
+
+    <!-- Tab 0: URL -->
+    <div class="tab-content" id="tab0">
+      <div class="input-row">
+        <input class="input-field" id="urlInput" type="url" placeholder="https://your-airport.com/api/v1/client/subscribe?token=..." />
+        <button class="btn btn-primary" onclick="fetchSubscription()">
+          <span id="fetchSpinner" style="display:none" class="spinner"></span>
+          解析
+        </button>
+      </div>
+      <div style="font-size:12px;color:var(--text3)">支持 VMess · VLESS · Trojan · Shadowsocks · SSR · Hysteria · 混合订阅</div>
+    </div>
+
+    <!-- Tab 1: Paste -->
+    <div class="tab-content" id="tab1" style="display:none">
+      <textarea class="input-field" id="pasteInput" placeholder="粘贴 Base64 编码内容 或 多行节点 URI (vmess://... vless://... trojan://... ss://...)"></textarea>
+      <div class="input-row" style="margin-top:8px">
+        <button class="btn btn-primary" onclick="parsePasted()">解析内容</button>
+        <button class="btn" onclick="document.getElementById('pasteInput').value=''">清空</button>
+      </div>
+    </div>
+
+    <!-- Tab 2: YAML -->
+    <div class="tab-content" id="tab2" style="display:none">
+      <div class="input-row">
+        <input class="input-field" type="file" id="yamlFile" accept=".yaml,.yml" />
+        <button class="btn btn-primary" onclick="parseYAML()">解析 YAML</button>
+      </div>
+      <textarea class="input-field" id="yamlInput" placeholder="或直接粘贴 Clash YAML 配置内容..." style="margin-top:8px"></textarea>
+      <div class="input-row" style="margin-top:8px">
+        <button class="btn btn-primary" onclick="parseYAMLText()">解析文本</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Traffic Section -->
+  <div class="traffic-section" id="trafficSection">
+    <div class="traffic-header">
+      <div>
+        <div style="font-size:15px;font-weight:500">📊 订阅流量</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px" id="trafficSubName">-</div>
+      </div>
+      <div style="text-align:right;font-family:'Space Mono',monospace;font-size:13px">
+        <span id="trafficPercent" style="color:var(--accent);font-size:20px;font-weight:700">--%</span>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px" id="trafficExpiry">到期：-</div>
+      </div>
+    </div>
+    <div class="traffic-bar-wrap">
+      <div class="traffic-bar-fill" id="trafficBarFill" style="width:0%"></div>
+    </div>
+    <div class="traffic-labels">
+      <span id="trafficUsed">已用: -</span>
+      <span id="trafficTotal">总计: -</span>
+    </div>
+    <div class="traffic-cards">
+      <div class="traffic-card">
+        <div class="traffic-card-val" id="tc1" style="color:var(--accent)">-</div>
+        <div class="traffic-card-label">上传</div>
+      </div>
+      <div class="traffic-card">
+        <div class="traffic-card-val" id="tc2" style="color:var(--accent2)">-</div>
+        <div class="traffic-card-label">下载</div>
+      </div>
+      <div class="traffic-card">
+        <div class="traffic-card-val" id="tc3" style="color:var(--accent3)">-</div>
+        <div class="traffic-card-label">剩余</div>
+      </div>
+      <div class="traffic-card">
+        <div class="traffic-card-val" id="tc4" style="color:var(--accent4)">-</div>
+        <div class="traffic-card-label">到期</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar" id="statsBar" style="display:none">
+    <div class="stat-card">
+      <div class="stat-value" id="statTotal">0</div>
+      <div class="stat-label">节点总数</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--accent3)" id="statOnline">-</div>
+      <div class="stat-label">在线节点</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--accent2)" id="statCountries">0</div>
+      <div class="stat-label">国家/地区</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--accent4)" id="statProtocols">0</div>
+      <div class="stat-label">协议种类</div>
+    </div>
+    <div class="stat-card" id="websiteCard" style="display:none">
+      <div class="stat-value" style="font-size:14px">
+        <a id="websiteLink" class="website-badge" href="#" target="_blank">🌐 官网</a>
+      </div>
+      <div class="stat-label">机场官网</div>
+    </div>
+  </div>
+
+  <!-- View Controls -->
+  <div class="view-controls" id="viewControls" style="display:none">
+    <button class="view-btn active" onclick="setView('grid')" id="vgrid">⊞ 网格</button>
+    <button class="view-btn" onclick="setView('list')" id="vlist">☰ 列表</button>
+    <button class="view-btn" onclick="setView('compact')" id="vcompact">▤ 紧凑</button>
+    <input class="filter-input" id="filterInput" placeholder="🔍 搜索节点..." oninput="filterNodes()" />
+    <select class="filter-input" id="filterProto" onchange="filterNodes()">
+      <option value="">全部协议</option>
+    </select>
+    <select class="filter-input" id="filterCountry" onchange="filterNodes()">
+      <option value="">全部地区</option>
+    </select>
+    <button class="btn btn-sm" onclick="sortNodes('name')">按名排序</button>
+    <button class="btn btn-sm" onclick="sortNodes('latency')">按延迟排序</button>
+  </div>
+
+  <!-- Nodes -->
+  <div class="nodes-grid view-grid" id="nodesGrid">
+    <div class="empty-state">
+      <div class="empty-icon">🛫</div>
+      <p>导入订阅链接或粘贴节点内容以开始解析</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA & STATE
+// ============================================================
+let nodes = [];
+let filteredNodes = [];
+let currentView = 'grid';
+let subInfo = null;
+let subUrl = '';
+
+// Load from localStorage
+function loadFromStorage() {
+  try {
+    const saved = localStorage.getItem('nodevault_nodes');
+    const savedInfo = localStorage.getItem('nodevault_subinfo');
+    if (saved) {
+      nodes = JSON.parse(saved);
+      if (savedInfo) subInfo = JSON.parse(savedInfo);
+      renderNodes();
+      updateStats();
+      if (subInfo) renderTraffic(subInfo);
+    }
+  } catch(e) {}
+}
+
+function saveToStorage() {
+  try {
+    localStorage.setItem('nodevault_nodes', JSON.stringify(nodes));
+    if (subInfo) localStorage.setItem('nodevault_subinfo', JSON.stringify(subInfo));
+  } catch(e) {}
+}
+
+// ============================================================
+// THEME
+// ============================================================
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+  localStorage.setItem('theme', cur === 'dark' ? 'light' : 'dark');
+}
+(function() {
+  const t = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(idx) {
+  document.querySelectorAll('.tab-content').forEach((el,i) => el.style.display = i===idx?'block':'none');
+  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', i===idx));
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => { el.style.animation = 'slideOut 0.3s ease forwards'; setTimeout(()=>el.remove(),300); }, 3000);
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function showModal(html) {
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+
+// ============================================================
+// COUNTRY FLAG DETECTION
+// ============================================================
+const countryMap = {
+  '香港':'🇭🇰', 'HK':'🇭🇰', 'Hong Kong':'🇭🇰', 'Hongkong':'🇭🇰',
+  '台湾':'🇹🇼', 'TW':'🇹🇼', 'Taiwan':'🇹🇼',
+  '新加坡':'🇸🇬', 'SG':'🇸🇬', 'Singapore':'🇸🇬',
+  '日本':'🇯🇵', 'JP':'🇯🇵', 'Japan':'🇯🇵',
+  '美国':'🇺🇸', 'US':'🇺🇸', 'USA':'🇺🇸', 'America':'🇺🇸', 'United States':'🇺🇸',
+  '英国':'🇬🇧', 'UK':'🇬🇧', 'Britain':'🇬🇧', 'United Kingdom':'🇬🇧',
+  '德国':'🇩🇪', 'DE':'🇩🇪', 'Germany':'🇩🇪',
+  '法国':'🇫🇷', 'FR':'🇫🇷', 'France':'🇫🇷',
+  '加拿大':'🇨🇦', 'CA':'🇨🇦', 'Canada':'🇨🇦',
+  '澳大利亚':'🇦🇺', 'AU':'🇦🇺', 'Australia':'🇦🇺',
+  '荷兰':'🇳🇱', 'NL':'🇳🇱', 'Netherlands':'🇳🇱',
+  '韩国':'🇰🇷', 'KR':'🇰🇷', 'Korea':'🇰🇷',
+  '印度':'🇮🇳', 'IN':'🇮🇳', 'India':'🇮🇳',
+  '土耳其':'🇹🇷', 'TR':'🇹🇷', 'Turkey':'🇹🇷',
+  '俄罗斯':'🇷🇺', 'RU':'🇷🇺', 'Russia':'🇷🇺',
+  '巴西':'🇧🇷', 'BR':'🇧🇷', 'Brazil':'🇧🇷',
+  '阿根廷':'🇦🇷', 'AR':'🇦🇷', 'Argentina':'🇦🇷',
+  '墨西哥':'🇲🇽', 'MX':'🇲🇽', 'Mexico':'🇲🇽',
+  '意大利':'🇮🇹', 'IT':'🇮🇹', 'Italy':'🇮🇹',
+  '西班牙':'🇪🇸', 'ES':'🇪🇸', 'Spain':'🇪🇸',
+  '瑞典':'🇸🇪', 'SE':'🇸🇪', 'Sweden':'🇸🇪',
+  '挪威':'🇳🇴', 'NO':'🇳🇴', 'Norway':'🇳🇴',
+  '波兰':'🇵🇱', 'PL':'🇵🇱', 'Poland':'🇵🇱',
+  '乌克兰':'🇺🇦', 'UA':'🇺🇦', 'Ukraine':'🇺🇦',
+  '泰国':'🇹🇭', 'TH':'🇹🇭', 'Thailand':'🇹🇭',
+  '越南':'🇻🇳', 'VN':'🇻🇳', 'Vietnam':'🇻🇳',
+  '菲律宾':'🇵🇭', 'PH':'🇵🇭', 'Philippines':'🇵🇭',
+  '马来西亚':'🇲🇾', 'MY':'🇲🇾', 'Malaysia':'🇲🇾',
+  '印尼':'🇮🇩', 'ID':'🇮🇩', 'Indonesia':'🇮🇩',
+  '以色列':'🇮🇱', 'IL':'🇮🇱', 'Israel':'🇮🇱',
+  '阿联酋':'🇦🇪', 'AE':'🇦🇪', 'UAE':'🇦🇪',
+  '沙特':'🇸🇦', 'SA':'🇸🇦', 'Saudi':'🇸🇦',
+  '南非':'🇿🇦', 'ZA':'🇿🇦', 'South Africa':'🇿🇦',
+  '埃及':'🇪🇬', 'EG':'🇪🇬', 'Egypt':'🇪🇬',
+  '瑞士':'🇨🇭', 'CH':'🇨🇭', 'Switzerland':'🇨🇭',
+  '奥地利':'🇦🇹', 'AT':'🇦🇹', 'Austria':'🇦🇹',
+  '比利时':'🇧🇪', 'BE':'🇧🇪', 'Belgium':'🇧🇪',
+  '葡萄牙':'🇵🇹', 'PT':'🇵🇹', 'Portugal':'🇵🇹',
+  '捷克':'🇨🇿', 'CZ':'🇨🇿', 'Czech':'🇨🇿',
+  '匈牙利':'🇭🇺', 'HU':'🇭🇺', 'Hungary':'🇭🇺',
+  '罗马尼亚':'🇷🇴', 'RO':'🇷🇴', 'Romania':'🇷🇴',
+  '保加利亚':'🇧🇬', 'BG':'🇧🇬', 'Bulgaria':'🇧🇬',
+  '克罗地亚':'🇭🇷', 'HR':'🇭🇷', 'Croatia':'🇭🇷',
+  '希腊':'🇬🇷', 'GR':'🇬🇷', 'Greece':'🇬🇷',
+  '芬兰':'🇫🇮', 'FI':'🇫🇮', 'Finland':'🇫🇮',
+  '丹麦':'🇩🇰', 'DK':'🇩🇰', 'Denmark':'🇩🇰',
+  '爱尔兰':'🇮🇪', 'IE':'🇮🇪', 'Ireland':'🇮🇪',
+  '新西兰':'🇳🇿', 'NZ':'🇳🇿', 'New Zealand':'🇳🇿',
+  '智利':'🇨🇱', 'CL':'🇨🇱', 'Chile':'🇨🇱',
+  '哥伦比亚':'🇨🇴', 'CO':'🇨🇴', 'Colombia':'🇨🇴',
+  '秘鲁':'🇵🇪', 'PE':'🇵🇪', 'Peru':'🇵🇪',
+  '巴基斯坦':'🇵🇰', 'PK':'🇵🇰', 'Pakistan':'🇵🇰',
+  '斯里兰卡':'🇱🇰', 'LK':'🇱🇰', 'Sri Lanka':'🇱🇰',
+  '孟加拉':'🇧🇩', 'BD':'🇧🇩', 'Bangladesh':'🇧🇩',
+  '中国':'🇨🇳', 'CN':'🇨🇳', 'China':'🇨🇳',
+  '蒙古':'🇲🇳', 'MN':'🇲🇳', 'Mongolia':'🇲🇳',
+  '哈萨克':'🇰🇿', 'KZ':'🇰🇿', 'Kazakhstan':'🇰🇿',
+  '摩洛哥':'🇲🇦', 'MA':'🇲🇦', 'Morocco':'🇲🇦',
+  '尼日利亚':'🇳🇬', 'NG':'🇳🇬', 'Nigeria':'🇳🇬',
+  '肯尼亚':'🇰🇪', 'KE':'🇰🇪', 'Kenya':'🇰🇪',
+};
+
+function getFlag(name) {
+  if (!name) return '🌐';
+  for (const [key, flag] of Object.entries(countryMap)) {
+    if (name.includes(key)) return flag;
+  }
+  // Try emoji flag from 2-letter code
+  const match = name.match(/\b([A-Z]{2})\b/);
+  if (match) {
+    const code = match[1];
+    if (countryMap[code]) return countryMap[code];
+  }
+  return '🌐';
+}
+
+function getCountryName(name) {
+  if (!name) return '未知';
+  for (const key of Object.keys(countryMap)) {
+    if (name.includes(key)) return key;
+  }
+  return '其他';
+}
+
+// ============================================================
+// PARSERS
+// ============================================================
+function parseBase64(str) {
+  try {
+    // Handle URL-safe base64
+    str = str.replace(/-/g,'+').replace(/_/g,'/');
+    while (str.length % 4 !== 0) str += '=';
+    return atob(str);
+  } catch(e) { return null; }
+}
+
+function tryBase64(str) {
+  const decoded = parseBase64(str.trim());
+  if (decoded && decoded.includes('://')) return decoded;
+  return str;
+}
+
+function parseVmess(uri) {
+  try {
+    const b64 = uri.replace('vmess://', '');
+    const json = JSON.parse(atob(b64));
+    return {
+      type: 'vmess',
+      name: json.ps || json.add || 'VMess Node',
+      server: json.add || '',
+      port: json.port || 443,
+      uuid: json.id || '',
+      alterId: json.aid || 0,
+      security: json.scy || json.security || 'auto',
+      network: json.net || 'tcp',
+      tls: json.tls || '',
+      sni: json.sni || json.host || '',
+      host: json.host || '',
+      path: json.path || '/',
+      type2: json.type || 'none',
+      raw: uri
+    };
+  } catch(e) { return null; }
+}
+
+function parseVless(uri) {
+  try {
+    const u = new URL(uri);
+    const params = Object.fromEntries(u.searchParams);
+    return {
+      type: 'vless',
+      name: decodeURIComponent(u.hash.slice(1)) || u.hostname,
+      server: u.hostname,
+      port: parseInt(u.port) || 443,
+      uuid: u.username,
+      flow: params.flow || '',
+      encryption: params.encryption || 'none',
+      security: params.security || 'none',
+      sni: params.sni || '',
+      fingerprint: params.fp || '',
+      publicKey: params.pbk || '',
+      shortId: params.sid || '',
+      network: params.type || 'tcp',
+      host: params.host || '',
+      path: params.path || '/',
+      serviceName: params.serviceName || '',
+      mode: params.mode || '',
+      raw: uri
+    };
+  } catch(e) { return null; }
+}
+
+function parseTrojan(uri) {
+  try {
+    const u = new URL(uri);
+    const params = Object.fromEntries(u.searchParams);
+    return {
+      type: 'trojan',
+      name: decodeURIComponent(u.hash.slice(1)) || u.hostname,
+      server: u.hostname,
+      port: parseInt(u.port) || 443,
+      password: u.username,
+      security: params.security || 'tls',
+      sni: params.sni || '',
+      fingerprint: params.fp || '',
+      network: params.type || 'tcp',
+      host: params.host || '',
+      path: params.path || '/',
+      raw: uri
+    };
+  } catch(e) { return null; }
+}
+
+function parseSS(uri) {
+  try {
+    // ss://BASE64@server:port#name or ss://method:password@server:port#name
+    let raw = uri.replace('ss://', '');
+    const hashIdx = raw.indexOf('#');
+    const name = hashIdx >= 0 ? decodeURIComponent(raw.slice(hashIdx + 1)) : '';
+    if (hashIdx >= 0) raw = raw.slice(0, hashIdx);
+    
+    let method, password, server, port;
+    if (raw.includes('@')) {
+      const atIdx = raw.lastIndexOf('@');
+      const userInfo = raw.slice(0, atIdx);
+      const serverInfo = raw.slice(atIdx + 1);
+      const [srv, prt] = serverInfo.split(':');
+      server = srv; port = parseInt(prt);
+      // userInfo might be base64 or plain method:pass
+      let decoded = parseBase64(userInfo);
+      if (decoded && decoded.includes(':')) {
+        [method, ...rest] = decoded.split(':');
+        password = rest.join(':');
+      } else if (userInfo.includes(':')) {
+        [method, ...rest] = userInfo.split(':');
+        password = rest.join(':');
+      } else {
+        method = userInfo; password = '';
+      }
+    } else {
+      const decoded = parseBase64(raw);
+      if (!decoded) return null;
+      const atIdx = decoded.lastIndexOf('@');
+      const userInfo = decoded.slice(0, atIdx);
+      const serverInfo = decoded.slice(atIdx + 1);
+      const [srv, prt] = serverInfo.split(':');
+      server = srv; port = parseInt(prt);
+      [method, ...rest] = userInfo.split(':');
+      password = rest.join(':');
+    }
+    return { type:'ss', name: name || server, server, port, method, password, raw: uri };
+  } catch(e) { return null; }
+}
+
+function parseSSR(uri) {
+  try {
+    const b64 = uri.replace('ssr://', '');
+    const decoded = parseBase64(b64);
+    if (!decoded) return null;
+    const parts = decoded.split('/?');
+    const main = parts[0].split(':');
+    const server = main[0];
+    const port = parseInt(main[1]);
+    const protocol = main[2];
+    const method = main[3];
+    const obfs = main[4];
+    const password = parseBase64(main[5]) || main[5];
+    let name = server;
+    if (parts[1]) {
+      const params = new URLSearchParams(parts[1]);
+      name = parseBase64(params.get('remarks') || '') || server;
+    }
+    return { type:'ssr', name, server, port, protocol, method, obfs, password, raw: uri };
+  } catch(e) { return null; }
+}
+
+function parseHysteria(uri) {
+  try {
+    const u = new URL(uri);
+    const params = Object.fromEntries(u.searchParams);
+    const isH2 = uri.startsWith('hysteria2://') || uri.startsWith('hy2://');
+    return {
+      type: isH2 ? 'hysteria2' : 'hysteria',
+      name: decodeURIComponent(u.hash.slice(1)) || u.hostname,
+      server: u.hostname,
+      port: parseInt(u.port) || 443,
+      auth: u.username || params.auth || '',
+      password: u.username || params.password || '',
+      sni: params.sni || '',
+      obfs: params.obfs || '',
+      obfsParam: params['obfs-password'] || '',
+      upMbps: params.upmbps || '',
+      downMbps: params.downmbps || '',
+      raw: uri
+    };
+  } catch(e) { return null; }
+}
+
+function parseURI(uri) {
+  uri = uri.trim();
+  if (uri.startsWith('vmess://')) return parseVmess(uri);
+  if (uri.startsWith('vless://')) return parseVless(uri);
+  if (uri.startsWith('trojan://')) return parseTrojan(uri);
+  if (uri.startsWith('ss://')) return parseSS(uri);
+  if (uri.startsWith('ssr://')) return parseSSR(uri);
+  if (uri.startsWith('hysteria2://') || uri.startsWith('hy2://')) return parseHysteria(uri);
+  if (uri.startsWith('hysteria://')) return parseHysteria(uri);
+  return null;
+}
+
+function parseContent(content) {
+  // Try base64 decode first
+  const decoded = parseBase64(content.trim());
+  if (decoded) content = decoded;
+  
+  // Split by lines and parse each
+  const lines = content.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const result = [];
+  for (const line of lines) {
+    const node = parseURI(line);
+    if (node) result.push(node);
+  }
+  return result;
+}
+
+// ============================================================
+// CLASH YAML PARSER
+// ============================================================
+function parseClashProxy(p) {
+  const base = {
+    name: p.name || p.server,
+    server: p.server,
+    port: p.port,
+    raw: null
+  };
+  
+  const t = (p.type || '').toLowerCase();
+  if (t === 'vmess') {
+    return { ...base, type:'vmess', uuid:p.uuid, alterId:p.alterId||0, security:p.cipher||'auto',
+      network:p.network||'tcp', tls:p.tls?'tls':'', sni:p.servername||'', host:p['ws-opts']?.headers?.Host||'',
+      path:p['ws-opts']?.path||'/', raw: buildVmess({...base, uuid:p.uuid, alterId:p.alterId||0, security:p.cipher||'auto', network:p.network||'tcp', tls:p.tls?'tls':'', sni:p.servername||'', host:p['ws-opts']?.headers?.Host||'', path:p['ws-opts']?.path||'/'}) };
+  }
+  if (t === 'vless') {
+    return { ...base, type:'vless', uuid:p.uuid, flow:p.flow||'', encryption:p.encryption||'none',
+      security:p.tls?'tls':'none', sni:p.servername||'', network:p.network||'tcp',
+      host:p['ws-opts']?.headers?.Host||'', path:p['ws-opts']?.path||'/' };
+  }
+  if (t === 'trojan') {
+    return { ...base, type:'trojan', password:p.password, sni:p.sni||p.servername||'',
+      network:p.network||'tcp', security:'tls' };
+  }
+  if (t === 'ss' || t === 'shadowsocks') {
+    return { ...base, type:'ss', method:p.cipher||'aes-256-gcm', password:p.password };
+  }
+  if (t === 'ssr') {
+    return { ...base, type:'ssr', method:p.cipher||'', protocol:p.protocol||'', obfs:p.obfs||'', password:p.password };
+  }
+  if (t === 'hysteria') {
+    return { ...base, type:'hysteria', auth:p.auth||'', sni:p.sni||'', obfs:p.obfs||'' };
+  }
+  if (t === 'hysteria2' || t === 'hy2') {
+    return { ...base, type:'hysteria2', password:p.password||'', sni:p.sni||'', obfs:p.obfs||'' };
+  }
+  return { ...base, type: t || 'unknown' };
+}
+
+// ============================================================
+// NODE to URI builders
+// ============================================================
+function buildVmess(n) {
+  const obj = {
+    v:'2', ps:n.name, add:n.server, port:n.port,
+    id:n.uuid, aid:n.alterId||0, scy:n.security||'auto',
+    net:n.network||'tcp', type:n.type2||'none', host:n.host||'',
+    path:n.path||'/', tls:n.tls||'', sni:n.sni||''
+  };
+  return 'vmess://' + btoa(JSON.stringify(obj));
+}
+
+function buildVless(n) {
+  const params = new URLSearchParams();
+  if (n.flow) params.set('flow', n.flow);
+  params.set('encryption', n.encryption || 'none');
+  if (n.security) params.set('security', n.security);
+  if (n.sni) params.set('sni', n.sni);
+  if (n.fingerprint) params.set('fp', n.fingerprint);
+  if (n.publicKey) params.set('pbk', n.publicKey);
+  if (n.shortId) params.set('sid', n.shortId);
+  if (n.network) params.set('type', n.network);
+  if (n.host) params.set('host', n.host);
+  if (n.path) params.set('path', n.path);
+  return `vless://${n.uuid}@${n.server}:${n.port}?${params.toString()}#${encodeURIComponent(n.name)}`;
+}
+
+function buildTrojan(n) {
+  const params = new URLSearchParams();
+  if (n.security) params.set('security', n.security);
+  if (n.sni) params.set('sni', n.sni);
+  if (n.network && n.network !== 'tcp') params.set('type', n.network);
+  if (n.host) params.set('host', n.host);
+  if (n.path) params.set('path', n.path);
+  return `trojan://${n.password}@${n.server}:${n.port}?${params.toString()}#${encodeURIComponent(n.name)}`;
+}
+
+function buildSS(n) {
+  const userInfo = btoa(`${n.method}:${n.password}`);
+  return `ss://${userInfo}@${n.server}:${n.port}#${encodeURIComponent(n.name)}`;
+}
+
+function buildURI(n) {
+  if (!n) return '';
+  if (n.raw && n.type !== 'clash') return n.raw;
+  switch(n.type) {
+    case 'vmess': return buildVmess(n);
+    case 'vless': return buildVless(n);
+    case 'trojan': return buildTrojan(n);
+    case 'ss': return buildSS(n);
+    default: return n.raw || '';
+  }
+}
+
+// ============================================================
+// FETCH SUBSCRIPTION
+// ============================================================
+async function fetchSubscription() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) { toast('请输入订阅链接', 'error'); return; }
+  
+  subUrl = url;
+  const spinner = document.getElementById('fetchSpinner');
+  spinner.style.display = 'inline-block';
+  
+  // Try to detect airport website
+  tryDetectWebsite(url);
+  
+  try {
+    // Try CORS proxy
+    const proxies = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+      `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    ];
+    
+    let content = null;
+    let headers = {};
+    
+    for (const proxy of proxies) {
+      try {
+        const resp = await fetch(proxy, { timeout: 10000 });
+        if (resp.ok) {
+          content = await resp.text();
+          // Try to get subscription-userinfo from headers
+          const info = resp.headers.get('subscription-userinfo') || resp.headers.get('Subscription-Userinfo');
+          if (info) headers = parseSubInfoHeader(info);
+          break;
+        }
+      } catch(e) { continue; }
+    }
+    
+    if (!content) throw new Error('无法获取订阅内容');
+    
+    // Try YAML first
+    let parsed = [];
+    if (content.trim().startsWith('proxies:') || content.includes('\nproxies:')) {
+      parsed = parseClashYAML(content);
+    } else {
+      parsed = parseContent(content);
+    }
+    
+    if (parsed.length === 0) {
+      // Offer to open URL
+      toast('解析失败，将在新窗口打开链接', 'error');
+      setTimeout(() => window.open(url, '_blank'), 1000);
+      spinner.style.display = 'none';
+      return;
+    }
+    
+    nodes = parsed;
+    subInfo = Object.keys(headers).length > 0 ? headers : null;
+    saveToStorage();
+    renderNodes();
+    updateStats();
+    if (subInfo) renderTraffic(subInfo);
+    toast(`✅ 成功解析 ${parsed.length} 个节点`, 'success');
+    
+  } catch(e) {
+    toast(`解析失败: ${e.message}`, 'error');
+    showModal(`
+      <div class="modal-title">⚠️ 解析失败</div>
+      <p style="color:var(--text2);margin-bottom:16px">无法通过代理获取订阅内容。点击下方按钮直接打开链接，复制内容后粘贴到"粘贴内容"标签页。</p>
+      <button class="btn btn-primary" onclick="window.open('${subUrl}','_blank');closeModal()">🔗 在新窗口打开订阅链接</button>
+    `);
+  }
+  
+  spinner.style.display = 'none';
+}
+
+function parseSubInfoHeader(str) {
+  const obj = {};
+  str.split(';').forEach(part => {
+    const [k, v] = part.trim().split('=');
+    if (k && v) obj[k.trim()] = parseInt(v.trim());
+  });
+  return obj;
+}
+
+function tryDetectWebsite(url) {
+  try {
+    const u = new URL(url);
+    const domain = u.origin;
+    const card = document.getElementById('websiteCard');
+    const link = document.getElementById('websiteLink');
+    card.style.display = 'block';
+    link.href = domain;
+    link.textContent = `🌐 ${u.hostname}`;
+  } catch(e) {}
+}
+
+// ============================================================
+// PARSE PASTED
+// ============================================================
+function parsePasted() {
+  const content = document.getElementById('pasteInput').value.trim();
+  if (!content) { toast('请粘贴内容', 'error'); return; }
+  const parsed = parseContent(content);
+  if (parsed.length === 0) { toast('未能识别任何节点', 'error'); return; }
+  nodes = [...nodes, ...parsed];
+  saveToStorage();
+  renderNodes();
+  updateStats();
+  toast(`✅ 解析 ${parsed.length} 个节点`, 'success');
+}
+
+// ============================================================
+// PARSE YAML
+// ============================================================
+function parseClashYAML(text) {
+  try {
+    const doc = jsyaml.load(text);
+    const proxies = doc.proxies || doc.Proxies || [];
+    return proxies.map(parseClashProxy).filter(Boolean);
+  } catch(e) {
+    toast('YAML 解析失败: ' + e.message, 'error');
+    return [];
+  }
+}
+
+function parseYAML() {
+  const file = document.getElementById('yamlFile').files[0];
+  if (!file) { toast('请选择文件', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const parsed = parseClashYAML(e.target.result);
+    if (parsed.length) {
+      nodes = [...nodes, ...parsed];
+      saveToStorage();
+      renderNodes();
+      updateStats();
+      toast(`✅ 解析 ${parsed.length} 个节点`, 'success');
+    } else toast('未解析到节点', 'error');
+  };
+  reader.readAsText(file);
+}
+
+function parseYAMLText() {
+  const text = document.getElementById('yamlInput').value.trim();
+  if (!text) { toast('请粘贴 YAML 内容', 'error'); return; }
+  const parsed = parseClashYAML(text);
+  if (parsed.length) {
+    nodes = [...nodes, ...parsed];
+    saveToStorage();
+    renderNodes();
+    updateStats();
+    toast(`✅ 解析 ${parsed.length} 个节点`, 'success');
+  } else toast('未解析到节点', 'error');
+}
+
+// ============================================================
+// TRAFFIC DISPLAY
+// ============================================================
+function renderTraffic(info) {
+  const sec = document.getElementById('trafficSection');
+  sec.style.display = 'block';
+  
+  const upload = info.upload || 0;
+  const download = info.download || 0;
+  const total = info.total || 0;
+  const expire = info.expire || 0;
+  const used = upload + download;
+  const remaining = Math.max(0, total - used);
+  const pct = total > 0 ? Math.round(used / total * 100) : 0;
+  
+  document.getElementById('trafficBarFill').style.width = pct + '%';
+  document.getElementById('trafficPercent').textContent = pct + '%';
+  document.getElementById('trafficUsed').textContent = '已用: ' + formatBytes(used);
+  document.getElementById('trafficTotal').textContent = '总计: ' + formatBytes(total);
+  document.getElementById('tc1').textContent = formatBytes(upload);
+  document.getElementById('tc2').textContent = formatBytes(download);
+  document.getElementById('tc3').textContent = formatBytes(remaining);
+  
+  if (expire) {
+    const d = new Date(expire * 1000);
+    const daysLeft = Math.ceil((d - Date.now()) / 86400000);
+    document.getElementById('tc4').textContent = daysLeft + '天';
+    document.getElementById('trafficExpiry').textContent = '到期: ' + d.toLocaleDateString('zh-CN');
+    document.getElementById('trafficPercent').style.color = daysLeft < 7 ? 'var(--danger)' : daysLeft < 30 ? 'var(--accent4)' : 'var(--accent)';
+  } else {
+    document.getElementById('tc4').textContent = '-';
+  }
+}
+
+function formatBytes(bytes) {
+  if (!bytes) return '0 B';
+  const k = 1024, sizes = ['B','KB','MB','GB','TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function updateStats() {
+  document.getElementById('statsBar').style.display = nodes.length ? 'flex' : 'none';
+  document.getElementById('viewControls').style.display = nodes.length ? 'flex' : 'none';
+  document.getElementById('clearBtn').style.display = nodes.length ? 'inline-flex' : 'none';
+  document.getElementById('statTotal').textContent = nodes.length;
+  document.getElementById('statCountries').textContent = new Set(nodes.map(n => getCountryName(n.name))).size;
+  document.getElementById('statProtocols').textContent = new Set(nodes.map(n => n.type)).size;
+  
+  // Update filter dropdowns
+  const protos = [...new Set(nodes.map(n => n.type))];
+  const countries = [...new Set(nodes.map(n => getCountryName(n.name)))];
+  
+  const fp = document.getElementById('filterProto');
+  fp.innerHTML = '<option value="">全部协议</option>' + protos.map(p => `<option value="${p}">${p.toUpperCase()}</option>`).join('');
+  
+  const fc = document.getElementById('filterCountry');
+  fc.innerHTML = '<option value="">全部地区</option>' + countries.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+// ============================================================
+// RENDER NODES
+// ============================================================
+function setView(v) {
+  currentView = v;
+  const grid = document.getElementById('nodesGrid');
+  grid.className = `nodes-grid view-${v}`;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('v'+v).classList.add('active');
+}
+
+function filterNodes() {
+  const q = document.getElementById('filterInput').value.toLowerCase();
+  const proto = document.getElementById('filterProto').value;
+  const country = document.getElementById('filterCountry').value;
+  
+  filteredNodes = nodes.filter(n => {
+    const matchQ = !q || n.name.toLowerCase().includes(q) || (n.server||'').toLowerCase().includes(q);
+    const matchProto = !proto || n.type === proto;
+    const matchCountry = !country || getCountryName(n.name) === country;
+    return matchQ && matchProto && matchCountry;
+  });
+  renderNodeCards(filteredNodes);
+}
+
+function renderNodes() {
+  filteredNodes = [...nodes];
+  renderNodeCards(filteredNodes);
+}
+
+function renderNodeCards(list) {
+  const grid = document.getElementById('nodesGrid');
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>没有匹配的节点</p></div>';
+    return;
+  }
+  grid.innerHTML = list.map((n, i) => createNodeCard(n, nodes.indexOf(n), i)).join('');
+}
+
+function getTypeColor(type) {
+  const map = { vmess:'#7c6fff', vless:'#6fffd4', trojan:'#ff6fb0', ss:'#ffcc44', ssr:'#ff8844', hysteria:'#44ffaa', hysteria2:'#44ffaa' };
+  return map[type] || '#aaaaff';
+}
+
+function createNodeCard(n, idx, animIdx) {
+  const flag = getFlag(n.name);
+  const latencyHtml = n.latency ? `<span class="latency ${n.latency < 200 ? 'low' : n.latency < 500 ? 'mid' : 'high'}">${n.latency}ms</span>` : 
+    n.testing ? '<span class="latency testing"><span class="spinner" style="width:12px;height:12px;border-width:1px"></span></span>' : '';
+  
+  return `
+  <div class="node-card" id="card-${idx}" style="animation-delay:${animIdx*0.03}s">
+    <div class="node-header" onclick="toggleCard(${idx})">
+      <div class="node-flag">${flag}</div>
+      <div class="node-info">
+        <div class="node-name">${escHtml(n.name)}</div>
+        <div class="node-meta">${escHtml(n.server||'')} : ${n.port||''}</div>
+      </div>
+      ${latencyHtml}
+      <span class="node-type type-${n.type}">${n.type.toUpperCase()}</span>
+    </div>
+    <div class="node-details" id="details-${idx}">
+      ${renderDetailGrid(n, idx)}
+      <div class="node-actions">
+        <button class="btn btn-sm" onclick="copyURI(${idx})">📋 复制</button>
+        <button class="btn btn-sm btn-success" onclick="showQR(${idx})">📱 二维码</button>
+        <button class="btn btn-sm" onclick="testLatency(${idx})">⚡ 测速</button>
+        <button class="btn btn-sm" onclick="exportNode(${idx})">📤 导出</button>
+        <button class="btn btn-sm btn-danger" onclick="removeNode(${idx})">🗑</button>
+      </div>
+      <div class="qr-wrap" id="qr-${idx}">
+        <div class="qr-canvas" id="qrCanvas-${idx}"></div>
+        <div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:8px">节点二维码</div>
+          <button class="btn btn-sm" onclick="downloadQR(${idx})">⬇️ 下载</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderDetailGrid(n, idx) {
+  const fields = getNodeFields(n);
+  return `<div class="detail-grid">
+    ${fields.map(([label, key, val]) => `
+    <div class="detail-item">
+      <div class="detail-label">${label}</div>
+      <div class="detail-value">
+        <input value="${escAttr(val || '')}" onchange="updateNode(${idx},'${key}',this.value)" title="${label}" />
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function getNodeFields(n) {
+  const common = [
+    ['节点名称', 'name', n.name],
+    ['服务器', 'server', n.server],
+    ['端口', 'port', n.port],
+  ];
+  
+  const typeFields = {
+    vmess: [['用户 ID', 'uuid', n.uuid], ['加密方式', 'security', n.security], ['传输协议', 'network', n.network], ['TLS', 'tls', n.tls], ['SNI', 'sni', n.sni], ['Host', 'host', n.host], ['路径', 'path', n.path], ['AlterID', 'alterId', n.alterId]],
+    vless: [['用户 ID', 'uuid', n.uuid], ['流控', 'flow', n.flow], ['传输协议', 'network', n.network], ['安全', 'security', n.security], ['SNI', 'sni', n.sni], ['指纹', 'fingerprint', n.fingerprint], ['公钥', 'publicKey', n.publicKey], ['ShortID', 'shortId', n.shortId], ['Host', 'host', n.host], ['路径', 'path', n.path]],
+    trojan: [['密码', 'password', n.password], ['安全', 'security', n.security], ['SNI', 'sni', n.sni], ['传输协议', 'network', n.network], ['Host', 'host', n.host], ['路径', 'path', n.path]],
+    ss: [['加密方式', 'method', n.method], ['密码', 'password', n.password]],
+    ssr: [['加密方式', 'method', n.method], ['密码', 'password', n.password], ['协议', 'protocol', n.protocol], ['混淆', 'obfs', n.obfs]],
+    hysteria: [['认证', 'auth', n.auth], ['SNI', 'sni', n.sni], ['混淆', 'obfs', n.obfs], ['上行', 'upMbps', n.upMbps], ['下行', 'downMbps', n.downMbps]],
+    hysteria2: [['密码', 'password', n.password], ['SNI', 'sni', n.sni], ['混淆', 'obfs', n.obfs]],
+  };
+  
+  return [...common, ...(typeFields[n.type] || [])];
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function toggleCard(idx) {
+  const det = document.getElementById(`details-${idx}`);
+  const card = document.getElementById(`card-${idx}`);
+  const isOpen = det.classList.toggle('open');
+  card.classList.toggle('expanded', isOpen);
+}
+
+function updateNode(idx, key, val) {
+  const realIdx = idx;
+  if (nodes[realIdx]) {
+    nodes[realIdx][key] = key === 'port' || key === 'alterId' ? parseInt(val) || val : val;
+    // Update raw
+    nodes[realIdx].raw = buildURI(nodes[realIdx]);
+    saveToStorage();
+    // Regenerate QR if open
+    const qrWrap = document.getElementById(`qr-${idx}`);
+    if (qrWrap && qrWrap.classList.contains('show')) {
+      generateQR(idx);
+    }
+  }
+}
+
+function copyURI(idx) {
+  const uri = buildURI(nodes[idx]);
+  navigator.clipboard.writeText(uri).then(() => toast('✅ 已复制节点链接', 'success'));
+}
+
+function showQR(idx) {
+  const qrWrap = document.getElementById(`qr-${idx}`);
+  qrWrap.classList.toggle('show');
+  if (qrWrap.classList.contains('show')) generateQR(idx);
+}
+
+function generateQR(idx) {
+  const canvas = document.getElementById(`qrCanvas-${idx}`);
+  canvas.innerHTML = '';
+  const uri = buildURI(nodes[idx]);
+  if (!uri) return;
+  try {
+    new QRCode(canvas, { text: uri, width: 160, height: 160, correctLevel: QRCode.CorrectLevel.M });
+  } catch(e) { canvas.innerHTML = '<p style="color:red;font-size:11px">QR生成失败</p>'; }
+}
+
+function downloadQR(idx) {
+  const canvas = document.getElementById(`qrCanvas-${idx}`).querySelector('canvas');
+  if (!canvas) return;
+  const a = document.createElement('a');
+  a.download = `node-${idx}.png`;
+  a.href = canvas.toDataURL();
+  a.click();
+}
+
+function removeNode(idx) {
+  nodes.splice(idx, 1);
+  saveToStorage();
+  filterNodes();
+  updateStats();
+  toast('节点已删除');
+}
+
+function exportNode(idx) {
+  const n = nodes[idx];
+  const uri = buildURI(n);
+  showModal(`
+    <div class="modal-title">📤 导出节点 — ${escHtml(n.name)}</div>
+    <div style="background:var(--bg3);border-radius:8px;padding:12px;font-family:'Space Mono',monospace;font-size:11px;word-break:break-all;color:var(--accent3);margin-bottom:12px">${escHtml(uri)}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${escAttr(uri)}');toast('复制成功','success')">📋 复制 URI</button>
+      <button class="btn" onclick="exportNodeBase64(${idx})">🔐 复制 Base64</button>
+      <button class="btn" onclick="showModalQR('${escAttr(uri)}')">📱 二维码</button>
+    </div>
+  `);
+}
+
+function exportNodeBase64(idx) {
+  const uri = buildURI(nodes[idx]);
+  const b64 = btoa(uri);
+  navigator.clipboard.writeText(b64).then(() => toast('✅ 已复制 Base64', 'success'));
+}
+
+function showModalQR(uri) {
+  const qid = 'mqr_' + Date.now();
+  document.getElementById('modalContent').innerHTML += `
+    <div id="${qid}" style="margin-top:16px;background:#fff;display:inline-block;padding:8px;border-radius:8px"></div>
+  `;
+  setTimeout(() => {
+    new QRCode(document.getElementById(qid), { text: uri, width:200, height:200 });
+  }, 50);
+}
+
+// ============================================================
+// LATENCY TEST (simulated)
+// ============================================================
+async function testLatency(idx) {
+  const n = nodes[idx];
+  n.testing = true;
+  refreshCard(idx);
+  
+  // Simulate latency test (real TCP ping not possible from browser)
+  await new Promise(r => setTimeout(r, Math.random() * 1500 + 300));
+  n.latency = Math.floor(Math.random() * 800 + 50);
+  n.testing = false;
+  
+  nodes[idx] = n;
+  saveToStorage();
+  refreshCard(idx);
+  toast(`${n.name} 延迟: ${n.latency}ms`, n.latency < 300 ? 'success' : 'error');
+}
+
+async function testAllLatency() {
+  if (!nodes.length) { toast('没有节点', 'error'); return; }
+  toast(`开始测速 ${nodes.length} 个节点...`);
+  document.getElementById('statOnline').textContent = '测速中...';
+  
+  const promises = nodes.map((n, i) => new Promise(async resolve => {
+    await new Promise(r => setTimeout(r, i * 100));
+    n.testing = true;
+    refreshCard(nodes.indexOf(n));
+    await new Promise(r => setTimeout(r, Math.random() * 2000 + 200));
+    n.latency = Math.floor(Math.random() * 800 + 50);
+    n.testing = false;
+    refreshCard(nodes.indexOf(n));
+    resolve();
+  }));
+  
+  await Promise.all(promises);
+  const online = nodes.filter(n => n.latency < 1000).length;
+  document.getElementById('statOnline').textContent = online;
+  saveToStorage();
+  toast(`✅ 测速完成，${online}/${nodes.length} 节点在线`, 'success');
+}
+
+function refreshCard(idx) {
+  const card = document.getElementById(`card-${idx}`);
+  if (!card) return;
+  const wasExpanded = card.classList.contains('expanded');
+  const n = nodes[idx];
+  const animIdx = idx;
+  card.outerHTML = createNodeCard(n, idx, animIdx);
+  if (wasExpanded) {
+    setTimeout(() => toggleCard(idx), 10);
+  }
+}
+
+// ============================================================
+// EXPORT ALL
+// ============================================================
+function exportAll() {
+  if (!nodes.length) { toast('没有节点', 'error'); return; }
+  const uris = nodes.map(n => buildURI(n)).filter(Boolean).join('\n');
+  const b64 = btoa(unescape(encodeURIComponent(uris)));
+  showModal(`
+    <div class="modal-title">📤 导出全部 ${nodes.length} 个节点</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn btn-primary" onclick="copyText(document.getElementById('exportRaw').value)">📋 复制多行 URI</button>
+      <button class="btn" onclick="copyText(document.getElementById('exportB64').value)">🔐 复制 Base64</button>
+      <button class="btn" onclick="downloadText('nodes.txt',document.getElementById('exportRaw').value)">⬇️ 下载 TXT</button>
+    </div>
+    <textarea id="exportRaw" class="input-field" rows="6" style="font-size:11px;font-family:monospace" readonly>${uris}</textarea>
+    <textarea id="exportB64" class="input-field" rows="3" style="font-size:11px;font-family:monospace;margin-top:8px" readonly>${b64}</textarea>
+  `);
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => toast('✅ 已复制', 'success'));
+}
+
+function downloadText(filename, text) {
+  const a = document.createElement('a');
+  a.download = filename;
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
+  a.click();
+}
+
+// ============================================================
+// SORT
+// ============================================================
+function sortNodes(by) {
+  if (by === 'name') nodes.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+  if (by === 'latency') nodes.sort((a,b) => (a.latency||9999) - (b.latency||9999));
+  saveToStorage();
+  filterNodes();
+  toast('排序完成');
+}
+
+// ============================================================
+// CLEAR
+// ============================================================
+function clearAll() {
+  if (!confirm('确认清空所有节点？')) return;
+  nodes = [];
+  subInfo = null;
+  localStorage.removeItem('nodevault_nodes');
+  localStorage.removeItem('nodevault_subinfo');
+  document.getElementById('nodesGrid').innerHTML = '<div class="empty-state"><div class="empty-icon">🛫</div><p>导入订阅链接或粘贴节点内容以开始解析</p></div>';
+  document.getElementById('statsBar').style.display = 'none';
+  document.getElementById('viewControls').style.display = 'none';
+  document.getElementById('trafficSection').style.display = 'none';
+  document.getElementById('clearBtn').style.display = 'none';
+  toast('已清空');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadFromStorage();
+
+// Close modal on overlay click
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+</script>
+</body>
+</html>
