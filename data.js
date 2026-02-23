@@ -208,6 +208,17 @@ const projects = [
         versions: [
             { name: '开始起卦', url: 'https://projects.wangcy.site/八卦/bg-xunlian' }
         ]
+    },
+    {
+        id: 20,
+        category: 'entertainment',
+        name: 'WebOS',
+        description: '纯前端操作系统',
+        icon: '💻',
+        tags: ['Claude'],
+        versions: [
+            { name: '进入系统', url: 'https://projects.wangcy.site/WebOS/webos' }
+        ]
     }
 ];
 
@@ -239,5 +250,6 @@ const categoryInfo = {
         icon: '⭐' 
     }
 };
+
 
 
