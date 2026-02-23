@@ -29,6 +29,7 @@
 - [法考主观模拟网站](https://projects.wangcy.site/fakao/c/index)
 - [道家小六壬](https://dao6.dpdns.org)
 - [Sub工具](https://projects.wangcy.site/Sub/indexC)
+- [WebOS](https://projects.wangcy.site/WebOS/webos)
 
 > ChatGPT
 - [起始页生成](https://projects.wangcy.site/Auto-search)
