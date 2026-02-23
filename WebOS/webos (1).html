@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AuraOS</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a14;
+    --surface: rgba(255,255,255,0.06);
+    --surface-hover: rgba(255,255,255,0.10);
+    --border: rgba(255,255,255,0.10);
+    --accent: #7c6aff;
+    --accent2: #ff6ab0;
+    --accent3: #6affcb;
+    --text: #e8e8f0;
+    --text-dim: rgba(232,232,240,0.5);
+    --taskbar-h: 52px;
+    --radius: 14px;
+    --shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh; width: 100vw;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* WALLPAPER */
+  #wallpaper {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 30%, rgba(124,106,255,0.22) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 70%, rgba(255,106,176,0.18) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 50% 10%, rgba(106,255,203,0.10) 0%, transparent 50%),
+      linear-gradient(135deg, #080812 0%, #0d0d1e 50%, #0a0814 100%);
+    transition: background 0.8s ease;
+  }
+  #wallpaper::after {
+    content:''; position:absolute; inset:0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* DESKTOP */
+  #desktop { position: fixed; inset: 0 0 var(--taskbar-h) 0; z-index: 1; }
+
+  .desktop-icons {
+    display: flex; flex-direction: column; flex-wrap: wrap;
+    align-content: flex-start; gap: 8px; padding: 20px; height: 100%;
+    pointer-events: none;
+  }
+  .d-icon {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    width: 72px; cursor: pointer; pointer-events: all;
+    padding: 8px 4px; border-radius: 10px; transition: background 0.15s;
+  }
+  .d-icon:hover { background: rgba(255,255,255,0.08); }
+  .d-icon:active { background: rgba(255,255,255,0.14); }
+  .d-icon .ico { font-size: 32px; line-height:1; }
+  .d-icon span { font-size: 11px; color: var(--text); text-align:center;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8); line-height:1.3; }
+
+  /* WINDOWS */
+  .window {
+    position: absolute; min-width: 320px; min-height: 200px;
+    background: rgba(16,16,32,0.82); backdrop-filter: blur(40px) saturate(1.4);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); display: flex; flex-direction: column;
+    overflow: hidden; transition: box-shadow 0.2s; z-index: 10;
+  }
+  .window.active { box-shadow: 0 24px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(124,106,255,0.3); z-index: 100; }
+  .window.minimized { display: none; }
+  .window.maximized { transition: all 0.2s ease; }
+
+  .win-titlebar {
+    display: flex; align-items: center; gap: 10px; padding: 0 14px; height: 38px;
+    background: rgba(255,255,255,0.04); border-bottom: 1px solid var(--border);
+    cursor: grab; flex-shrink: 0;
+  }
+  .win-titlebar:active { cursor: grabbing; }
+  .win-btns { display: flex; gap: 6px; }
+  .win-btn { width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; transition: filter 0.15s; flex-shrink:0; }
+  .win-btn.close { background: #ff5f57; }
+  .win-btn.min { background: #febc2e; }
+  .win-btn.max { background: #28c840; }
+  .win-btn:hover { filter: brightness(1.2); }
+  .win-title { flex: 1; text-align: center; font-size: 12px; font-weight: 500; color: var(--text-dim); pointer-events: none; }
+  .win-body { flex: 1; overflow: auto; position: relative; }
+  .win-resize { position: absolute; bottom: 0; right: 0; width: 16px; height: 16px; cursor: se-resize; z-index: 999; }
+
+  /* TASKBAR */
+  #taskbar {
+    position: fixed; bottom: 0; left: 0; right: 0; height: var(--taskbar-h); z-index: 1000;
+    display: flex; align-items: center; gap: 6px; padding: 0 16px;
+    background: rgba(10,10,20,0.75); backdrop-filter: blur(30px); border-top: 1px solid var(--border);
+  }
+  #tb-apps { display:flex; gap:6px; flex:1; overflow:hidden; }
+  #clock { font-size: 13px; font-weight:500; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+
+  .tb-app {
+    display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 8px;
+    background: var(--surface); border: 1px solid var(--border); cursor: pointer;
+    transition: background 0.15s; font-size: 12px; max-width: 140px; flex-shrink:0;
+  }
+  .tb-app:hover { background: var(--surface-hover); }
+  .tb-app.active-tb { background: rgba(124,106,255,0.2); border-color: rgba(124,106,255,0.3); }
+  .tb-app .tb-ico { font-size: 14px; flex-shrink:0; }
+  .tb-app .tb-label { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .sys-tray { display:flex; align-items:center; gap:8px; margin-left:8px; flex-shrink:0; }
+  .tray-icon { font-size: 16px; cursor:pointer; opacity:0.7; transition:opacity 0.15s; position:relative; }
+  .tray-icon:hover { opacity:1; }
+
+  /* START BUTTON */
+  #start-btn {
+    width: 36px; height: 36px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; cursor: pointer; font-size: 18px; display: flex; align-items:center;
+    justify-content:center; transition: transform 0.15s, box-shadow 0.15s; flex-shrink:0;
+  }
+  #start-btn:hover { transform: scale(1.08); box-shadow: 0 0 20px rgba(124,106,255,0.5); }
+
+  /* START MENU */
+  #start-menu {
+    position: fixed; bottom: calc(var(--taskbar-h) + 10px); left: 16px; width: 380px;
+    background: rgba(12,12,24,0.92); backdrop-filter: blur(40px); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow); z-index: 2000; display: none;
+    overflow: hidden; animation: slideUp 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  .sm-search { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--border); }
+  .sm-search input {
+    flex:1; background:rgba(255,255,255,0.07); border:1px solid var(--border); border-radius:8px;
+    padding:8px 12px; color:var(--text); font-family:inherit; font-size:13px; outline:none; transition:border-color 0.15s;
+  }
+  .sm-search input:focus { border-color:rgba(124,106,255,0.5); }
+  .sm-apps { padding:12px; display:grid; grid-template-columns:repeat(4,1fr); gap:4px; }
+  .sm-app { display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px; border-radius:10px; cursor:pointer; transition:background 0.15s; }
+  .sm-app:hover { background:var(--surface-hover); }
+  .sm-app .ico { font-size:26px; }
+  .sm-app span { font-size:10px; color:var(--text-dim); text-align:center; }
+  .sm-section { padding:8px 16px 4px; font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; }
+  .sm-footer { padding:12px 16px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px; }
+  .sm-footer button { padding:6px 14px; border-radius:7px; border:1px solid var(--border); background:var(--surface); color:var(--text); cursor:pointer; font-size:12px; font-family:inherit; transition:background 0.15s; }
+  .sm-footer button:hover { background:var(--surface-hover); }
+
+  /* CONTEXT MENU */
+  #ctx-menu {
+    position: fixed; z-index: 9999; background:rgba(16,16,32,0.95); backdrop-filter:blur(20px);
+    border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow); display:none; min-width:190px;
+    overflow:hidden; animation:fadeIn 0.12s ease;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
+  .ctx-item { padding:9px 16px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:10px; transition:background 0.1s; }
+  .ctx-item:hover { background:var(--surface-hover); }
+  .ctx-sep { height:1px; background:var(--border); margin:4px 0; }
+
+  /* NOTIFICATIONS */
+  #notif-container { position:fixed; top:16px; right:16px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+  .notif { background:rgba(20,20,40,0.92); backdrop-filter:blur(20px); border:1px solid var(--border); border-radius:12px; padding:14px 18px; min-width:280px; max-width:340px; box-shadow:var(--shadow); pointer-events:all; animation:slideInRight 0.3s cubic-bezier(0.34,1.56,0.64,1); display:flex; gap:12px; align-items:flex-start; }
+  .notif.out { animation:slideOutRight 0.3s ease forwards; }
+  @keyframes slideInRight { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes slideOutRight { to{opacity:0;transform:translateX(60px)} }
+  .notif-ico { font-size:22px; flex-shrink:0; }
+  .notif-title { font-size:13px; font-weight:600; margin-bottom:3px; }
+  .notif-text { font-size:12px; color:var(--text-dim); }
+  .notif-close { margin-left:auto; cursor:pointer; opacity:0.5; font-size:12px; padding:2px 4px; }
+  .notif-close:hover { opacity:1; }
+
+  /* VOLUME POPUP */
+  #vol-popup {
+    position:fixed; z-index:5000; background:rgba(16,16,32,0.95); backdrop-filter:blur(20px);
+    border:1px solid var(--border); border-radius:12px; padding:16px; width:200px;
+    box-shadow:var(--shadow); display:none;
+  }
+  #vol-popup label { font-size:12px; color:var(--text-dim); display:block; margin-bottom:8px; }
+  #vol-slider { width:100%; accent-color:var(--accent); }
+
+  /* LOCK SCREEN */
+  #lock-screen {
+    position:fixed; inset:0; z-index:99998; background:rgba(5,5,15,0.92);
+    backdrop-filter:blur(40px); display:none; flex-direction:column;
+    align-items:center; justify-content:center; gap:24px;
+  }
+  #lock-screen.active { display:flex; }
+  .lock-clock { font-family:'JetBrains Mono',monospace; font-size:72px; font-weight:200; letter-spacing:-3px; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .lock-date { font-size:16px; color:var(--text-dim); }
+  .lock-input { background:rgba(255,255,255,0.1); border:1px solid var(--border); border-radius:30px; padding:12px 24px; font-family:inherit; font-size:14px; color:var(--text); outline:none; text-align:center; width:220px; transition:border-color 0.15s; letter-spacing:4px; }
+  .lock-input:focus { border-color:rgba(124,106,255,0.5); }
+  .lock-hint { font-size:12px; color:var(--text-dim); }
+  .lock-btn { padding:10px 30px; border-radius:30px; border:none; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; cursor:pointer; font-family:inherit; font-size:14px; font-weight:500; transition:transform 0.15s,filter 0.15s; }
+  .lock-btn:hover { transform:scale(1.04); filter:brightness(1.1); }
+
+  /* SCROLL */
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.15); border-radius:3px; }
+
+  /* FILE MANAGER */
+  .fm-toolbar { display:flex; align-items:center; gap:8px; padding:10px 14px; border-bottom:1px solid var(--border); background:rgba(255,255,255,0.03); }
+  .fm-toolbar button, .te-toolbar button, .br-toolbar button { padding:5px 11px; border-radius:7px; border:1px solid var(--border); background:var(--surface); color:var(--text); cursor:pointer; font-size:12px; font-family:inherit; transition:background 0.15s; }
+  .fm-toolbar button:hover, .te-toolbar button:hover, .br-toolbar button:hover { background:var(--surface-hover); }
+  .fm-path { flex:1; background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:7px; padding:5px 10px; font-size:12px; color:var(--text-dim); }
+  .fm-body { display:flex; height:calc(100% - 49px); }
+  .fm-sidebar { width:130px; border-right:1px solid var(--border); padding:10px 0; flex-shrink:0; }
+  .fm-sidebar-item { display:flex; align-items:center; gap:8px; padding:7px 14px; font-size:12px; cursor:pointer; transition:background 0.1s; }
+  .fm-sidebar-item:hover { background:var(--surface); }
+  .fm-sidebar-item.active { background:rgba(124,106,255,0.18); color:var(--accent); }
+  .fm-files { flex:1; display:flex; flex-wrap:wrap; align-content:flex-start; gap:4px; padding:12px; overflow-y:auto; }
+  .fm-file { display:flex; flex-direction:column; align-items:center; gap:5px; width:80px; padding:8px 4px; border-radius:9px; cursor:pointer; transition:background 0.12s; text-align:center; }
+  .fm-file:hover { background:var(--surface-hover); }
+  .fm-file.selected { background:rgba(124,106,255,0.2); }
+  .fm-file .ico { font-size:28px; }
+  .fm-file span { font-size:11px; color:var(--text-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%; }
+  .fm-statusbar { padding:6px 14px; border-top:1px solid var(--border); font-size:11px; color:var(--text-dim); background:rgba(255,255,255,0.02); }
+
+  /* TEXT EDITOR */
+  .te-toolbar { display:flex; align-items:center; gap:6px; padding:8px 14px; border-bottom:1px solid var(--border); background:rgba(255,255,255,0.03); flex-wrap:wrap; }
+  .te-toolbar select { background:var(--surface); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:4px 8px; font-size:12px; outline:none; }
+  .te-body { width:100%; height:calc(100% - 45px); background:transparent; border:none; outline:none; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:13px; padding:14px; resize:none; line-height:1.7; }
+
+  /* TERMINAL */
+  .term-body { background:#060610; height:100%; padding:14px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.7; overflow-y:auto; display:flex; flex-direction:column; }
+  .term-output { flex:1; }
+  .term-line { margin-bottom:2px; word-break:break-all; }
+  .term-line.cmd { color:var(--accent3); }
+  .term-line.out { color:var(--text-dim); }
+  .term-line.err { color:var(--accent2); }
+  .term-line.info { color:var(--accent); }
+  .term-prompt { display:flex; align-items:center; gap:6px; }
+  .term-ps { color:var(--accent3); white-space:nowrap; flex-shrink:0; }
+  .term-input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:13px; caret-color:var(--accent3); }
+
+  /* CALCULATOR */
+  .calc-body { display:flex; flex-direction:column; padding:16px; gap:10px; height:100%; }
+  .calc-display { background:rgba(0,0,0,0.4); border-radius:10px; padding:16px; text-align:right; border:1px solid var(--border); }
+  .calc-expr { font-size:12px; color:var(--text-dim); min-height:18px; font-family:'JetBrains Mono',monospace; }
+  .calc-val { font-size:36px; font-weight:300; margin-top:4px; overflow:hidden; text-overflow:ellipsis; font-family:'JetBrains Mono',monospace; }
+  .calc-btns { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; flex:1; }
+  .calc-btn { border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); cursor:pointer; font-family:inherit; font-size:16px; transition:background 0.12s,transform 0.08s; min-height:48px; }
+  .calc-btn:hover { background:var(--surface-hover); }
+  .calc-btn:active { transform:scale(0.94); }
+  .calc-btn.accent { background:rgba(124,106,255,0.25); color:var(--accent); }
+  .calc-btn.accent:hover { background:rgba(124,106,255,0.4); }
+  .calc-btn.op { background:rgba(255,106,176,0.15); color:var(--accent2); }
+  .calc-btn.op:hover { background:rgba(255,106,176,0.25); }
+  .calc-btn.eq { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none; font-weight:600; }
+  .calc-btn.eq:hover { filter:brightness(1.1); }
+
+  /* BROWSER */
+  .br-toolbar { display:flex; align-items:center; gap:8px; padding:8px 14px; border-bottom:1px solid var(--border); background:rgba(255,255,255,0.03); }
+  .br-url { flex:1; background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:20px; padding:6px 14px; font-size:12px; color:var(--text); font-family:inherit; outline:none; transition:border-color 0.15s; }
+  .br-url:focus { border-color:rgba(124,106,255,0.5); }
+
+  /* MUSIC */
+  .music-body { padding:24px; display:flex; flex-direction:column; align-items:center; gap:16px; height:100%; overflow-y:auto; }
+  .album-art { width:140px; height:140px; border-radius:16px; background:linear-gradient(135deg,var(--accent),var(--accent2),var(--accent3)); display:flex; align-items:center; justify-content:center; font-size:60px; box-shadow:0 20px 60px rgba(124,106,255,0.4); animation:rotateSlow 8s linear infinite; animation-play-state:paused; }
+  .album-art.playing { animation-play-state:running; }
+  @keyframes rotateSlow { to{transform:rotate(360deg)} }
+  .music-title { font-size:18px; font-weight:600; }
+  .music-artist { font-size:13px; color:var(--text-dim); }
+  .music-progress { width:100%; background:rgba(255,255,255,0.1); border-radius:4px; height:4px; cursor:pointer; }
+  .music-prog-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 0.5s linear; }
+  .music-controls { display:flex; align-items:center; gap:16px; }
+  .music-btn { background:none; border:none; color:var(--text); font-size:20px; cursor:pointer; transition:color 0.15s,transform 0.1s; padding:8px; }
+  .music-btn:hover { color:var(--accent); }
+  .music-btn.play { width:48px; height:48px; border-radius:50%; font-size:20px; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; display:flex; align-items:center; justify-content:center; border:none; }
+  .music-btn.play:hover { transform:scale(1.08); }
+  .music-track { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; cursor:pointer; transition:background 0.15s; width:100%; }
+  .music-track:hover { background:var(--surface); }
+
+  /* GALLERY */
+  .gallery-body { padding:14px; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; overflow-y:auto; height:100%; }
+  .gallery-thumb { aspect-ratio:1; border-radius:10px; overflow:hidden; background:var(--surface); cursor:pointer; transition:transform 0.15s; display:flex; align-items:center; justify-content:center; font-size:40px; border:1px solid var(--border); }
+  .gallery-thumb:hover { transform:scale(1.04); }
+
+  /* CLOCK */
+  .clock-app { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:16px; }
+  .big-clock { font-family:'JetBrains Mono',monospace; font-size:64px; font-weight:300; letter-spacing:-2px; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .big-date { font-size:16px; color:var(--text-dim); }
+
+  /* WEATHER */
+  .weather-body { padding:24px; height:100%; overflow-y:auto; }
+  .weather-main { display:flex; align-items:center; gap:20px; margin-bottom:24px; }
+  .weather-temp { font-size:72px; font-weight:200; }
+  .weather-city { font-size:20px; font-weight:500; }
+  .weather-desc { font-size:14px; color:var(--text-dim); }
+  .weather-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .weather-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center; }
+  .weather-card .ico { font-size:24px; margin-bottom:6px; }
+  .weather-card .val { font-size:18px; font-weight:500; }
+  .weather-card .lbl { font-size:11px; color:var(--text-dim); }
+
+  /* SETTINGS */
+  .set-body { display:flex; height:100%; }
+  .set-nav { width:160px; border-right:1px solid var(--border); padding:10px 0; flex-shrink:0; }
+  .set-nav-item { display:flex; align-items:center; gap:10px; padding:9px 16px; font-size:13px; cursor:pointer; transition:background 0.1s; }
+  .set-nav-item:hover { background:var(--surface); }
+  .set-nav-item.active { background:rgba(124,106,255,0.18); color:var(--accent); }
+  .set-content { flex:1; padding:20px; overflow-y:auto; }
+  .set-section { display:none; }
+  .set-section.active { display:block; }
+  .set-title { font-size:18px; font-weight:600; margin-bottom:20px; }
+  .set-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--border); }
+  .set-row:last-child { border:none; }
+  .set-row-label { font-size:13px; }
+  .set-row-desc { font-size:11px; color:var(--text-dim); margin-top:3px; }
+  .toggle { width:40px; height:22px; border-radius:11px; background:rgba(255,255,255,0.15); position:relative; cursor:pointer; transition:background 0.2s; flex-shrink:0; }
+  .toggle.on { background:var(--accent); }
+  .toggle::after { content:''; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; transition:left 0.2s; }
+  .toggle.on::after { left:21px; }
+
+  /* NOTE APP */
+  .notes-body { height:100%; display:flex; }
+  .notes-list { width:160px; border-right:1px solid var(--border); display:flex; flex-direction:column; }
+  .notes-list-header { padding:10px 14px; border-bottom:1px solid var(--border); font-size:12px; font-weight:600; display:flex; justify-content:space-between; align-items:center; }
+  .notes-list-header button { background:var(--accent); border:none; color:#fff; border-radius:5px; padding:2px 8px; cursor:pointer; font-size:11px; }
+  .notes-items { flex:1; overflow-y:auto; }
+  .note-item { padding:10px 14px; cursor:pointer; transition:background 0.1s; border-bottom:1px solid var(--border); }
+  .note-item:hover { background:var(--surface); }
+  .note-item.active { background:rgba(124,106,255,0.18); }
+  .note-item-title { font-size:12px; font-weight:500; }
+  .note-item-preview { font-size:11px; color:var(--text-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .notes-editor { flex:1; display:flex; flex-direction:column; }
+  .notes-title-input { background:transparent; border:none; outline:none; border-bottom:1px solid var(--border); padding:12px 14px; font-family:inherit; font-size:16px; font-weight:600; color:var(--text); }
+  .notes-text { flex:1; background:transparent; border:none; outline:none; padding:12px 14px; font-family:inherit; font-size:13px; color:var(--text); line-height:1.7; resize:none; }
+
+  /* BOOT SCREEN */
+  #boot-screen {
+    position: fixed; inset: 0; z-index: 99999; background: #080812;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px;
+  }
+  #boot-screen.done { animation:bootFade 0.5s forwards; }
+  @keyframes bootFade { to{opacity:0;pointer-events:none} }
+  .boot-logo { font-size:48px; font-weight:700; letter-spacing:-2px; background:linear-gradient(135deg,var(--accent),var(--accent2),var(--accent3)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .boot-bar { width:200px; height:3px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
+  .boot-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--accent),var(--accent2)); animation:bootLoad 2.2s cubic-bezier(0.4,0,0.2,1) forwards; }
+  @keyframes bootLoad { from{width:0} to{width:100%} }
+  .boot-text { font-size:12px; color:var(--text-dim); }
+</style>
+</head>
+<body>
+
+<!-- BOOT -->
+<div id="boot-screen">
+  <div class="boot-logo">AuraOS</div>
+  <div class="boot-bar"><div class="boot-fill"></div></div>
+  <div class="boot-text" id="boot-text">正在初始化系统...</div>
+</div>
+
+<!-- WALLPAPER -->
+<div id="wallpaper"></div>
+
+<!-- DESKTOP -->
+<div id="desktop">
+  <div class="desktop-icons">
+    <div class="d-icon" ondblclick="openApp('filemanager')"><div class="ico">📁</div><span>文件管理器</span></div>
+    <div class="d-icon" ondblclick="openApp('texteditor')"><div class="ico">📝</div><span>文本编辑器</span></div>
+    <div class="d-icon" ondblclick="openApp('notes')"><div class="ico">🗒️</div><span>便签</span></div>
+    <div class="d-icon" ondblclick="openApp('terminal')"><div class="ico">💻</div><span>终端</span></div>
+    <div class="d-icon" ondblclick="openApp('calculator')"><div class="ico">🧮</div><span>计算器</span></div>
+    <div class="d-icon" ondblclick="openApp('browser')"><div class="ico">🌐</div><span>浏览器</span></div>
+    <div class="d-icon" ondblclick="openApp('music')"><div class="ico">🎵</div><span>音乐</span></div>
+    <div class="d-icon" ondblclick="openApp('gallery')"><div class="ico">🖼️</div><span>图库</span></div>
+    <div class="d-icon" ondblclick="openApp('clock')"><div class="ico">🕐</div><span>时钟</span></div>
+    <div class="d-icon" ondblclick="openApp('weather')"><div class="ico">🌤️</div><span>天气</span></div>
+    <div class="d-icon" ondblclick="openApp('settings')"><div class="ico">⚙️</div><span>设置</span></div>
+  </div>
+</div>
+
+<!-- TASKBAR -->
+<div id="taskbar">
+  <button id="start-btn" onclick="toggleStartMenu()" title="开始菜单">✦</button>
+  <div id="tb-apps"></div>
+  <div class="sys-tray">
+    <span class="tray-icon" title="网络" onclick="showNotif('网络','已连接到 AuraNet · 信号优秀','📶')">📶</span>
+    <span class="tray-icon" title="音量" onclick="toggleVol(this)">🔊</span>
+    <span class="tray-icon" title="电量" onclick="showNotif('电源','电量：87% · 正在充电','🔋')">🔋</span>
+    <span class="tray-icon" title="锁屏" onclick="lockScreen()">🔒</span>
+  </div>
+  <div id="clock">00:00:00</div>
+</div>
+
+<!-- START MENU -->
+<div id="start-menu">
+  <div class="sm-search">
+    <span>🔍</span>
+    <input type="text" placeholder="搜索应用程序..." id="sm-search-input" oninput="filterApps(this.value)">
+  </div>
+  <div class="sm-section">全部应用</div>
+  <div class="sm-apps" id="sm-apps">
+    <div class="sm-app" data-name="文件管理器" onclick="openApp('filemanager');closeStartMenu()"><div class="ico">📁</div><span>文件</span></div>
+    <div class="sm-app" data-name="文本编辑器" onclick="openApp('texteditor');closeStartMenu()"><div class="ico">📝</div><span>编辑器</span></div>
+    <div class="sm-app" data-name="便签" onclick="openApp('notes');closeStartMenu()"><div class="ico">🗒️</div><span>便签</span></div>
+    <div class="sm-app" data-name="终端" onclick="openApp('terminal');closeStartMenu()"><div class="ico">💻</div><span>终端</span></div>
+    <div class="sm-app" data-name="计算器" onclick="openApp('calculator');closeStartMenu()"><div class="ico">🧮</div><span>计算器</span></div>
+    <div class="sm-app" data-name="浏览器" onclick="openApp('browser');closeStartMenu()"><div class="ico">🌐</div><span>浏览器</span></div>
+    <div class="sm-app" data-name="音乐" onclick="openApp('music');closeStartMenu()"><div class="ico">🎵</div><span>音乐</span></div>
+    <div class="sm-app" data-name="图库" onclick="openApp('gallery');closeStartMenu()"><div class="ico">🖼️</div><span>图库</span></div>
+    <div class="sm-app" data-name="时钟" onclick="openApp('clock');closeStartMenu()"><div class="ico">🕐</div><span>时钟</span></div>
+    <div class="sm-app" data-name="天气" onclick="openApp('weather');closeStartMenu()"><div class="ico">🌤️</div><span>天气</span></div>
+    <div class="sm-app" data-name="设置" onclick="openApp('settings');closeStartMenu()"><div class="ico">⚙️</div><span>设置</span></div>
+  </div>
+  <div class="sm-footer">
+    <button onclick="showNotif('系统','正在重启...',  '🔄');closeStartMenu()">🔄 重启</button>
+    <button onclick="shutdown()">⏻ 关机</button>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx-menu">
+  <div class="ctx-item" onclick="changeWallpaper()">🖼️ 更换壁纸</div>
+  <div class="ctx-item" onclick="openApp('settings');hideCtx()">⚙️ 显示设置</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="openApp('filemanager');hideCtx()">📁 文件管理器</div>
+  <div class="ctx-item" onclick="openApp('terminal');hideCtx()">💻 打开终端</div>
+  <div class="ctx-item" onclick="openApp('notes');hideCtx()">🗒️ 新建便签</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="arrangeWindows();hideCtx()">⊞ 排列窗口</div>
+  <div class="ctx-item" onclick="closeAllWindows();hideCtx()">✕ 关闭所有窗口</div>
+</div>
+
+<!-- VOLUME POPUP -->
+<div id="vol-popup">
+  <label id="vol-label">🔊 音量: 80%</label>
+  <input type="range" id="vol-slider" min="0" max="100" value="80" oninput="updateVol(this.value)">
+</div>
+
+<!-- LOCK SCREEN -->
+<div id="lock-screen">
+  <div class="lock-clock" id="lock-clock">00:00</div>
+  <div class="lock-date" id="lock-date"></div>
+  <input class="lock-input" type="password" id="lock-pass" placeholder="输入密码解锁" maxlength="20">
+  <button class="lock-btn" onclick="unlock()">解锁</button>
+  <div class="lock-hint">提示：默认密码为空，直接点击解锁</div>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div id="notif-container"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let windows = {};
+let zCounter = 100;
+let activeWin = null;
+let startOpen = false;
+let wallpaperIndex = 0;
+
+const wallpapers = [
+  'radial-gradient(ellipse 80% 60% at 20% 30%, rgba(124,106,255,0.22) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 70%, rgba(255,106,176,0.18) 0%, transparent 55%), linear-gradient(135deg, #080812 0%, #0d0d1e 50%, #0a0814 100%)',
+  'radial-gradient(ellipse 80% 60% at 70% 30%, rgba(106,255,203,0.22) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 20% 70%, rgba(124,106,255,0.18) 0%, transparent 55%), linear-gradient(135deg, #081208 0%, #0d1e0d 50%, #080a14 100%)',
+  'radial-gradient(ellipse 80% 60% at 50% 20%, rgba(255,200,100,0.18) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 50% 80%, rgba(255,106,176,0.18) 0%, transparent 55%), linear-gradient(135deg, #14080a 0%, #1e0d14 50%, #14080a 100%)',
+  'radial-gradient(ellipse 80% 60% at 30% 50%, rgba(100,200,255,0.2) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 70% 50%, rgba(100,255,200,0.12) 0%, transparent 55%), linear-gradient(135deg, #080814 0%, #0d141e 50%, #080814 100%)',
+  'radial-gradient(ellipse 60% 60% at 50% 50%, rgba(255,150,50,0.15) 0%, transparent 70%), linear-gradient(135deg, #141008 0%, #1e180d 50%, #140e08 100%)',
+];
+
+// ═══════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════
+const bootMessages = ['正在初始化系统...', '加载用户配置...', '启动桌面服务...', '准备就绪'];
+let bootIdx = 0;
+const bootInterval = setInterval(()=>{
+  bootIdx++;
+  if (bootIdx < bootMessages.length) {
+    document.getElementById('boot-text').textContent = bootMessages[bootIdx];
+  } else {
+    clearInterval(bootInterval);
+  }
+}, 600);
+
+setTimeout(()=>{
+  const bs = document.getElementById('boot-screen');
+  bs.classList.add('done');
+  setTimeout(()=>bs.remove(), 500);
+  showNotif('欢迎', '欢迎使用 AuraOS！双击图标打开应用', '✨');
+  setTimeout(()=>showNotif('提示','右键桌面可更换壁纸和管理窗口','💡'), 2000);
+}, 2600);
+
+// ═══════════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+  // lock screen clock
+  const lc = document.getElementById('lock-clock');
+  if (lc) lc.textContent = `${h}:${m}`;
+  const ld = document.getElementById('lock-date');
+  if (ld) ld.textContent = now.toLocaleDateString('zh-CN',{weekday:'long',month:'long',day:'numeric'});
+  // clock app
+  const ca = document.getElementById('app-clock-time');
+  if (ca) ca.textContent = `${h}:${m}:${s}`;
+  const cd = document.getElementById('app-clock-date');
+  if (cd) cd.textContent = now.toLocaleDateString('zh-CN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  // music
+  if (musicState.playing) {
+    musicState.progress = Math.min((musicState.progress + 1/songs[musicState.idx].dur), 1);
+    const fill = document.getElementById('music-prog');
+    if (fill) fill.style.width = (musicState.progress * 100) + '%';
+    if (musicState.progress >= 1) { musicState.progress = 0; musicState.idx = (musicState.idx+1)%songs.length; refreshMusic(); }
+  }
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════════════════════════════════════════════
+// WALLPAPER
+// ═══════════════════════════════════════════════════
+function changeWallpaper() {
+  wallpaperIndex = (wallpaperIndex + 1) % wallpapers.length;
+  document.getElementById('wallpaper').style.background = wallpapers[wallpaperIndex];
+  hideCtx();
+  showNotif('外观','壁纸已更换','🖼️');
+}
+
+// ═══════════════════════════════════════════════════
+// CONTEXT MENU
+// ═══════════════════════════════════════════════════
+document.getElementById('desktop').addEventListener('contextmenu', e=>{
+  if (e.target.closest('.window') || e.target.closest('.d-icon')) return;
+  e.preventDefault();
+  const ctx = document.getElementById('ctx-menu');
+  ctx.style.display = 'block';
+  let x = e.clientX, y = e.clientY;
+  if (x + 200 > window.innerWidth) x = window.innerWidth - 205;
+  if (y + 220 > window.innerHeight) y = window.innerHeight - 225;
+  ctx.style.left = x + 'px'; ctx.style.top = y + 'px';
+});
+document.addEventListener('click', e=>{
+  if (!e.target.closest('#ctx-menu')) hideCtx();
+  if (!e.target.closest('#start-menu') && !e.target.closest('#start-btn')) closeStartMenu();
+  if (!e.target.closest('#vol-popup') && !e.target.closest('.tray-icon')) {
+    document.getElementById('vol-popup').style.display='none';
+  }
+});
+function hideCtx() { document.getElementById('ctx-menu').style.display='none'; }
+
+function arrangeWindows() {
+  const ids = Object.keys(windows);
+  const cols = Math.ceil(Math.sqrt(ids.length));
+  const dw = window.innerWidth, dh = window.innerHeight - 52;
+  const ww = Math.floor(dw/cols) - 16;
+  const wh = Math.floor(dh/Math.ceil(ids.length/cols)) - 16;
+  ids.forEach((id,i)=>{
+    const col = i % cols, row = Math.floor(i/cols);
+    const w = document.getElementById('win-'+id);
+    if (!w) return;
+    w.style.left = (col*(ww+16)+8) + 'px'; w.style.top = (row*(wh+16)+8) + 'px';
+    w.style.width = ww+'px'; w.style.height = wh+'px';
+    w.classList.remove('minimized');
+    windows[id].minimized = false;
+  });
+  updateTaskbar();
+}
+
+function closeAllWindows() {
+  Object.keys(windows).forEach(id => closeWin(id));
+}
+
+// ═══════════════════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════════════════
+function showNotif(title, text, ico='ℹ️') {
+  const c = document.getElementById('notif-container');
+  const n = document.createElement('div');
+  n.className = 'notif';
+  n.innerHTML = `<div class="notif-ico">${ico}</div><div class="notif-body"><div class="notif-title">${title}</div><div class="notif-text">${text}</div></div><div class="notif-close" onclick="this.parentElement.remove()">✕</div>`;
+  c.appendChild(n);
+  setTimeout(()=>{ n.classList.add('out'); setTimeout(()=>n.remove(),300); }, 4000);
+}
+
+// ═══════════════════════════════════════════════════
+// VOLUME
+// ═══════════════════════════════════════════════════
+function toggleVol(el) {
+  const p = document.getElementById('vol-popup');
+  const r = el.getBoundingClientRect();
+  p.style.display = p.style.display==='block' ? 'none' : 'block';
+  p.style.right = (window.innerWidth - r.right + 10) + 'px';
+  p.style.bottom = (window.innerHeight - r.top + 8) + 'px';
+  p.style.left = 'auto'; p.style.top = 'auto';
+}
+function updateVol(v) {
+  document.getElementById('vol-label').textContent = `🔊 音量: ${v}%`;
+  const icon = v==0?'🔇':v<40?'🔈':v<70?'🔉':'🔊';
+  document.querySelector('.tray-icon[title="音量"]').textContent = icon;
+}
+
+// ═══════════════════════════════════════════════════
+// LOCK SCREEN
+// ═══════════════════════════════════════════════════
+function lockScreen() {
+  document.getElementById('lock-screen').classList.add('active');
+  setTimeout(()=>document.getElementById('lock-pass').focus(), 100);
+}
+function unlock() {
+  document.getElementById('lock-screen').classList.remove('active');
+  document.getElementById('lock-pass').value='';
+  showNotif('系统','屏幕已解锁','🔓');
+}
+document.getElementById('lock-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') unlock(); });
+
+// ═══════════════════════════════════════════════════
+// START MENU
+// ═══════════════════════════════════════════════════
+function toggleStartMenu() {
+  const m = document.getElementById('start-menu');
+  startOpen = !startOpen;
+  m.style.display = startOpen ? 'block' : 'none';
+  if (startOpen) {
+    m.style.animation = 'none'; requestAnimationFrame(()=>{ m.style.animation=''; m.style.animation='slideUp 0.2s cubic-bezier(0.34,1.56,0.64,1)'; });
+    setTimeout(()=>document.getElementById('sm-search-input').focus(), 100);
+  }
+}
+function closeStartMenu() {
+  startOpen = false;
+  document.getElementById('start-menu').style.display = 'none';
+}
+function filterApps(v) {
+  document.querySelectorAll('#sm-apps .sm-app').forEach(a=>{
+    a.style.display = a.dataset.name?.includes(v) ? '' : 'none';
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// APP META
+// ═══════════════════════════════════════════════════
+const appMeta = {
+  filemanager: { title:'文件管理器', ico:'📁', w:660, h:440 },
+  texteditor:  { title:'文本编辑器', ico:'📝', w:600, h:440 },
+  notes:       { title:'便签', ico:'🗒️', w:500, h:380 },
+  terminal:    { title:'终端', ico:'💻', w:580, h:400 },
+  calculator:  { title:'计算器', ico:'🧮', w:300, h:440 },
+  browser:     { title:'浏览器', ico:'🌐', w:700, h:520 },
+  music:       { title:'音乐播放器', ico:'🎵', w:340, h:520 },
+  gallery:     { title:'图库', ico:'🖼️', w:520, h:440 },
+  clock:       { title:'时钟', ico:'🕐', w:360, h:280 },
+  weather:     { title:'天气', ico:'🌤️', w:440, h:360 },
+  settings:    { title:'设置', ico:'⚙️', w:580, h:420 },
+};
+
+// ═══════════════════════════════════════════════════
+// WINDOW MANAGEMENT
+// ═══════════════════════════════════════════════════
+function openApp(id) {
+  if (windows[id]) {
+    const w = document.getElementById('win-'+id);
+    if (!w) return;
+    w.classList.remove('minimized');
+    windows[id].minimized = false;
+    bringToFront(id);
+    return;
+  }
+  createWindow(id);
+}
+
+function createWindow(id) {
+  const meta = appMeta[id] || { title:id, ico:'🖥️', w:500, h:400 };
+  const win = document.createElement('div');
+  win.className = 'window';
+  win.id = 'win-'+id;
+
+  const existing = Object.keys(windows).length;
+  const ox = Math.min(80 + existing*28, window.innerWidth - meta.w - 40);
+  const oy = Math.min(50 + existing*28, window.innerHeight - meta.h - 80);
+  win.style.cssText = `left:${ox}px;top:${oy}px;width:${meta.w}px;height:${meta.h}px;`;
+
+  win.innerHTML = `
+    <div class="win-titlebar" id="tb-${id}">
+      <div class="win-btns">
+        <button class="win-btn close" onclick="closeWin('${id}')" title="关闭"></button>
+        <button class="win-btn min" onclick="minimizeWin('${id}')" title="最小化"></button>
+        <button class="win-btn max" onclick="maximizeWin('${id}')" title="最大化"></button>
+      </div>
+      <div class="win-title">${meta.ico} ${meta.title}</div>
+      <div style="width:52px"></div>
+    </div>
+    <div class="win-body" id="body-${id}">${buildApp(id)}</div>
+    <div class="win-resize" id="rs-${id}"></div>
+  `;
+
+  document.getElementById('desktop').appendChild(win);
+  windows[id] = { minimized:false, maximized:false, prevSize:null };
+  bringToFront(id);
+  makeDraggable(id);
+  makeResizable(id);
+  updateTaskbar();
+  win.addEventListener('mousedown', ()=>bringToFront(id));
+
+  if (id === 'terminal') setTimeout(()=>{ const inp=document.getElementById('term-in'); if(inp) inp.focus(); }, 50);
+  if (id === 'texteditor') setTimeout(()=>{ const b=document.getElementById('te-body'); if(b) b.focus(); }, 50);
+}
+
+function bringToFront(id) {
+  zCounter++;
+  const w = document.getElementById('win-'+id);
+  if (!w) return;
+  document.querySelectorAll('.window').forEach(x=>x.classList.remove('active'));
+  w.style.zIndex = zCounter;
+  w.classList.add('active');
+  activeWin = id;
+  updateTaskbar();
+}
+
+function closeWin(id) {
+  const w = document.getElementById('win-'+id);
+  if (w) {
+    w.style.transition = 'opacity 0.15s, transform 0.15s';
+    w.style.opacity = '0'; w.style.transform = 'scale(0.97)';
+    setTimeout(()=>w.remove(), 150);
+  }
+  delete windows[id];
+  if (id === 'music') musicState.playing = false;
+  if (activeWin === id) activeWin = null;
+  updateTaskbar();
+}
+
+function minimizeWin(id) {
+  const w = document.getElementById('win-'+id);
+  if (w) {
+    w.style.transition = 'opacity 0.15s, transform 0.15s';
+    w.style.opacity = '0'; w.style.transform = 'scale(0.95) translateY(20px)';
+    setTimeout(()=>{ w.style.transition=''; w.style.opacity=''; w.style.transform=''; w.classList.add('minimized'); }, 150);
+  }
+  windows[id].minimized = true;
+  if (activeWin === id) activeWin = null;
+  updateTaskbar();
+}
+
+function maximizeWin(id) {
+  const w = document.getElementById('win-'+id);
+  const state = windows[id];
+  w.style.transition = 'all 0.2s cubic-bezier(0.4,0,0.2,1)';
+  if (!state.maximized) {
+    state.prevSize = { left:w.style.left, top:w.style.top, width:w.style.width, height:w.style.height };
+    w.style.left='0'; w.style.top='0'; w.style.width='100vw'; w.style.height=`calc(100vh - var(--taskbar-h))`;
+    state.maximized = true;
+  } else {
+    const p = state.prevSize;
+    w.style.left=p.left; w.style.top=p.top; w.style.width=p.width; w.style.height=p.height;
+    state.maximized = false;
+  }
+  setTimeout(()=>w.style.transition='', 200);
+}
+
+function updateTaskbar() {
+  const c = document.getElementById('tb-apps');
+  c.innerHTML = '';
+  for (const id in windows) {
+    const meta = appMeta[id] || {};
+    const isActive = activeWin === id && !windows[id].minimized;
+    const div = document.createElement('div');
+    div.className = 'tb-app' + (isActive ? ' active-tb' : '');
+    div.innerHTML = `<span class="tb-ico">${meta.ico||'🖥️'}</span><span class="tb-label">${meta.title||id}</span>`;
+    div.title = meta.title || id;
+    div.onclick = ()=>{
+      const w = document.getElementById('win-'+id);
+      if (!w) return;
+      if (windows[id].minimized) {
+        w.classList.remove('minimized'); windows[id].minimized = false;
+        bringToFront(id);
+      } else if (activeWin === id) {
+        minimizeWin(id);
+      } else {
+        bringToFront(id);
+      }
+    };
+    c.appendChild(div);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// DRAG & RESIZE
+// ═══════════════════════════════════════════════════
+function makeDraggable(id) {
+  const tb = document.getElementById('tb-'+id);
+  const win = document.getElementById('win-'+id);
+  let dragging=false, ox,oy;
+  tb.addEventListener('mousedown', e=>{
+    if (e.target.closest('.win-btn')) return;
+    if (windows[id]?.maximized) return;
+    dragging=true; ox=e.clientX-win.offsetLeft; oy=e.clientY-win.offsetTop;
+    win.style.transition='';
+  });
+  document.addEventListener('mousemove', e=>{
+    if (!dragging) return;
+    const maxX = window.innerWidth - win.offsetWidth;
+    const maxY = window.innerHeight - 52 - 30;
+    win.style.left = Math.max(0, Math.min(e.clientX-ox, maxX)) + 'px';
+    win.style.top = Math.max(0, Math.min(e.clientY-oy, maxY)) + 'px';
+  });
+  document.addEventListener('mouseup', ()=>dragging=false);
+}
+
+function makeResizable(id) {
+  const rs = document.getElementById('rs-'+id);
+  const win = document.getElementById('win-'+id);
+  let resizing=false, sx,sy,sw,sh;
+  rs.addEventListener('mousedown', e=>{ e.preventDefault(); resizing=true; sx=e.clientX; sy=e.clientY; sw=win.offsetWidth; sh=win.offsetHeight; });
+  document.addEventListener('mousemove', e=>{
+    if (!resizing) return;
+    win.style.width = Math.max(280, sw+(e.clientX-sx)) + 'px';
+    win.style.height = Math.max(180, sh+(e.clientY-sy)) + 'px';
+  });
+  document.addEventListener('mouseup', ()=>resizing=false);
+}
+
+// ═══════════════════════════════════════════════════
+// SHUTDOWN
+// ═══════════════════════════════════════════════════
+function shutdown() {
+  document.body.style.transition='background 1.5s';
+  document.body.style.background='#000';
+  document.querySelectorAll('#taskbar,#desktop,#start-menu,#notif-container').forEach(el=>{ el.style.transition='opacity 1s'; el.style.opacity='0'; });
+  setTimeout(()=>{
+    document.body.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:'Sora',sans-serif;background:#030308;color:rgba(255,255,255,0.25);font-size:14px;flex-direction:column;gap:16px"><div style="font-size:32px">⏻</div><div>AuraOS 已关机</div><div style="font-size:12px">刷新页面以重新启动</div></div>`;
+  }, 1500);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// APP BUILDERS
+// ═══════════════════════════════════════════════════════════════
+
+function buildApp(id) {
+  switch(id) {
+    case 'filemanager': return buildFileManager();
+    case 'texteditor':  return buildTextEditor();
+    case 'notes':       return buildNotes();
+    case 'terminal':    return buildTerminal();
+    case 'calculator':  return buildCalculator();
+    case 'browser':     return buildBrowser();
+    case 'music':       return buildMusic();
+    case 'gallery':     return buildGallery();
+    case 'clock':       return buildClock();
+    case 'weather':     return buildWeather();
+    case 'settings':    return buildSettings();
+    default: return `<div style="padding:20px;color:var(--text-dim)">暂无内容</div>`;
+  }
+}
+
+// ─── FILE MANAGER ───────────────────────────────────
+const fsData = {
+  '桌面': [
+    {n:'文档',i:'📁',type:'dir'},{n:'图片',i:'📁',type:'dir'},{n:'下载',i:'📁',type:'dir'},
+    {n:'README.txt',i:'📄',type:'txt'},{n:'日记.txt',i:'📝',type:'txt'},
+  ],
+  '文档': [
+    {n:'报告.docx',i:'📄',type:'doc'},{n:'笔记.txt',i:'📝',type:'txt'},
+    {n:'项目计划.xlsx',i:'📊',type:'doc'},{n:'演示.pptx',i:'📑',type:'doc'},
+  ],
+  '图片': [
+    {n:'照片1.jpg',i:'🖼️',type:'img'},{n:'照片2.png',i:'🖼️',type:'img'},
+    {n:'壁纸.jpg',i:'🖼️',type:'img'},{n:'截图.png',i:'🖼️',type:'img'},
+  ],
+  '下载': [
+    {n:'安装包.zip',i:'📦',type:'file'},{n:'视频.mp4',i:'🎬',type:'file'},
+    {n:'音乐.mp3',i:'🎵',type:'file'},
+  ],
+  '音乐': [
+    {n:'歌曲1.mp3',i:'🎵',type:'file'},{n:'歌曲2.mp3',i:'🎵',type:'file'},
+    {n:'专辑.flac',i:'🎶',type:'file'},
+  ],
+};
+let fmHistory = ['桌面']; let fmHIdx = 0;
+
+function buildFileManager() {
+  return `
+  <div style="display:flex;flex-direction:column;height:100%">
+    <div class="fm-toolbar">
+      <button onclick="fmBack()">← 后退</button>
+      <button onclick="fmForward()">前进 →</button>
+      <button onclick="fmUp()">↑ 上级</button>
+      <div class="fm-path" id="fm-path">📍 ~/桌面</div>
+      <button onclick="fmView()">≡</button>
+    </div>
+    <div class="fm-body">
+      <div class="fm-sidebar">
+        <div style="padding:8px 14px 4px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">位置</div>
+        ${Object.keys(fsData).map(k=>`<div class="fm-sidebar-item${k==='桌面'?' active':''}" id="fm-nav-${k}" onclick="fmGoto('${k}',this)">📂 ${k}</div>`).join('')}
+      </div>
+      <div style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+        <div class="fm-files" id="fm-files">${renderFmFiles('桌面')}</div>
+        <div class="fm-statusbar" id="fm-status">5 个项目</div>
+      </div>
+    </div>
+  </div>`;
+}
+function renderFmFiles(folder) {
+  const items = fsData[folder] || [];
+  return items.map(f=>`<div class="fm-file" ondblclick="fmOpen('${f.n}','${f.i}','${f.type}')" onclick="fmSelect(this,'${f.n}')"><div class="ico">${f.i}</div><span>${f.n}</span></div>`).join('');
+}
+function fmSelect(el, name) {
+  document.querySelectorAll('.fm-file').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  const s = document.getElementById('fm-status');
+  if(s) s.textContent = '已选择: ' + name;
+}
+function fmGoto(folder, el) {
+  document.querySelectorAll('.fm-sidebar-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('fm-nav-'+folder)?.classList.add('active');
+  const ff = document.getElementById('fm-files'); if(ff) ff.innerHTML = renderFmFiles(folder);
+  const fp = document.getElementById('fm-path'); if(fp) fp.textContent = `📍 ~/${folder}`;
+  const s = document.getElementById('fm-status'); if(s) s.textContent = (fsData[folder]||[]).length + ' 个项目';
+  fmHistory = fmHistory.slice(0,fmHIdx+1); fmHistory.push(folder); fmHIdx = fmHistory.length-1;
+}
+function fmBack() { if(fmHIdx>0){fmHIdx--;fmGoto(fmHistory[fmHIdx],null);} }
+function fmForward() { if(fmHIdx<fmHistory.length-1){fmHIdx++;fmGoto(fmHistory[fmHIdx],null);} }
+function fmUp() { fmGoto('桌面',null); }
+function fmView() { showNotif('文件管理器','视图切换功能','≡'); }
+function fmOpen(name, ico, type) {
+  if (type==='dir') { fmGoto(name, null); return; }
+  if (type==='txt') { openApp('texteditor'); showNotif('文本编辑器','打开: '+name, ico); return; }
+  if (type==='img') { openApp('gallery'); showNotif('图库','打开: '+name, ico); return; }
+  showNotif('文件管理器','打开: '+name, ico);
+}
+
+// ─── TEXT EDITOR ─────────────────────────────────────
+let teContent = '# 欢迎使用 AuraOS 文本编辑器\n\n这是一个简单的文本编辑器。\n\n功能包括：\n- 文字输入与编辑\n- 字体切换\n- 文件保存\n\n开始输入你的内容吧！';
+let teSaved = true;
+
+function buildTextEditor() {
+  return `<div style="display:flex;flex-direction:column;height:100%">
+    <div class="te-toolbar">
+      <button onclick="teSave()">💾 保存</button>
+      <button onclick="teNew()">📄 新建</button>
+      <button onclick="teCopy()">📋 复制</button>
+      <select onchange="setFont(this.value)">
+        <option value="'JetBrains Mono',monospace">Monospace</option>
+        <option value="'Sora',sans-serif">Sans-serif</option>
+      </select>
+      <select onchange="setFontSize(this.value)">
+        <option value="13px">13px</option><option value="16px">16px</option>
+        <option value="18px">18px</option><option value="20px">20px</option>
+      </select>
+      <span style="margin-left:auto;font-size:11px;color:var(--text-dim)" id="te-status">就绪</span>
+    </div>
+    <textarea class="te-body" id="te-body" oninput="teOnInput()" onkeydown="teKeydown(event)" spellcheck="false">${teContent}</textarea>
+  </div>`;
+}
+function teOnInput() {
+  teSaved = false;
+  const b=document.getElementById('te-body');
+  const s=document.getElementById('te-status');
+  if(b&&s) { const lines=b.value.split('\n').length; s.textContent=`${b.value.length} 字符 · ${lines} 行 · 未保存`; }
+}
+function teSave() {
+  teContent=document.getElementById('te-body')?.value||''; teSaved=true;
+  const s=document.getElementById('te-status'); if(s) s.textContent='已保存';
+  showNotif('文本编辑器','文件已保存','💾');
+}
+function teNew() { const b=document.getElementById('te-body'); if(b){b.value='';teOnInput();} }
+function teCopy() { const b=document.getElementById('te-body'); if(b){navigator.clipboard?.writeText(b.value); showNotif('编辑器','内容已复制到剪贴板','📋');} }
+function setFont(f) { const b=document.getElementById('te-body'); if(b) b.style.fontFamily=f; }
+function setFontSize(s) { const b=document.getElementById('te-body'); if(b) b.style.fontSize=s; }
+function teKeydown(e) { if(e.ctrlKey&&e.key==='s'){e.preventDefault();teSave();} }
+
+// ─── NOTES ───────────────────────────────────────────
+let notesData = [
+  { id:1, title:'购物清单', content:'• 牛奶\n• 鸡蛋\n• 面包\n• 蔬菜' },
+  { id:2, title:'工作备忘', content:'1. 完成项目报告\n2. 开会讨论方案\n3. 发送周报' },
+  { id:3, title:'灵感记录', content:'有个不错的想法...' },
+];
+let activeNote = 1; let nextNoteId = 4;
+
+function buildNotes() {
+  return `<div class="notes-body">
+    <div class="notes-list">
+      <div class="notes-list-header">
+        <span>便签</span>
+        <button onclick="noteNew()">+</button>
+      </div>
+      <div class="notes-items" id="notes-items">${renderNotesList()}</div>
+    </div>
+    <div class="notes-editor">
+      <input class="notes-title-input" id="note-title" value="${notesData.find(n=>n.id===activeNote)?.title||''}" oninput="noteSave()" placeholder="标题...">
+      <textarea class="notes-text" id="note-content" oninput="noteSave()" placeholder="开始记录...">${notesData.find(n=>n.id===activeNote)?.content||''}</textarea>
+    </div>
+  </div>`;
+}
+function renderNotesList() {
+  return notesData.map(n=>`<div class="note-item${n.id===activeNote?' active':''}" onclick="noteSelect(${n.id})">
+    <div class="note-item-title">${n.title||'无标题'}</div>
+    <div class="note-item-preview">${n.content.slice(0,30)||'空'}</div>
+  </div>`).join('');
+}
+function noteSelect(id) {
+  activeNote=id; const n=notesData.find(x=>x.id===id);
+  const t=document.getElementById('note-title'); if(t) t.value=n?.title||'';
+  const c=document.getElementById('note-content'); if(c) c.value=n?.content||'';
+  document.querySelectorAll('.note-item').forEach(x=>x.classList.remove('active'));
+  document.querySelector(`.note-item[onclick="noteSelect(${id})"]`)?.classList.add('active');
+}
+function noteSave() {
+  const n=notesData.find(x=>x.id===activeNote); if(!n) return;
+  n.title=document.getElementById('note-title')?.value||'无标题';
+  n.content=document.getElementById('note-content')?.value||'';
+  const ni=document.getElementById('notes-items'); if(ni) ni.innerHTML=renderNotesList();
+}
+function noteNew() {
+  const n={ id:nextNoteId++, title:'新便签', content:'' };
+  notesData.unshift(n); activeNote=n.id;
+  const ni=document.getElementById('notes-items'); if(ni) ni.innerHTML=renderNotesList();
+  noteSelect(n.id);
+}
+
+// ─── TERMINAL ────────────────────────────────────────
+let cmdHistory=[]; let cmdIdx=-1; let termCwd='~';
+const termEnv = { HOME:'~', USER:'aura', OS:'AuraOS 1.0.0', SHELL:'/bin/aura' };
+
+function buildTerminal() {
+  return `<div class="term-body" id="term-body">
+    <div class="term-output" id="term-out">
+      <div class="term-line info">AuraOS Terminal v1.0.0</div>
+      <div class="term-line out">输入 <span style="color:var(--accent)">help</span> 查看可用命令</div>
+      <div class="term-line out"></div>
+    </div>
+    <div class="term-prompt">
+      <span class="term-ps" id="term-ps">aura@auraos:~$</span>
+      <input class="term-input" id="term-in" onkeydown="termKey(event)" autocomplete="off" spellcheck="false">
+    </div>
+  </div>`;
+}
+
+const termCmds = {
+  help: ()=>`<span style="color:var(--accent)">可用命令：</span>
+help ls cd pwd echo date clear whoami uname cal neofetch history env cat mkdir rm`,
+  ls: (args)=>{
+    const dir = args[0]||termCwd;
+    const items = { '~':['📁 文档','📁 图片','📁 下载','📄 README.txt'], '文档':['📄 报告.docx','📝 笔记.txt'], '图片':['🖼️ 照片1.jpg','🖼️ 照片2.png'] };
+    return (items[dir]||items['~']).join('  ');
+  },
+  pwd: ()=>'/home/user/'+termCwd,
+  cd: (args)=>{
+    const d=args[0]||'~'; termCwd=d==='~'?'~':d==='..''~':d;
+    const ps=document.getElementById('term-ps'); if(ps) ps.textContent=`aura@auraos:${termCwd}$`; return null;
+  },
+  whoami: ()=>'aura-user',
+  uname: (args)=>args.includes('-a')?'AuraOS 1.0.0 WebEngine x86_64 GNU/AuraOS':'AuraOS',
+  date: ()=>new Date().toLocaleString('zh-CN'),
+  clear: ()=>{ const o=document.getElementById('term-out'); if(o) o.innerHTML=''; return null; },
+  echo: (args)=>args.join(' '),
+  env: ()=>Object.entries(termEnv).map(([k,v])=>`${k}=${v}`).join('\n'),
+  history: ()=>cmdHistory.slice().reverse().slice(0,10).map((c,i)=>`  ${i+1}  ${c}`).join('\n'),
+  mkdir: (args)=>args[0]?`mkdir: 已创建目录 '${args[0]}'`:'mkdir: 缺少操作数',
+  rm: (args)=>args[0]?`rm: 已删除 '${args[0]}'`:'rm: 缺少操作数',
+  cat: (args)=>args[0]?`cat: ${args[0]}: 无法读取文件（虚拟环境）`:'cat: 缺少文件名',
+  neofetch: ()=>`
+<span style="color:var(--accent)">    ████████</span>  <span style="color:var(--accent)">AuraOS</span> 1.0.0
+<span style="color:var(--accent)">  ████████████</span>  ─────────────
+<span style="color:var(--accent)"> ██████████████</span>  OS: AuraOS WebEngine
+<span style="color:var(--accent)"> ██████████████</span>  Shell: AuraShell 1.0
+<span style="color:var(--accent)">  ████████████</span>  Resolution: ${window.innerWidth}x${window.innerHeight}
+<span style="color:var(--accent)">    ████████</span>  Theme: Aura Dark
+  `,
+  cal: ()=>{
+    const now=new Date(); const y=now.getFullYear(); const m=now.getMonth();
+    const days=['日','一','二','三','四','五','六'];
+    let s=`<span style="color:var(--accent)">${y}年${m+1}月</span>\n${days.map(d=>' '+d).join(' ')}\n`;
+    const first=new Date(y,m,1).getDay();
+    const total=new Date(y,m+1,0).getDate();
+    const today=now.getDate();
+    let row=Array(first).fill('  ');
+    for(let i=1;i<=total;i++) row.push(i===today?`<span style="background:var(--accent);color:#fff;border-radius:3px;padding:0 2px">${String(i).padStart(2)}</span>`:String(i).padStart(2));
+    while(row.length%7) row.push('  ');
+    for(let i=0;i<row.length;i+=7) s+=row.slice(i,i+7).join(' ')+'\n';
+    return s;
+  },
+  calc: (args)=>{ try{return String(Function('return '+args.join(' '))())}catch{return '语法错误'} },
+};
+
+function termKey(e) {
+  const inp=document.getElementById('term-in'); if(!inp) return;
+  if (e.key==='Enter') {
+    const val=inp.value.trim(); inp.value='';
+    if(!val) return;
+    cmdHistory.unshift(val); cmdIdx=-1;
+    const out=document.getElementById('term-out');
+    out.innerHTML+=`<div class="term-line cmd">aura@auraos:${termCwd}$ ${val}</div>`;
+    const [cmd,...args]=val.split(' ');
+    if(cmd==='clear'){const o=document.getElementById('term-out');if(o)o.innerHTML='';return;}
+    const fn=termCmds[cmd];
+    const res=fn?fn(args):`<span style="color:var(--accent2)">${cmd}: 未找到命令</span>`;
+    if(res!=null) out.innerHTML+=res.split('\n').map(l=>`<div class="term-line out">${l}</div>`).join('');
+    const tb=document.getElementById('term-body'); if(tb) tb.scrollTop=tb.scrollHeight;
+  }
+  if(e.key==='ArrowUp'){e.preventDefault();cmdIdx=Math.min(cmdIdx+1,cmdHistory.length-1);inp.value=cmdHistory[cmdIdx]||'';}
+  if(e.key==='ArrowDown'){e.preventDefault();cmdIdx=Math.max(cmdIdx-1,-1);inp.value=cmdIdx<0?'':cmdHistory[cmdIdx];}
+  if(e.key==='Tab'){e.preventDefault();
+    const partial=inp.value;
+    const match=Object.keys(termCmds).find(c=>c.startsWith(partial));
+    if(match) inp.value=match;
+  }
+}
+
+// ─── CALCULATOR ──────────────────────────────────────
+let calcExpr=''; let calcResult='0'; let calcNewNum=true; let calcMemory=0;
+
+function buildCalculator() {
+  const layout = [
+    [{l:'MC',c:'accent'},{l:'MR',c:'accent'},{l:'M+',c:'accent'},{l:'M-',c:'accent'}],
+    [{l:'C',c:'accent'},{l:'⌫',c:'accent'},{l:'%',c:'accent'},{l:'÷',c:'op'}],
+    [{l:'7'},{l:'8'},{l:'9'},{l:'×',c:'op'}],
+    [{l:'4'},{l:'5'},{l:'6'},{l:'-',c:'op'}],
+    [{l:'1'},{l:'2'},{l:'3'},{l:'+',c:'op'}],
+    [{l:'±'},{l:'0'},{l:'.'},{l:'=',c:'eq'}],
+  ];
+  const btns = layout.map(row=>row.map(b=>`<button class="calc-btn ${b.c||''}" onclick="calcPress('${b.l}')">${b.l}</button>`).join('')).join('');
+  return `<div class="calc-body"><div class="calc-display"><div class="calc-expr" id="calc-expr"></div><div class="calc-val" id="calc-val">0</div></div><div class="calc-btns">${btns}</div></div>`;
+}
+
+function calcPress(b) {
+  const v=document.getElementById('calc-val'); const e=document.getElementById('calc-expr');
+  if(!v||!e) return;
+  if(b==='C'){calcExpr='';calcResult='0';v.textContent='0';e.textContent='';calcNewNum=true;return;}
+  if(b==='⌫'){calcResult=calcResult.length>1?calcResult.slice(0,-1):'0';v.textContent=calcResult;return;}
+  if(b==='MC'){calcMemory=0;showNotif('计算器','内存已清除','🧮');return;}
+  if(b==='MR'){calcResult=String(calcMemory);v.textContent=calcResult;calcNewNum=true;return;}
+  if(b==='M+'){calcMemory+=parseFloat(calcResult)||0;showNotif('计算器','已存入内存: '+calcMemory,'🧮');return;}
+  if(b==='M-'){calcMemory-=parseFloat(calcResult)||0;showNotif('计算器','内存: '+calcMemory,'🧮');return;}
+  if(b==='='){
+    try{
+      const expr=calcExpr+calcResult;
+      e.textContent=expr+' =';
+      const r=Function('return '+expr.replace(/×/g,'*').replace(/÷/g,'/'))();
+      calcResult=String(parseFloat(r.toFixed(10)));
+      v.textContent=calcResult; calcExpr=''; calcNewNum=true;
+    }catch{v.textContent='错误';calcExpr='';calcResult='0';}
+    return;
+  }
+  if(['÷','×','-','+'].includes(b)){calcExpr+=calcResult+b;calcResult='0';calcNewNum=true;e.textContent=calcExpr;return;}
+  if(b==='%'){const r=parseFloat(calcResult)/100;calcResult=String(r);v.textContent=calcResult;return;}
+  if(b==='±'){calcResult=String(-parseFloat(calcResult));v.textContent=calcResult;return;}
+  if(b==='.'&&calcResult.includes('.'))return;
+  if(calcNewNum){calcResult=b==='.'?'0.':b;calcNewNum=false;}
+  else calcResult=calcResult==='0'&&b!=='.'?b:calcResult+b;
+  v.textContent=calcResult;
+}
+
+// ─── BROWSER ─────────────────────────────────────────
+function buildBrowser() {
+  const bookmarks=[{n:'百度',u:'https://www.baidu.com',i:'🔍'},{n:'GitHub',u:'https://github.com',i:'💻'},{n:'维基百科',u:'https://zh.wikipedia.org',i:'📖'}];
+  return `<div style="display:flex;flex-direction:column;height:100%">
+    <div class="br-toolbar">
+      <button title="后退">←</button><button title="前进">→</button><button title="刷新">↻</button>
+      <input class="br-url" id="br-url" value="https://example.com" onkeydown="if(event.key==='Enter')brGo()" placeholder="输入网址...">
+      <button onclick="brGo()">GO</button>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;background:rgba(0,0,0,0.2)">
+      <div style="font-size:48px">🌐</div>
+      <div style="font-size:16px;font-weight:500">AuraOS 浏览器</div>
+      <div style="font-size:12px;color:var(--text-dim)">由于浏览器安全限制，内嵌网页不可用</div>
+      <div style="display:flex;gap:12px">
+        ${bookmarks.map(b=>`<div onclick="document.getElementById('br-url').value='${b.u}'" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 16px;border-radius:10px;cursor:pointer;background:var(--surface);border:1px solid var(--border);transition:background 0.15s" onmouseover="this.style.background='var(--surface-hover)'" onmouseout="this.style.background='var(--surface)'"><span style="font-size:24px">${b.i}</span><span style="font-size:12px">${b.n}</span></div>`).join('')}
+      </div>
+      <button onclick="window.open(document.getElementById('br-url').value,'_blank')" style="padding:10px 24px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-family:inherit;font-size:13px;transition:background 0.15s" onmouseover="this.style.background='var(--surface-hover)'" onmouseout="this.style.background='var(--surface)'">在新标签中打开 ↗</button>
+    </div>
+  </div>`;
+}
+function brGo() { const u=document.getElementById('br-url')?.value; if(u) window.open(u,'_blank'); }
+
+// ─── MUSIC PLAYER ────────────────────────────────────
+const songs=[
+  {title:'星空之夜', artist:'AuraOS Music', dur:210, ico:'🌌', color:'#7c6aff,#ff6ab0'},
+  {title:'深蓝海洋', artist:'PixelSound', dur:185, ico:'🌊', color:'#6ab0ff,#6affcb'},
+  {title:'霓虹城市', artist:'SynthWave', dur:240, ico:'🌆', color:'#ff6ab0,#ffb06a'},
+  {title:'林间漫步', artist:'NatureSound', dur:195, ico:'🌲', color:'#6affcb,#6ab0ff'},
+  {title:'赛博朋克', artist:'NeonDrive', dur:220, ico:'🤖', color:'#ff6a6a,#6aff6a'},
+];
+let musicState={ idx:0, playing:false, progress:0, shuffle:false, repeat:false };
+
+function buildMusic() {
+  const s=songs[musicState.idx];
+  const min=Math.floor(s.dur/60), sec=String(s.dur%60).padStart(2,'0');
+  const elapsed=Math.floor(musicState.progress*s.dur);
+  const em=Math.floor(elapsed/60), es=String(elapsed%60).padStart(2,'0');
+  return `<div class="music-body">
+    <div class="album-art${musicState.playing?' playing':''}" id="album-art" style="background:linear-gradient(135deg,${s.color})">${s.ico}</div>
+    <div style="text-align:center">
+      <div class="music-title" id="music-title">${s.title}</div>
+      <div class="music-artist" id="music-artist">${s.artist}</div>
+    </div>
+    <div style="width:100%">
+      <div class="music-progress" onclick="musicSeek(event,this)">
+        <div class="music-prog-fill" id="music-prog" style="width:${musicState.progress*100}%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-top:4px">
+        <span>${em}:${es}</span><span>${min}:${sec}</span>
+      </div>
+    </div>
+    <div class="music-controls">
+      <button class="music-btn" onclick="musicShuffle()" style="color:${musicState.shuffle?'var(--accent)':'var(--text)'}">⇄</button>
+      <button class="music-btn" onclick="musicPrev()">⏮</button>
+      <button class="music-btn play" id="music-play-btn" onclick="musicToggle()">${musicState.playing?'⏸':'▶'}</button>
+      <button class="music-btn" onclick="musicNext()">⏭</button>
+      <button class="music-btn" onclick="musicRepeat()" style="color:${musicState.repeat?'var(--accent)':'var(--text)'}">↻</button>
+    </div>
+    <div style="width:100%">
+      ${songs.map((s,i)=>`<div onclick="musicGoto(${i})" class="music-track" style="background:${i===musicState.idx?'rgba(124,106,255,0.2)':'transparent'}">
+        <span style="font-size:20px">${s.ico}</span>
+        <span style="flex:1;font-size:13px">${s.title}</span>
+        <span style="font-size:10px;color:var(--text-dim)">${Math.floor(s.dur/60)}:${String(s.dur%60).padStart(2,'0')}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+function musicToggle() {
+  musicState.playing=!musicState.playing;
+  const btn=document.getElementById('music-play-btn');
+  const art=document.getElementById('album-art');
+  if(btn) btn.innerHTML=musicState.playing?'⏸':'▶';
+  if(art) { art.className='album-art'+(musicState.playing?' playing':''); }
+}
+function musicNext() { musicState.idx=musicState.shuffle?Math.floor(Math.random()*songs.length):(musicState.idx+1)%songs.length; musicState.progress=0; refreshMusic(); }
+function musicPrev() { musicState.idx=(musicState.idx-1+songs.length)%songs.length; musicState.progress=0; refreshMusic(); }
+function musicGoto(i) { musicState.idx=i; musicState.progress=0; refreshMusic(); }
+function musicShuffle() { musicState.shuffle=!musicState.shuffle; refreshMusic(); }
+function musicRepeat() { musicState.repeat=!musicState.repeat; refreshMusic(); }
+function refreshMusic() { const b=document.getElementById('body-music'); if(b) b.innerHTML=buildMusic(); }
+function musicSeek(e,el) { const r=el.getBoundingClientRect(); musicState.progress=Math.max(0,Math.min((e.clientX-r.left)/r.width,1)); const fill=document.getElementById('music-prog'); if(fill) fill.style.width=(musicState.progress*100)+'%'; }
+
+// ─── GALLERY ─────────────────────────────────────────
+const galleryItems=[
+  {ico:'🌌',label:'星空'},{ico:'🌊',label:'海洋'},{ico:'🏔️',label:'山峰'},
+  {ico:'🌸',label:'樱花'},{ico:'🌅',label:'日出'},{ico:'🦋',label:'蝴蝶'},
+  {ico:'🌿',label:'植物'},{ico:'🏙️',label:'城市'},{ico:'🌈',label:'彩虹'},
+  {ico:'🎆',label:'烟花'},{ico:'🌺',label:'鲜花'},{ico:'🐉',label:'神龙'},
+];
+function buildGallery() {
+  return `<div style="display:flex;flex-direction:column;height:100%">
+    <div style="padding:8px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-dim);background:rgba(255,255,255,0.02)">${galleryItems.length} 张图片</div>
+    <div class="gallery-body">${galleryItems.map(g=>`<div class="gallery-thumb" title="${g.label}" ondblclick="showNotif('图库','查看: ${g.label}','${g.ico}')">${g.ico}</div>`).join('')}</div>
+  </div>`;
+}
+
+// ─── CLOCK APP ───────────────────────────────────────
+function buildClock() {
+  const now=new Date();
+  return `<div class="clock-app">
+    <div class="big-clock" id="app-clock-time">--:--:--</div>
+    <div class="big-date" id="app-clock-date">${now.toLocaleDateString('zh-CN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+    <div style="display:flex;gap:12px;margin-top:8px">
+      <button onclick="showNotif('时钟','秒表功能即将推出','⏱️')" style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:12px;font-family:inherit">⏱️ 秒表</button>
+      <button onclick="showNotif('时钟','定时器功能即将推出','⏰')" style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:12px;font-family:inherit">⏰ 定时器</button>
+    </div>
+  </div>`;
+}
+
+// ─── WEATHER ─────────────────────────────────────────
+const weatherDays=[
+  {day:'今天',ico:'⛅',h:25,l:18},{day:'明天',ico:'🌤️',h:27,l:19},
+  {day:'后天',ico:'🌧️',h:20,l:15},{day:'周四',ico:'☀️',h:30,l:22},
+  {day:'周五',ico:'⛈️',h:18,l:13},
+];
+function buildWeather() {
+  return `<div class="weather-body">
+    <div class="weather-main">
+      <div style="font-size:64px">⛅</div>
+      <div>
+        <div class="weather-temp">22°C</div>
+        <div class="weather-city">未来科技城</div>
+        <div class="weather-desc">多云转晴，东南风 12km/h</div>
+      </div>
+    </div>
+    <div class="weather-cards" style="margin-bottom:16px">
+      <div class="weather-card"><div class="ico">💧</div><div class="val">65%</div><div class="lbl">湿度</div></div>
+      <div class="weather-card"><div class="ico">🌬️</div><div class="val">12 km/h</div><div class="lbl">风速</div></div>
+      <div class="weather-card"><div class="ico">👁️</div><div class="val">10 km</div><div class="lbl">能见度</div></div>
+      <div class="weather-card"><div class="ico">🌡️</div><div class="val">18°C</div><div class="lbl">体感温度</div></div>
+      <div class="weather-card"><div class="ico">☀️</div><div class="val">UV 3</div><div class="lbl">紫外线</div></div>
+      <div class="weather-card"><div class="ico">🌧️</div><div class="val">10%</div><div class="lbl">降水概率</div></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      ${weatherDays.map(d=>`<div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">${d.day}</div>
+        <div style="font-size:22px">${d.ico}</div>
+        <div style="font-size:12px;margin-top:4px">${d.h}°</div>
+        <div style="font-size:11px;color:var(--text-dim)">${d.l}°</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ─── SETTINGS ────────────────────────────────────────
+function buildSettings() {
+  const navItems=[['🖥️','显示'],['🔔','通知'],['🔒','安全'],['🌐','网络'],['🎨','外观'],['💾','存储'],['ℹ️','关于']];
+  return `<div class="set-body">
+    <div class="set-nav">
+      ${navItems.map((x,i)=>`<div class="set-nav-item${i===0?' active':''}" onclick="setNav(this,'set-p-${i}')">${x[0]} ${x[1]}</div>`).join('')}
+    </div>
+    <div class="set-content">
+      <div class="set-section active" id="set-p-0">
+        <div class="set-title">显示设置</div>
+        ${setRow('夜间模式','减少蓝光，保护眼睛',true)}
+        ${setRow('高对比度','提高文字可读性',false)}
+        ${setRow('动画效果','开启界面动画',true)}
+        ${setRow('高分辨率','启用 HiDPI 渲染',true)}
+        <div class="set-row"><div><div class="set-row-label">缩放比例</div><div class="set-row-desc">调整 UI 缩放</div></div>
+          <select style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 8px;font-size:12px;outline:none"><option>100%</option><option>125%</option><option>150%</option></select>
+        </div>
+      </div>
+      <div class="set-section" id="set-p-1">
+        <div class="set-title">通知设置</div>
+        ${setRow('系统通知','显示系统消息',true)}
+        ${setRow('应用通知','来自应用的通知',true)}
+        ${setRow('声音提醒','通知时播放声音',false)}
+        ${setRow('勿扰模式','暂时屏蔽所有通知',false)}
+      </div>
+      <div class="set-section" id="set-p-2">
+        <div class="set-title">安全设置</div>
+        ${setRow('自动锁屏','闲置5分钟后锁定',true)}
+        ${setRow('防火墙','启用内置防火墙',true)}
+        ${setRow('加密存储','加密本地文件',false)}
+        <div class="set-row"><div><div class="set-row-label">更改密码</div></div>
+          <button onclick="showNotif('安全','密码已更改','🔒')" style="padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:12px;font-family:inherit">更改</button>
+        </div>
+      </div>
+      <div class="set-section" id="set-p-3">
+        <div class="set-title">网络设置</div>
+        ${setRow('WiFi','已连接到 AuraNet · 信号优秀',true)}
+        ${setRow('蓝牙','蓝牙无线连接',false)}
+        ${setRow('VPN','虚拟私人网络',false)}
+        ${setRow('代理服务器','通过代理上网',false)}
+      </div>
+      <div class="set-section" id="set-p-4">
+        <div class="set-title">外观设置</div>
+        <div class="set-row"><div><div class="set-row-label">壁纸</div><div class="set-row-desc">选择桌面壁纸</div></div>
+          <button onclick="changeWallpaper()" style="padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:12px;font-family:inherit">切换壁纸</button>
+        </div>
+        ${setRow('毛玻璃效果','半透明磨砂背景',true)}
+        ${setRow('彩色强调色','多彩主题色',true)}
+        ${setRow('圆角效果','窗口和按钮圆角',true)}
+      </div>
+      <div class="set-section" id="set-p-5">
+        <div class="set-title">存储管理</div>
+        <div style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span>系统盘 (/)</span><span style="color:var(--text-dim)">23.4 GB / 64 GB</span></div>
+          <div style="background:rgba(255,255,255,0.1);border-radius:4px;height:8px;overflow:hidden"><div style="width:36%;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px"></div></div>
+        </div>
+        <div style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span>用户数据 (/home)</span><span style="color:var(--text-dim)">8.2 GB / 256 GB</span></div>
+          <div style="background:rgba(255,255,255,0.1);border-radius:4px;height:8px;overflow:hidden"><div style="width:3%;height:100%;background:linear-gradient(90deg,var(--accent3),var(--accent));border-radius:4px"></div></div>
+        </div>
+        ${setRow('自动清理缓存','定期清理临时文件',true)}
+      </div>
+      <div class="set-section" id="set-p-6">
+        <div class="set-title">关于 AuraOS</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;text-align:center">
+          <div style="font-size:36px;margin-bottom:8px">✦</div>
+          <div style="font-size:20px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">AuraOS</div>
+          <div style="font-size:13px;color:var(--text-dim);margin-top:4px">版本 1.0.0 · WebEngine Build</div>
+        </div>
+        <div style="color:var(--text-dim);font-size:13px;line-height:2.2">
+          <div>🖥️ 内核版本：WebEngine 2026.1</div>
+          <div>⚙️ 运行环境：HTML5 / CSS3 / JavaScript</div>
+          <div>🎨 设计语言：Aura Design System</div>
+          <div>📅 构建日期：2026</div>
+        </div>
+        <div style="margin-top:16px;padding:14px;background:rgba(124,106,255,0.1);border-radius:10px;border:1px solid rgba(124,106,255,0.2);font-size:12px;color:var(--text-dim)">
+          AuraOS 是一个基于 Web 技术的模拟操作系统，展示了现代浏览器强大的 UI 能力。
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function setRow(label,desc,on) {
+  return `<div class="set-row"><div><div class="set-row-label">${label}</div><div class="set-row-desc">${desc}</div></div><div class="toggle${on?' on':''}" onclick="this.classList.toggle('on')"></div></div>`;
+}
+function setNav(el,section) {
+  document.querySelectorAll('.set-nav-item').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.set-section').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  const s=document.getElementById(section); if(s) s.classList.add('active');
+}
+
+// keyboard shortcut: Super key toggles start menu
+document.addEventListener('keydown', e=>{
+  if(e.key==='Meta'||e.key==='Super') { e.preventDefault(); toggleStartMenu(); }
+  if(e.ctrlKey&&e.altKey&&e.key==='t') openApp('terminal');
+  if(e.ctrlKey&&e.altKey&&e.key==='f') openApp('filemanager');
+  if(e.key==='Escape') { closeStartMenu(); hideCtx(); }
+});
+</script>
+</body>
+</html>
