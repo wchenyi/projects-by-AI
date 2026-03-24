@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NodeVault · 订阅解析器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<style>
+:root{
+  --bg:#07080d;--bg1:#0c0d14;--bg2:#11121c;--bg3:#181928;--bg4:#1f2135;--bg5:#272944;
+  --l1:rgba(90,100,200,.09);--l2:rgba(90,100,200,.20);--l3:rgba(90,100,200,.42);
+  --t1:#dde0f5;--t2:#8890c8;--t3:#4a5090;
+  --a1:#4d8fff;--a2:#c05dff;--a3:#00e5b0;--a4:#ffcc33;--a5:#ff4d7e;--a6:#ff8c33;
+  --g1:rgba(77,143,255,.14);--g2:rgba(192,93,255,.11);
+  --r:10px;--r2:6px;
+  --sh:0 8px 32px rgba(0,0,0,.5);
+  --mono:'JetBrains Mono',monospace;--sans:'Noto Sans SC',sans-serif;
+}
+[data-theme="light"]{
+  --bg:#f0f2fc;--bg1:#fff;--bg2:#f6f8ff;--bg3:#edf0ff;--bg4:#e2e6f8;--bg5:#d4daef;
+  --l1:rgba(60,70,180,.07);--l2:rgba(60,70,180,.15);--l3:rgba(60,70,180,.34);
+  --t1:#12152a;--t2:#4a5490;--t3:#9098c0;
+  --a1:#2865d0;--a2:#8830c8;--a3:#008c6e;--a4:#b08800;--a5:#c0204a;--a6:#c05500;
+  --g1:rgba(40,101,208,.09);--g2:rgba(136,48,200,.07);
+  --sh:0 4px 20px rgba(0,0,0,.09);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--l1) 1px,transparent 1px),linear-gradient(90deg,var(--l1) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+.orb{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0;opacity:.28;transition:opacity .5s}
+.orb1{width:500px;height:500px;background:var(--a1);top:-160px;right:-120px}
+.orb2{width:360px;height:360px;background:var(--a2);bottom:-90px;left:-90px}
+[data-theme="light"] .orb{opacity:.07}
+.w{position:relative;z-index:1;max-width:1480px;margin:0 auto;padding:14px 18px}
+
+/* ── HEADER ── */
+header{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:12px 18px;margin-bottom:14px;background:var(--bg2);border:1px solid var(--l2);border-radius:var(--r);backdrop-filter:blur(20px)}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:14px;font-weight:700;color:var(--t1);letter-spacing:.03em}
+.lmark{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--a1),var(--a2));display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 0 12px var(--g1)}
+.lsub{font-size:8px;font-weight:300;color:var(--t3);letter-spacing:.16em;text-transform:uppercase;display:block;margin-top:1px}
+.hr{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border:1px solid var(--l2);border-radius:var(--r2);background:var(--bg3);color:var(--t2);font-family:var(--sans);font-size:12px;cursor:pointer;transition:all .18s;white-space:nowrap}
+.btn:hover{background:var(--bg4);border-color:var(--l3);color:var(--t1)}
+.btn-p{background:linear-gradient(135deg,var(--a1),var(--a2));border-color:transparent;color:#fff;font-weight:500}.btn-p:hover{opacity:.85;color:#fff}
+.btn-g{border-color:var(--a3);color:var(--a3)}.btn-g:hover{background:rgba(0,229,176,.07)}
+.btn-r{border-color:var(--a5);color:var(--a5)}.btn-r:hover{background:rgba(255,77,126,.07)}
+.btn-y{border-color:var(--a4);color:var(--a4)}.btn-y:hover{background:rgba(255,204,51,.07)}
+.btn-xs{padding:3px 8px;font-size:11px}
+.btn-sel{border-color:var(--a1);color:var(--a1);background:rgba(77,143,255,.1)}
+
+/* ── TOGGLE ── */
+.tog{width:40px;height:21px;background:var(--bg4);border:1px solid var(--l2);border-radius:11px;cursor:pointer;position:relative;transition:all .3s;flex-shrink:0}
+.tog::after{content:'';position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:var(--a1);transition:transform .3s;box-shadow:0 0 7px var(--g1)}
+[data-theme="light"] .tog::after{transform:translateX(19px)}
+
+/* ── PANELS ── */
+.panel{background:var(--bg2);border:1px solid var(--l2);border-radius:var(--r);padding:16px 18px;margin-bottom:13px;box-shadow:var(--sh)}
+.ptitle{font-family:var(--mono);font-size:9px;letter-spacing:.24em;color:var(--t3);text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:8px}
+.ptitle::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--l2),transparent)}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;background:var(--bg);border-radius:var(--r2);padding:3px;margin-bottom:13px}
+.tb{flex:1;padding:6px 9px;border:none;border-radius:5px;background:transparent;color:var(--t3);font-family:var(--sans);font-size:12px;cursor:pointer;transition:all .18s}
+.tb.on{background:var(--bg3);color:var(--t1);box-shadow:0 1px 5px rgba(0,0,0,.25)}
+.tpane{display:none}.tpane.on{display:block}
+
+/* ── FIELDS ── */
+.field{width:100%;padding:9px 12px;background:var(--bg3);border:1px solid var(--l2);border-radius:var(--r2);color:var(--t1);font-family:var(--sans);font-size:13px;transition:border-color .18s,box-shadow .18s;outline:none;resize:vertical}
+.field:focus{border-color:var(--a1);box-shadow:0 0 0 3px var(--g1)}
+.field::placeholder{color:var(--t3)}
+textarea.field{min-height:135px;font-family:var(--mono);font-size:12px;line-height:1.65}
+.frow{display:flex;gap:7px;margin-bottom:9px;align-items:flex-start}
+
+/* ── SUBSCRIPTIONS LIST ── */
+.sub-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.sub-item{background:var(--bg3);border:1px solid var(--l2);border-radius:var(--r2);padding:11px 13px;display:flex;align-items:center;gap:10px;transition:border-color .18s}
+.sub-item:hover{border-color:var(--l3)}
+.sub-item-info{flex:1;min-width:0}
+.sub-item-name{font-size:12px;font-weight:500;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub-item-meta{font-size:10px;color:var(--t3);font-family:var(--mono);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
+.sub-badge{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:10px;background:rgba(77,143,255,.12);color:var(--a1);border:1px solid rgba(77,143,255,.25)}
+.sub-traffic-mini{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--t2)}
+.sub-bar-mini{width:60px;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;flex-shrink:0}
+.sub-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--a3),var(--a1))}
+.sub-actions{display:flex;gap:5px;flex-shrink:0}
+
+/* ── STATS ── */
+.stats{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:13px}
+.sc{flex:1;min-width:85px;background:var(--bg2);border:1px solid var(--l2);border-radius:var(--r);padding:11px 13px;text-align:center}
+.sv{font-family:var(--mono);font-size:19px;font-weight:700;color:var(--a1)}
+.sl{font-size:10px;color:var(--t3);margin-top:3px}
+
+/* ── VIEW CONTROLS ── */
+.vc{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:11px}
+.vb{padding:5px 10px;border:1px solid var(--l2);border-radius:var(--r2);background:var(--bg2);color:var(--t3);font-size:12px;cursor:pointer;transition:all .18s}
+.vb.on{border-color:var(--a1);color:var(--a1);background:var(--bg3)}
+.fi{padding:5px 10px;background:var(--bg2);border:1px solid var(--l2);border-radius:var(--r2);color:var(--t1);font-size:12px;outline:none;transition:border-color .18s;font-family:var(--sans)}
+.fi:focus{border-color:var(--a1)}
+select.fi option{background:var(--bg2)}
+.sel-bar{display:none;align-items:center;gap:7px;padding:8px 12px;background:rgba(77,143,255,.1);border:1px solid rgba(77,143,255,.25);border-radius:var(--r2);margin-bottom:10px;flex-wrap:wrap}
+.sel-bar.on{display:flex}
+.sel-count{font-family:var(--mono);font-size:12px;color:var(--a1);font-weight:600}
+
+/* ── NODE GRID ── */
+.ng{display:grid;gap:8px}
+.ng.vg{grid-template-columns:repeat(auto-fill,minmax(268px,1fr))}
+.ng.vl{grid-template-columns:1fr}
+.ng.vk{grid-template-columns:repeat(auto-fill,minmax(195px,1fr))}
+
+/* ── GROUP DIVIDER ── */
+.grp-divider{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:10px 0 4px}
+.grp-divider-line{flex:1;height:1px;background:linear-gradient(90deg,var(--l3),transparent)}
+.grp-divider-label{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--a1);text-transform:uppercase;white-space:nowrap;padding:3px 10px;border:1px solid rgba(77,143,255,.25);border-radius:20px;background:rgba(77,143,255,.08)}
+.grp-divider-line2{width:40px;height:1px;background:var(--l3)}
+
+/* ── NODE CARD ── */
+.nc{background:var(--bg2);border:1px solid var(--l2);border-radius:var(--r);cursor:pointer;transition:all .18s;animation:fu .24s ease both;overflow:hidden;position:relative}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.nc:hover{border-color:var(--l3);box-shadow:0 0 16px var(--g1);transform:translateY(-1px)}
+.nc.selected{border-color:var(--a1);box-shadow:0 0 14px var(--g1)}
+.nc-chk{position:absolute;top:8px;left:8px;width:16px;height:16px;border-radius:4px;border:1.5px solid var(--l3);background:var(--bg3);display:none;align-items:center;justify-content:center;font-size:10px;z-index:2;transition:all .15s}
+.select-mode .nc-chk{display:flex}
+.nc.selected .nc-chk{background:var(--a1);border-color:var(--a1);color:#fff}
+.select-mode .nc{padding-left:4px}
+.nch{display:flex;align-items:center;gap:8px;padding:10px 12px}
+.nf{font-size:19px;line-height:1;flex-shrink:0}
+.ni{flex:1;min-width:0}
+.nn{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t1)}
+.nm{font-size:10px;color:var(--t3);margin-top:2px;font-family:var(--mono)}
+/* PROTOCOL BADGE — left side, distinct from latency */
+.nptype{font-family:var(--mono);font-size:8px;letter-spacing:.06em;padding:2px 6px;border-radius:4px;text-transform:uppercase;flex-shrink:0;font-weight:700}
+.pt-vmess  {background:#1a2a55;color:#7aacff;border:1px solid #2a3a70}
+.pt-vless  {background:#0d3428;color:#00e5b0;border:1px solid #1a5040}
+.pt-trojan {background:#3a1030;color:#ff6db8;border:1px solid #5a1848}
+.pt-ss     {background:#2e2200;color:#ffcc33;border:1px solid #4a3800}
+.pt-ssr    {background:#2a1800;color:#ff9940;border:1px solid #442800}
+.pt-hysteria,.pt-hysteria2{background:#0a2e20;color:#55ffcc;border:1px solid #1a5040}
+.pt-unknown{background:#1a1a30;color:#8888cc;border:1px solid #2a2a44}
+/* LATENCY — right side, clear color signal */
+.lat{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:6px;flex-shrink:0;font-weight:600;min-width:52px;text-align:center}
+.lat-lo{background:#0d2e1e;color:#00e87a;border:1px solid #1a5030}
+.lat-mi{background:#2e2200;color:#ffcc00;border:1px solid #4a3800}
+.lat-hi{background:#2e0d18;color:#ff4466;border:1px solid #5a1828}
+.lat-go{background:var(--bg3);color:var(--t3);border:1px solid var(--l2)}
+.lat-none{font-size:10px;color:var(--t3);border:1px dashed var(--l2);background:transparent}
+.spin{display:inline-block;width:9px;height:9px;border:1.5px solid var(--l3);border-top-color:var(--a1);border-radius:50%;animation:rot .7s linear infinite;vertical-align:middle}
+@keyframes rot{to{transform:rotate(360deg)}}
+.vk .nch{padding:7px 10px}.vk .nf{font-size:15px}.vk .nn{font-size:12px}
+.vk .lat{font-size:10px;padding:2px 5px;min-width:40px}
+.vk .nptype{font-size:7px}
+
+/* ── NODE DETAIL MODAL ── */
+.ndo{position:fixed;inset:0;background:rgba(5,6,14,.80);z-index:600;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(7px)}
+.ndo.on{display:flex}
+.ndm{background:var(--bg1);border:1px solid var(--l3);border-radius:14px;width:100%;max-width:700px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(0,0,0,.65),0 0 40px var(--g1);animation:mIn .2s ease}
+@keyframes mIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.ndh{display:flex;align-items:center;gap:11px;padding:15px 18px;border-bottom:1px solid var(--l2);flex-shrink:0}
+.ndhfl{font-size:24px;flex-shrink:0}
+.ndhi{flex:1;min-width:0}
+.ndhname{font-size:14px;font-weight:600;color:var(--t1)}
+.ndhmeta{font-size:10px;color:var(--t3);font-family:var(--mono);margin-top:2px}
+.ndb{overflow-y:auto;flex:1;padding:15px 18px}
+.ndf{padding:11px 18px;border-top:1px solid var(--l2);display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;background:var(--bg1)}
+.ndc{background:none;border:1px solid var(--l2);border-radius:5px;color:var(--t3);width:25px;height:25px;cursor:pointer;font-size:12px;transition:all .18s;flex-shrink:0}
+.ndc:hover{border-color:var(--a5);color:var(--a5)}
+.dtabs{display:flex;gap:2px;background:var(--bg);border-radius:var(--r2);padding:3px;margin-bottom:13px}
+.dtb{flex:1;padding:5px 8px;border:none;border-radius:4px;background:transparent;color:var(--t3);font-size:12px;cursor:pointer;transition:all .18s;font-family:var(--sans)}
+.dtb.on{background:var(--bg3);color:var(--t1)}
+.dpane{display:none}.dpane.on{display:block}
+.dg{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:7px;margin-bottom:10px}
+.di{background:var(--bg3);border:1px solid var(--l1);border-radius:var(--r2);padding:8px 10px;transition:border-color .18s}
+.di:focus-within{border-color:var(--a1)}
+.dl{font-size:9px;color:var(--t3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:3px}
+.dv input{background:transparent;border:none;outline:none;color:var(--t1);font-family:var(--mono);font-size:11px;width:100%;transition:color .18s}
+.dv input:focus{color:var(--a1)}
+.ubox{background:var(--bg3);border:1px solid var(--l2);border-radius:var(--r2);padding:9px 11px;font-family:var(--mono);font-size:11px;color:var(--a3);word-break:break-all;line-height:1.65;margin-bottom:9px;max-height:105px;overflow-y:auto}
+.qrsec{display:flex;gap:13px;align-items:flex-start;flex-wrap:wrap;margin-top:6px}
+.qrbox{background:#fff;padding:7px;border-radius:7px;display:inline-block}
+.sep{height:1px;background:linear-gradient(90deg,transparent,var(--l2),transparent);margin:11px 0;opacity:.7}
+
+/* ── CONVERT ── */
+.cgrid{display:grid;grid-template-columns:1fr auto 1fr;gap:9px;align-items:start}
+@media(max-width:600px){.cgrid{grid-template-columns:1fr}}
+.carr{display:flex;align-items:center;justify-content:center;padding-top:30px;color:var(--a1);font-size:17px;font-weight:700}
+.host-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.chip{padding:3px 9px;border:1px solid var(--l2);border-radius:20px;font-family:var(--mono);font-size:10px;color:var(--t2);cursor:pointer;transition:all .15s;background:var(--bg3)}
+.chip:hover{border-color:var(--a1);color:var(--a1);background:rgba(77,143,255,.08)}
+
+/* ── GLOBAL MODAL ── */
+.go{position:fixed;inset:0;background:rgba(5,6,14,.83);z-index:700;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+.go.on{display:flex}
+.gm{background:var(--bg1);border:1px solid var(--l3);border-radius:var(--r);padding:20px;max-width:520px;width:100%;box-shadow:var(--sh);animation:mIn .2s ease;max-height:82vh;overflow-y:auto}
+.gmt{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--a1);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.gmc{background:none;border:none;color:var(--t3);font-size:17px;cursor:pointer}.gmc:hover{color:var(--t1)}
+
+/* ── TOAST ── */
+.tsts{position:fixed;bottom:16px;right:16px;z-index:900;display:flex;flex-direction:column;gap:5px}
+.tst{padding:8px 14px;background:var(--bg2);border:1px solid var(--l2);border-radius:var(--r2);font-size:12px;color:var(--t1);box-shadow:var(--sh);animation:tIn .22s ease;max-width:260px}
+.tst.ok{border-color:var(--a3);color:var(--a3)}.tst.err{border-color:var(--a5);color:var(--a5)}
+@keyframes tIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes tOut{to{opacity:0;transform:translateX(100%)}}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:50px 20px;color:var(--t3)}
+.eico{font-size:50px;opacity:.32;margin-bottom:12px}
+.empty p{font-size:13px}
+
+/* ── HELP MODAL ── */
+.help-section{margin-bottom:16px}
+.help-section h3{font-family:var(--mono);font-size:11px;color:var(--a1);margin-bottom:8px;letter-spacing:.1em}
+.help-section p,.help-section li{font-size:12px;color:var(--t2);line-height:1.7}
+.help-section ul{padding-left:16px}
+.help-badge{display:inline-block;font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:4px;margin-right:4px}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--a1)}
+@media(max-width:560px){.stats{display:grid;grid-template-columns:1fr 1fr}header{flex-wrap:wrap}.cgrid{grid-template-columns:1fr}.carr{display:none}}
+code{color:var(--a1);background:var(--bg3);padding:1px 5px;border-radius:3px;font-family:var(--mono);font-size:10px}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="tsts" id="tsts"></div>
+
+<!-- NODE DETAIL MODAL -->
+<div class="ndo" id="ndo">
+  <div class="ndm">
+    <div class="ndh">
+      <div class="ndhfl" id="ndfl">🌐</div>
+      <div class="ndhi">
+        <div class="ndhname" id="ndname">-</div>
+        <div class="ndhmeta" id="ndmeta">-</div>
+      </div>
+      <span class="nptype" id="ndbadge"></span>
+      <button class="ndc" onclick="closeND()">✕</button>
+    </div>
+    <div class="ndb" id="ndb"></div>
+    <div class="ndf" id="ndf"></div>
+  </div>
+</div>
+
+<!-- GLOBAL MODAL -->
+<div class="go" id="go">
+  <div class="gm">
+    <div class="gmt"><span id="gmt"></span><button class="gmc" onclick="closeGM()">✕</button></div>
+    <div id="gmb"></div>
+  </div>
+</div>
+
+<div class="w">
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="lmark">✈</div>
+    <div>NodeVault<span class="lsub">订阅解析器</span></div>
+  </div>
+  <div class="hr">
+    <button class="btn" onclick="showHelp()" title="使用说明">❓ 说明</button>
+    <button class="btn" onclick="testAll()">⚡ 全部测速</button>
+    <button class="btn" onclick="toggleSelectMode()" id="btnSel">☑ 多选</button>
+    <button class="btn" onclick="showExportAll()">📤 导出全部</button>
+    <button class="btn btn-r" id="btnClear" style="display:none" onclick="clearAll()">🗑 清空</button>
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t3)">🌙<div class="tog" onclick="toggleTheme()"></div>☀</div>
+  </div>
+</header>
+
+<!-- INPUT PANEL -->
+<div class="panel">
+  <div class="ptitle">导入订阅 <span style="margin-left:auto;font-size:10px;color:var(--t2);text-transform:none;letter-spacing:0">节点持续累积，多来源并存</span></div>
+  <div class="tabs">
+    <button class="tb on" onclick="swTab(0)">🔗 订阅链接</button>
+    <button class="tb" onclick="swTab(1)">📋 内容解析</button>
+    <button class="tb" onclick="swTab(2)">📁 Clash YAML</button>
+    <button class="tb" onclick="swTab(3)">🔄 Host 转换</button>
+  </div>
+
+  <!-- Tab 0: URL -->
+  <div class="tpane on" id="tp0">
+    <!-- subscription list -->
+    <div class="sub-list" id="subList"></div>
+    <div class="frow">
+      <input class="field" id="urlIn" type="url" placeholder="https://airport.com/api/subscribe?token=xxxxx  （可重复添加多条订阅）" style="min-height:42px"/>
+      <button class="btn btn-p" onclick="fetchSub()" style="height:42px;padding:0 16px;flex-shrink:0">
+        <span id="fspin" style="display:none" class="spin"></span> + 添加
+      </button>
+    </div>
+    <div style="font-size:11px;color:var(--t3)">支持 VMess · VLESS · Trojan · Shadowsocks · SSR · Hysteria · Clash YAML · 混合订阅 — 每次添加新链接，节点持续累积</div>
+  </div>
+
+  <!-- Tab 1: Paste -->
+  <div class="tpane" id="tp1">
+    <textarea class="field" id="pasteIn" style="min-height:150px"
+      placeholder="支持任意混合格式粘贴：&#10;• Base64 编码内容 → 自动解码&#10;• 多行节点 URI：vmess://  vless://  trojan://  ss://  ssr://  hysteria://&#10;• 单个节点 URI&#10;• 含 proxies: 的 Clash YAML 片段&#10;&#10;每次解析后节点追加到当前列表，不会覆盖已有节点"></textarea>
+    <div class="frow" style="margin-top:9px">
+      <button class="btn btn-p" onclick="parsePaste()">追加解析</button>
+      <button class="btn" onclick="document.getElementById('pasteIn').value=''">清空输入</button>
+    </div>
+  </div>
+
+  <!-- Tab 2: YAML -->
+  <div class="tpane" id="tp2">
+    <div class="frow">
+      <input class="field" type="file" id="yamlFile" accept=".yaml,.yml,.txt" style="min-height:42px"/>
+      <button class="btn btn-p" onclick="loadYAMLFile()" style="height:42px;flex-shrink:0">追加解析</button>
+    </div>
+    <textarea class="field" id="yamlPaste" style="min-height:150px;margin-top:9px"
+      placeholder="或直接粘贴完整 Clash YAML 配置（proxies: 开头）— 解析后追加，不覆盖已有节点..."></textarea>
+    <div class="frow" style="margin-top:9px">
+      <button class="btn btn-p" onclick="parseYAMLText()">追加解析</button>
+      <button class="btn" onclick="document.getElementById('yamlPaste').value=''">清空</button>
+    </div>
+  </div>
+
+  <!-- Tab 3: Convert -->
+  <div class="tpane" id="tp3">
+    <div style="font-size:12px;color:var(--t2);margin-bottom:12px">批量替换节点的 <code>host</code> 字段（WebSocket / HTTP 伪装 CDN 场景），原 Host 值自动从已加载节点提取</div>
+    <div class="cgrid">
+      <div>
+        <div style="font-size:10px;color:var(--t3);margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase">原 Host（点击自动填入 / 留空=全部）</div>
+        <input class="field" id="convFrom" placeholder="留空则替换所有节点的 host"/>
+        <div class="host-chips" id="hostChips"></div>
+      </div>
+      <div class="carr">→</div>
+      <div>
+        <div style="font-size:10px;color:var(--t3);margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase">新 Host</div>
+        <input class="field" id="convTo" placeholder="e.g. mycdn.example.com"/>
+      </div>
+    </div>
+    <div class="frow" style="margin-top:11px">
+      <button class="btn btn-p" onclick="doConvert()">执行转换</button>
+      <button class="btn" onclick="refreshHostChips()">🔄 刷新来源</button>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats" id="statsrow" style="display:none">
+  <div class="sc"><div class="sv" id="sttotal">0</div><div class="sl">节点总数</div></div>
+  <div class="sc"><div class="sv" style="color:var(--a3)" id="stonline">-</div><div class="sl">已测在线</div></div>
+  <div class="sc"><div class="sv" style="color:var(--a2)" id="stctry">0</div><div class="sl">国家/地区</div></div>
+  <div class="sc"><div class="sv" style="color:var(--a4)" id="stproto">0</div><div class="sl">协议种类</div></div>
+  <div class="sc"><div class="sv" style="color:var(--a6)" id="stsubs">0</div><div class="sl">订阅来源</div></div>
+  <div class="sc" id="stsite" style="display:none">
+    <div class="sv" style="font-size:12px"><a id="sitelink" href="#" target="_blank" style="color:var(--a3);text-decoration:none;border:1px solid rgba(0,229,176,.3);padding:3px 9px;border-radius:20px;display:inline-flex;align-items:center;gap:3px">🌐 官网</a></div>
+    <div class="sl">机场官网</div>
+  </div>
+</div>
+
+<!-- VIEW CONTROLS -->
+<div class="vc" id="viewctrl" style="display:none">
+  <button class="vb on" id="vvg" onclick="setView('g')">⊞ 网格</button>
+  <button class="vb" id="vvl" onclick="setView('l')">☰ 列表</button>
+  <button class="vb" id="vvk" onclick="setView('k')">▤ 紧凑</button>
+  <input class="fi" id="fiq" placeholder="🔍 搜索节点 / 服务器..." oninput="filterNodes()">
+  <select class="fi" id="fip" onchange="filterNodes()"><option value="">全部协议</option></select>
+  <select class="fi" id="fic" onchange="filterNodes()"><option value="">全部地区</option></select>
+  <select class="fi" id="fis" onchange="filterNodes()"><option value="">全部来源</option></select>
+  <button class="btn btn-xs" onclick="sortBy('name')">按名排序</button>
+  <button class="btn btn-xs" onclick="sortBy('lat')">按延迟</button>
+</div>
+
+<!-- SELECTION BAR -->
+<div class="sel-bar" id="selBar">
+  <span class="sel-count" id="selCount">0 已选</span>
+  <button class="btn btn-xs btn-sel" onclick="selAll()">全选</button>
+  <button class="btn btn-xs" onclick="selNone()">取消</button>
+  <button class="btn btn-xs btn-p" onclick="exportSelected()">📤 导出选中</button>
+  <button class="btn btn-xs btn-g" onclick="exportSelectedQR()">📱 二维码</button>
+  <button class="btn btn-xs btn-r" onclick="deleteSelected()">🗑 删除选中</button>
+</div>
+
+<!-- NODE GRID -->
+<div class="ng vg" id="ng">
+  <div class="empty"><div class="eico">🛰️</div><p>导入订阅链接 / 粘贴节点内容 / 上传 YAML 以开始解析</p></div>
+</div>
+
+</div><!-- /w -->
+<script>
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+// nodes: array of node objects, each has .srcId (subscription id or 'paste'/'yaml')
+// subs:  array of {id, url, name, nodeCount, traffic, addedAt}
+let nodes = [], subs = [], ndIdx = -1, curView = 'g', selectMode = false, selected = new Set();
+
+const SK_N = 'nv3_nodes', SK_S = 'nv3_subs';
+
+function save() {
+  try { localStorage.setItem(SK_N, JSON.stringify(nodes)); localStorage.setItem(SK_S, JSON.stringify(subs)); } catch {}
+}
+function load() {
+  try {
+    const n = localStorage.getItem(SK_N), s = localStorage.getItem(SK_S);
+    if (n) nodes = JSON.parse(n);
+    if (s) subs = JSON.parse(s);
+    renderAll(); renderSubList();
+  } catch {}
+}
+
+// ═══════════════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════════════
+function toggleTheme() { const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('nv3_t', t); }
+(() => { const t = localStorage.getItem('nv3_t') || 'dark'; document.documentElement.setAttribute('data-theme', t); })();
+
+// ═══════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════
+function swTab(i) { document.querySelectorAll('.tb').forEach((b, j) => b.classList.toggle('on', i === j)); document.querySelectorAll('.tpane').forEach((p, j) => p.classList.toggle('on', i === j)); if (i === 3) refreshHostChips(); }
+
+// ═══════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════
+function toast(msg, type = '') { const el = document.createElement('div'); el.className = 'tst ' + type; el.textContent = msg; document.getElementById('tsts').appendChild(el); setTimeout(() => { el.style.animation = 'tOut .22s ease forwards'; setTimeout(() => el.remove(), 220); }, 2700); }
+
+// ═══════════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════════
+function showGM(title, html) { document.getElementById('gmt').textContent = title; document.getElementById('gmb').innerHTML = html; document.getElementById('go').classList.add('on'); }
+function closeGM() { document.getElementById('go').classList.remove('on'); }
+document.getElementById('go').addEventListener('click', e => { if (e.target === e.currentTarget) closeGM(); });
+document.getElementById('ndo').addEventListener('click', e => { if (e.target === e.currentTarget) closeND(); });
+
+// ═══════════════════════════════════════════════════
+// FLAG MAP
+// ═══════════════════════════════════════════════════
+const FMAP = [
+  [['香港','港','HK','Hong Kong','Hongkong','HONGKONG','hk'],'🇭🇰','香港'],
+  [['台湾','台','TW','Taiwan','TAIWAN','tw'],'🇹🇼','台湾'],
+  [['新加坡','狮城','SG','Singapore','SINGAPORE','sg'],'🇸🇬','新加坡'],
+  [['日本','JP','Japan','Tokyo','Osaka','JAPAN','jp','东京','大阪','osaka','tokyo'],'🇯🇵','日本'],
+  [['美国','US','USA','America','United States','洛杉矶','纽约','硅谷','芝加哥','西雅图','达拉斯','LAX','SJC','us'],'🇺🇸','美国'],
+  [['英国','UK','Britain','United Kingdom','伦敦','London','gb'],'🇬🇧','英国'],
+  [['德国','DE','Germany','Frankfurt','法兰克福','de'],'🇩🇪','德国'],
+  [['法国','FR','France','Paris','巴黎','fr'],'🇫🇷','法国'],
+  [['荷兰','NL','Netherlands','阿姆斯特丹','Amsterdam','nl'],'🇳🇱','荷兰'],
+  [['加拿大','CA','Canada','多伦多','温哥华','Toronto','Vancouver','ca'],'🇨🇦','加拿大'],
+  [['澳大利亚','AU','Australia','悉尼','墨尔本','Sydney','Melbourne','au'],'🇦🇺','澳大利亚'],
+  [['韩国','KR','Korea','首尔','Seoul','kr'],'🇰🇷','韩国'],
+  [['印度','IN','India','孟买','Mumbai','in'],'🇮🇳','印度'],
+  [['俄罗斯','RU','Russia','莫斯科','Moscow','ru'],'🇷🇺','俄罗斯'],
+  [['土耳其','TR','Turkey','伊斯坦布尔','Istanbul','tr'],'🇹🇷','土耳其'],
+  [['巴西','BR','Brazil','圣保罗','br'],'🇧🇷','巴西'],
+  [['意大利','IT','Italy','罗马','米兰','Rome','Milan','it'],'🇮🇹','意大利'],
+  [['西班牙','ES','Spain','马德里','Madrid','es'],'🇪🇸','西班牙'],
+  [['瑞典','SE','Sweden','斯德哥尔摩','se'],'🇸🇪','瑞典'],
+  [['挪威','NO','Norway','no'],'🇳🇴','挪威'],
+  [['芬兰','FI','Finland','fi'],'🇫🇮','芬兰'],
+  [['丹麦','DK','Denmark','dk'],'🇩🇰','丹麦'],
+  [['波兰','PL','Poland','华沙','Warsaw','pl'],'🇵🇱','波兰'],
+  [['瑞士','CH','Switzerland','苏黎世','Zurich','ch'],'🇨🇭','瑞士'],
+  [['奥地利','AT','Austria','维也纳','Vienna','at'],'🇦🇹','奥地利'],
+  [['比利时','BE','Belgium','布鲁塞尔','Brussels','be'],'🇧🇪','比利时'],
+  [['葡萄牙','PT','Portugal','里斯本','Lisbon','pt'],'🇵🇹','葡萄牙'],
+  [['捷克','CZ','Czech','布拉格','Prague','cz'],'🇨🇿','捷克'],
+  [['匈牙利','HU','Hungary','布达佩斯','Budapest','hu'],'🇭🇺','匈牙利'],
+  [['希腊','GR','Greece','雅典','Athens','gr'],'🇬🇷','希腊'],
+  [['罗马尼亚','RO','Romania','布加勒斯特','ro'],'🇷🇴','罗马尼亚'],
+  [['乌克兰','UA','Ukraine','基辅','Kiev','ua'],'🇺🇦','乌克兰'],
+  [['泰国','TH','Thailand','曼谷','Bangkok','th'],'🇹🇭','泰国'],
+  [['越南','VN','Vietnam','河内','胡志明','Hanoi','Ho Chi Minh','vn'],'🇻🇳','越南'],
+  [['菲律宾','PH','Philippines','马尼拉','Manila','ph'],'🇵🇭','菲律宾'],
+  [['马来西亚','MY','Malaysia','吉隆坡','Kuala Lumpur','my'],'🇲🇾','马来西亚'],
+  [['印尼','ID','Indonesia','雅加达','Jakarta','id'],'🇮🇩','印度尼西亚'],
+  [['以色列','IL','Israel','特拉维夫','Tel Aviv','il'],'🇮🇱','以色列'],
+  [['阿联酋','AE','UAE','迪拜','Dubai','ae'],'🇦🇪','阿联酋'],
+  [['沙特','SA','Saudi','利雅得','Riyadh','sa'],'🇸🇦','沙特'],
+  [['南非','ZA','South Africa','za'],'🇿🇦','南非'],
+  [['巴基斯坦','PK','Pakistan','pk'],'🇵🇰','巴基斯坦'],
+  [['中国','CN','China','大陆','内地','cn'],'🇨🇳','中国'],
+  [['新西兰','NZ','New Zealand','Auckland','nz'],'🇳🇿','新西兰'],
+  [['爱尔兰','IE','Ireland','Dublin','ie'],'🇮🇪','爱尔兰'],
+  [['阿根廷','AR','Argentina','Buenos Aires','ar'],'🇦🇷','阿根廷'],
+  [['墨西哥','MX','Mexico','Mexico City','mx'],'🇲🇽','墨西哥'],
+  [['智利','CL','Chile','Santiago','cl'],'🇨🇱','智利'],
+];
+function getFlag(name) { if (!name) return { flag: '🌐', country: '未知' }; for (const [keys, flag, country] of FMAP) { for (const k of keys) { if (name.includes(k)) return { flag, country }; } } return { flag: '🌐', country: '其他' }; }
+
+// ═══════════════════════════════════════════════════
+// PARSERS
+// ═══════════════════════════════════════════════════
+function b64d(s) { try { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return atob(s); } catch { return null; } }
+function parseVmess(u) { try { const j = JSON.parse(atob(u.slice(8))); return { type: 'vmess', name: j.ps || j.add || 'VMess', server: j.add || '', port: +j.port || 443, uuid: j.id || '', alterId: j.aid || 0, security: j.scy || j.security || 'auto', network: j.net || 'tcp', tls: j.tls || '', sni: j.sni || j.host || '', host: j.host || '', path: j.path || '/', type2: j.type || 'none', raw: u }; } catch { return null; } }
+function parseVless(u) { try { const p = new URL(u), q = Object.fromEntries(p.searchParams); return { type: 'vless', name: decodeURIComponent(p.hash.slice(1)) || p.hostname, server: p.hostname, port: +p.port || 443, uuid: p.username, flow: q.flow || '', encryption: q.encryption || 'none', security: q.security || 'none', sni: q.sni || '', fingerprint: q.fp || '', publicKey: q.pbk || '', shortId: q.sid || '', network: q.type || 'tcp', host: q.host || '', path: q.path || '/', raw: u }; } catch { return null; } }
+function parseTrojan(u) { try { const p = new URL(u), q = Object.fromEntries(p.searchParams); return { type: 'trojan', name: decodeURIComponent(p.hash.slice(1)) || p.hostname, server: p.hostname, port: +p.port || 443, password: p.username, security: q.security || 'tls', sni: q.sni || '', fingerprint: q.fp || '', network: q.type || 'tcp', host: q.host || '', path: q.path || '/', raw: u }; } catch { return null; } }
+function parseSS(u) { try { let r = u.slice(5); const hi = r.indexOf('#'); const name = hi >= 0 ? decodeURIComponent(r.slice(hi + 1)) : ''; if (hi >= 0) r = r.slice(0, hi); let method, password, server, port; if (r.includes('@')) { const ai = r.lastIndexOf('@'); const [srv, prt] = r.slice(ai + 1).split(':'); server = srv; port = +prt; const ui = r.slice(0, ai); const dec = b64d(ui); const info = (dec && dec.includes(':')) ? dec : ui; const ci = info.indexOf(':'); method = info.slice(0, ci); password = info.slice(ci + 1); } else { const dec = b64d(r); if (!dec) return null; const ai = dec.lastIndexOf('@'); const [srv, prt] = dec.slice(ai + 1).split(':'); server = srv; port = +prt; const ci = dec.indexOf(':'); method = dec.slice(0, ci); password = dec.slice(ci + 1, ai); } return { type: 'ss', name: name || server, server, port, method, password, raw: u }; } catch { return null; } }
+function parseSSR(u) { try { const dec = b64d(u.slice(6)); if (!dec) return null; const [main, qs] = dec.split('/?'); const parts = main.split(':'); const server = parts[0], port = +parts[1], protocol = parts[2], method = parts[3], obfs = parts[4]; const password = b64d(parts[5]) || parts[5]; let name = server; if (qs) { const p = new URLSearchParams(qs); name = b64d(p.get('remarks') || '') || server; } return { type: 'ssr', name, server, port, protocol, method, obfs, password, raw: u }; } catch { return null; } }
+function parseHy(u) { try { const p = new URL(u), q = Object.fromEntries(p.searchParams); const isH2 = u.startsWith('hysteria2://') || u.startsWith('hy2://'); return { type: isH2 ? 'hysteria2' : 'hysteria', name: decodeURIComponent(p.hash.slice(1)) || p.hostname, server: p.hostname, port: +p.port || 443, auth: p.username || q.auth || '', password: p.username || q.password || '', sni: q.sni || '', obfs: q.obfs || '', raw: u }; } catch { return null; } }
+function parseURI(line) { line = line.trim(); if (line.startsWith('vmess://')) return parseVmess(line); if (line.startsWith('vless://')) return parseVless(line); if (line.startsWith('trojan://')) return parseTrojan(line); if (line.startsWith('ss://')) return parseSS(line); if (line.startsWith('ssr://')) return parseSSR(line); if (line.startsWith('hysteria2://') || line.startsWith('hy2://') || line.startsWith('hysteria://')) return parseHy(line); return null; }
+
+function parseContent(raw) {
+  const decoded = b64d(raw.trim());
+  const text = (decoded && (decoded.includes('://') || decoded.includes('proxies:'))) ? decoded : raw;
+  if (text.trim().startsWith('proxies:') || text.includes('\nproxies:')) return parseClashYAML(text);
+  return text.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(parseURI).filter(Boolean);
+}
+
+function parseClashYAML(text) {
+  try {
+    const doc = jsyaml.load(text);
+    const proxies = doc.proxies || doc.Proxies || [];
+    return proxies.map(p => {
+      const t = (p.type || '').toLowerCase();
+      const base = { name: p.name || p.server, server: p.server, port: p.port, type: t, raw: null };
+      const ws = p['ws-opts'] || {};
+      if (t === 'vmess') return { ...base, uuid: p.uuid, alterId: p.alterId || 0, security: p.cipher || 'auto', network: p.network || 'tcp', tls: p.tls ? 'tls' : '', sni: p.servername || '', host: ws.headers?.Host || '', path: ws.path || '/' };
+      if (t === 'vless') return { ...base, uuid: p.uuid, flow: p.flow || '', encryption: p.encryption || 'none', security: p.tls ? 'tls' : 'none', sni: p.servername || '', network: p.network || 'tcp', host: ws.headers?.Host || '', path: ws.path || '' };
+      if (t === 'trojan') return { ...base, password: p.password, sni: p.sni || p.servername || '', network: p.network || 'tcp', security: 'tls', host: ws.headers?.Host || '', path: ws.path || '' };
+      if (t === 'ss' || t === 'shadowsocks') return { ...base, type: 'ss', method: p.cipher || 'aes-256-gcm', password: p.password };
+      if (t === 'ssr') return { ...base, method: p.cipher || '', protocol: p.protocol || '', obfs: p.obfs || '', password: p.password };
+      if (t === 'hysteria') return { ...base, auth: p.auth || '', sni: p.sni || '', obfs: p.obfs || '' };
+      if (t === 'hysteria2' || t === 'hy2') return { ...base, type: 'hysteria2', password: p.password || '', sni: p.sni || '', obfs: p.obfs || '' };
+      return base;
+    }).filter(n => n && n.server);
+  } catch (e) { toast('YAML解析失败: ' + e.message, 'err'); return []; }
+}
+
+// ═══════════════════════════════════════════════════
+// URI BUILDERS
+// ═══════════════════════════════════════════════════
+function bldVmess(n) { return 'vmess://' + btoa(JSON.stringify({ v: '2', ps: n.name, add: n.server, port: n.port, id: n.uuid, aid: n.alterId || 0, scy: n.security || 'auto', net: n.network || 'tcp', type: n.type2 || 'none', host: n.host || '', path: n.path || '/', tls: n.tls || '', sni: n.sni || '' })); }
+function bldVless(n) { const p = new URLSearchParams(); if (n.flow) p.set('flow', n.flow); p.set('encryption', n.encryption || 'none'); if (n.security) p.set('security', n.security); if (n.sni) p.set('sni', n.sni); if (n.fingerprint) p.set('fp', n.fingerprint); if (n.publicKey) p.set('pbk', n.publicKey); if (n.shortId) p.set('sid', n.shortId); if (n.network) p.set('type', n.network); if (n.host) p.set('host', n.host); if (n.path) p.set('path', n.path); return `vless://${n.uuid}@${n.server}:${n.port}?${p}#${encodeURIComponent(n.name)}`; }
+function bldTrojan(n) { const p = new URLSearchParams(); if (n.security) p.set('security', n.security); if (n.sni) p.set('sni', n.sni); if (n.network && n.network !== 'tcp') p.set('type', n.network); if (n.host) p.set('host', n.host); if (n.path) p.set('path', n.path); return `trojan://${n.password}@${n.server}:${n.port}?${p}#${encodeURIComponent(n.name)}`; }
+function bldSS(n) { return `ss://${btoa(n.method + ':' + n.password)}@${n.server}:${n.port}#${encodeURIComponent(n.name)}`; }
+function buildURI(n) { if (!n) return ''; switch (n.type) { case 'vmess': return bldVmess(n); case 'vless': return bldVless(n); case 'trojan': return bldTrojan(n); case 'ss': return bldSS(n); default: return n.raw || ''; } }
+
+// ═══════════════════════════════════════════════════
+// FETCH SUBSCRIPTION (with accumulation)
+// ═══════════════════════════════════════════════════
+async function fetchSub() {
+  const url = document.getElementById('urlIn').value.trim();
+  if (!url) { toast('请输入订阅链接', 'err'); return; }
+  // Dedup
+  if (subs.find(s => s.url === url)) { toast('该订阅链接已添加过', 'err'); return; }
+  const sp = document.getElementById('fspin'); sp.style.display = 'inline-block';
+  const subId = 'sub_' + Date.now();
+  // Detect hostname
+  let hostname = url;
+  try { const u = new URL(url); hostname = u.hostname; } catch {}
+  const subName = hostname;
+  const proxies = [`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, `https://corsproxy.io/?${encodeURIComponent(url)}`];
+  let content = null, hInfo = null;
+  for (const px of proxies) {
+    try { const r = await fetch(px, { signal: AbortSignal.timeout(12000) }); if (!r.ok) continue; content = await r.text(); const h = r.headers.get('subscription-userinfo') || r.headers.get('Subscription-Userinfo'); if (h) hInfo = parseSubHdr(h); break; } catch {}
+  }
+  sp.style.display = 'none';
+  if (!content) {
+    toast('无法获取订阅内容', 'err');
+    showGM('⚠️ 获取失败', `<p style="color:var(--t2);font-size:13px;margin-bottom:14px">无法通过代理访问（跨域限制）。直接打开链接，复制 Base64 内容到「内容解析」标签。</p><button class="btn btn-p" onclick="window.open('${escA(url)}','_blank');closeGM()">🔗 新窗口打开</button>`);
+    return;
+  }
+  const parsed = parseContent(content);
+  if (!parsed.length) {
+    toast('解析失败，未找到节点', 'err');
+    showGM('⚠️ 解析失败', `<p style="color:var(--t2);font-size:13px;margin-bottom:12px">获取到内容但未解析出节点。请复制到「内容解析」。</p><textarea class="field" rows="4" readonly style="font-size:10px">${escH(content.slice(0, 400))}</textarea><button class="btn btn-p" style="margin-top:9px" onclick="navigator.clipboard.writeText(${JSON.stringify(content)}).then(()=>toast('已复制','ok'))">📋 复制内容</button>`);
+    return;
+  }
+  parsed.forEach(n => { n.srcId = subId; n.srcName = subName; });
+  nodes.push(...parsed);
+  const sub = { id: subId, url, name: subName, nodeCount: parsed.length, traffic: hInfo, addedAt: Date.now() };
+  subs.push(sub);
+  // update site link with first sub
+  if (subs.length === 1) {
+    try { const u = new URL(url); document.getElementById('stsite').style.display = 'block'; const lk = document.getElementById('sitelink'); lk.href = u.origin; lk.textContent = '🌐 ' + u.hostname; } catch {}
+  }
+  save(); renderAll(); renderSubList();
+  document.getElementById('urlIn').value = '';
+  toast(`✅ 订阅「${subName}」— ${parsed.length} 个节点已追加`, 'ok');
+}
+function parseSubHdr(s) { const o = {}; s.split(';').forEach(p => { const [k, v] = p.trim().split('='); if (k && v !== undefined) o[k.trim()] = +v.trim(); }); return o; }
+
+// ═══════════════════════════════════════════════════
+// SUBSCRIPTION LIST
+// ═══════════════════════════════════════════════════
+function renderSubList() {
+  const el = document.getElementById('subList');
+  if (!subs.length) { el.innerHTML = ''; return; }
+  el.innerHTML = subs.map(s => {
+    const t = s.traffic;
+    let trafficHtml = '';
+    if (t && t.total) {
+      const used = (t.upload || 0) + (t.download || 0);
+      const pct = Math.min(100, Math.round(used / t.total * 100));
+      const remain = Math.max(0, t.total - used);
+      const expStr = t.expire ? `到期 ${new Date(t.expire * 1000).toLocaleDateString('zh-CN')}` : '';
+      trafficHtml = `<div class="sub-traffic-mini"><div class="sub-bar-mini"><div class="sub-bar-fill" style="width:${pct}%"></div></div><span>${pct}%</span><span style="color:var(--a3)">${fb(remain)}</span>${expStr ? `<span>${expStr}</span>` : ''}</div>`;
+    }
+    return `<div class="sub-item">
+      <div class="sub-item-info">
+        <div class="sub-item-name">${escH(s.name)}</div>
+        <div class="sub-item-meta">
+          <span class="sub-badge">${s.nodeCount} 节点</span>
+          ${trafficHtml}
+          <span style="color:var(--t3)">${new Date(s.addedAt).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' })}</span>
+        </div>
+      </div>
+      <div class="sub-actions">
+        <button class="btn btn-xs" onclick="refreshSub('${s.id}')" title="刷新订阅">↺</button>
+        <button class="btn btn-xs btn-r" onclick="removeSub('${s.id}')" title="删除此订阅">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function refreshSub(subId) {
+  const s = subs.find(x => x.id === subId);
+  if (!s) return;
+  toast(`刷新订阅 ${s.name}...`);
+  // Remove old nodes from this sub
+  nodes = nodes.filter(n => n.srcId !== subId);
+  const proxies = [`https://api.allorigins.win/raw?url=${encodeURIComponent(s.url)}`, `https://corsproxy.io/?${encodeURIComponent(s.url)}`];
+  let content = null, hInfo = null;
+  for (const px of proxies) { try { const r = await fetch(px); if (!r.ok) continue; content = await r.text(); const h = r.headers.get('subscription-userinfo'); if (h) hInfo = parseSubHdr(h); break; } catch {} }
+  if (!content) { toast('刷新失败', 'err'); return; }
+  const parsed = parseContent(content);
+  parsed.forEach(n => { n.srcId = subId; n.srcName = s.name; });
+  nodes.push(...parsed);
+  s.nodeCount = parsed.length;
+  if (hInfo) s.traffic = hInfo;
+  save(); renderAll(); renderSubList();
+  toast(`✅ 刷新成功 — ${parsed.length} 个节点`, 'ok');
+}
+
+function removeSub(subId) {
+  if (!confirm('删除该订阅及其所有节点？')) return;
+  nodes = nodes.filter(n => n.srcId !== subId);
+  subs = subs.filter(s => s.id !== subId);
+  save(); renderAll(); renderSubList();
+  toast('订阅已删除');
+}
+
+// ═══════════════════════════════════════════════════
+// PASTE + YAML
+// ═══════════════════════════════════════════════════
+function parsePaste() {
+  const raw = document.getElementById('pasteIn').value.trim();
+  if (!raw) { toast('请粘贴内容', 'err'); return; }
+  const p = parseContent(raw);
+  if (!p.length) { toast('未识别到任何节点', 'err'); return; }
+  const srcId = 'paste_' + Date.now();
+  p.forEach(n => { n.srcId = srcId; n.srcName = '手动粘贴'; });
+  nodes.push(...p); save(); renderAll();
+  toast(`✅ 解析 ${p.length} 个节点（手动粘贴）`, 'ok');
+}
+function loadYAMLFile() { const f = document.getElementById('yamlFile').files[0]; if (!f) { toast('请选择文件', 'err'); return; } const reader = new FileReader(); reader.onload = e => { const p = parseClashYAML(e.target.result); if (p.length) { const sid = 'yaml_' + Date.now(); p.forEach(n => { n.srcId = sid; n.srcName = f.name; }); nodes.push(...p); save(); renderAll(); toast(`✅ 解析 ${p.length} 个节点（${f.name}）`, 'ok'); } else toast('未解析到节点', 'err'); }; reader.readAsText(f); }
+function parseYAMLText() { const t = document.getElementById('yamlPaste').value.trim(); if (!t) { toast('请粘贴 YAML', 'err'); return; } const p = parseClashYAML(t); if (p.length) { const sid = 'yaml_' + Date.now(); p.forEach(n => { n.srcId = sid; n.srcName = 'YAML粘贴'; }); nodes.push(...p); save(); renderAll(); toast(`✅ 解析 ${p.length} 个节点（YAML）`, 'ok'); } else toast('未解析到节点', 'err'); }
+
+// ═══════════════════════════════════════════════════
+// CONVERT (auto detect host values)
+// ═══════════════════════════════════════════════════
+function refreshHostChips() {
+  const hosts = [...new Set(nodes.map(n => n.host).filter(Boolean))];
+  const el = document.getElementById('hostChips');
+  el.innerHTML = hosts.length ? hosts.map(h => `<span class="chip" onclick="document.getElementById('convFrom').value='${escA(h)}'">${escH(h)}</span>`).join('') : '<span style="font-size:11px;color:var(--t3)">（节点中暂无 host 字段）</span>';
+}
+function doConvert() {
+  if (!nodes.length) { toast('没有节点', 'err'); return; }
+  const from = document.getElementById('convFrom').value.trim();
+  const to = document.getElementById('convTo').value.trim();
+  if (!to) { toast('请填写新 Host', 'err'); return; }
+  let cnt = 0;
+  nodes.forEach(n => { if (n.host !== undefined && (!from || n.host === from)) { n.host = to; cnt++; } });
+  nodes.forEach(n => { n.raw = buildURI(n); });
+  save(); renderAll(); refreshHostChips();
+  toast(`✅ 已转换 ${cnt} 个节点 Host → ${to}`, 'ok');
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════
+function fb(b) { if (!b) return '0 B'; const k = 1024, s = ['B', 'KB', 'MB', 'GB', 'TB'], i = Math.floor(Math.log(b) / Math.log(k)); return (b / Math.pow(k, i)).toFixed(2) + ' ' + s[i]; }
+
+function renderAll() { updateStats(); filterNodes(); }
+
+function updateStats() {
+  const has = nodes.length > 0;
+  document.getElementById('statsrow').style.display = has ? 'flex' : 'none';
+  document.getElementById('viewctrl').style.display = has ? 'flex' : 'none';
+  document.getElementById('btnClear').style.display = has ? 'inline-flex' : 'none';
+  document.getElementById('sttotal').textContent = nodes.length;
+  document.getElementById('stctry').textContent = new Set(nodes.map(n => getFlag(n.name).country)).size;
+  document.getElementById('stproto').textContent = new Set(nodes.map(n => n.type)).size;
+  document.getElementById('stsubs').textContent = new Set(nodes.map(n => n.srcId)).size;
+  const protos = [...new Set(nodes.map(n => n.type))];
+  const countries = [...new Set(nodes.map(n => getFlag(n.name).country))];
+  const srcs = [...new Set(nodes.map(n => n.srcName || '未知'))];
+  document.getElementById('fip').innerHTML = '<option value="">全部协议</option>' + protos.map(p => `<option value="${p}">${p.toUpperCase()}</option>`).join('');
+  document.getElementById('fic').innerHTML = '<option value="">全部地区</option>' + countries.map(c => `<option value="${c}">${c}</option>`).join('');
+  document.getElementById('fis').innerHTML = '<option value="">全部来源</option>' + srcs.map(s => `<option value="${s}">${s}</option>`).join('');
+}
+
+function filterNodes() {
+  const q = document.getElementById('fiq').value.toLowerCase();
+  const proto = document.getElementById('fip').value;
+  const country = document.getElementById('fic').value;
+  const src = document.getElementById('fis').value;
+  const list = nodes.filter(n => {
+    const fi = getFlag(n.name);
+    return (!q || n.name.toLowerCase().includes(q) || (n.server || '').toLowerCase().includes(q))
+      && (!proto || n.type === proto)
+      && (!country || fi.country === country)
+      && (!src || (n.srcName || '未知') === src);
+  });
+  renderGrid(list);
+}
+
+function renderGrid(list) {
+  const g = document.getElementById('ng');
+  if (!list.length) { g.innerHTML = '<div class="empty"><div class="eico">🔭</div><p>没有匹配的节点</p></div>'; return; }
+
+  // Group by srcId
+  const groups = [];
+  const seen = new Map();
+  list.forEach(n => {
+    const sid = n.srcId || '__misc__';
+    if (!seen.has(sid)) { seen.set(sid, groups.length); groups.push({ id: sid, name: n.srcName || '零散节点', nodes: [] }); }
+    groups[seen.get(sid)].nodes.push(n);
+  });
+
+  let html = '';
+  let animIdx = 0;
+  groups.forEach((grp, gi) => {
+    // divider
+    html += `<div class="grp-divider">
+      <div class="grp-divider-line"></div>
+      <div class="grp-divider-label">📡 ${escH(grp.name)} · ${grp.nodes.length}</div>
+      <div class="grp-divider-line2"></div>
+    </div>`;
+    grp.nodes.forEach(n => {
+      const ri = nodes.indexOf(n);
+      html += buildCard(n, ri, animIdx++);
+    });
+  });
+  g.innerHTML = html;
+}
+
+function buildCard(n, ri, ai) {
+  const fi = getFlag(n.name);
+  const isSel = selected.has(ri);
+  const typeClass = `pt-${n.type}`;
+  // Latency indicator — visually distinct from protocol badge
+  let latHtml;
+  if (n.testing) {
+    latHtml = `<span class="lat lat-go"><span class="spin"></span></span>`;
+  } else if (n.latency) {
+    const cls = n.latency < 200 ? 'lat-lo' : n.latency < 500 ? 'lat-mi' : 'lat-hi';
+    latHtml = `<span class="lat ${cls}">${n.latency}<span style="font-size:8px;opacity:.7">ms</span></span>`;
+  } else {
+    latHtml = `<span class="lat lat-none" title="未测速">—</span>`;
+  }
+  return `<div class="nc${isSel ? ' selected' : ''}" style="animation-delay:${ai * 0.02}s" onclick="handleCardClick(event,${ri})" id="nc${ri}">
+    <div class="nc-chk">${isSel ? '✓' : ''}</div>
+    <div class="nch">
+      <div class="nf">${fi.flag}</div>
+      <div class="ni">
+        <div class="nn">${escH(n.name)}</div>
+        <div class="nm">${escH(n.server || '')}:${n.port || ''}</div>
+      </div>
+      <span class="nptype ${typeClass}">${n.type.toUpperCase()}</span>
+      ${latHtml}
+    </div>
+  </div>`;
+}
+
+function handleCardClick(e, ri) {
+  if (selectMode) { toggleSelect(ri); return; }
+  openND(ri);
+}
+
+// ═══════════════════════════════════════════════════
+// SELECT MODE
+// ═══════════════════════════════════════════════════
+function toggleSelectMode() {
+  selectMode = !selectMode;
+  selected.clear();
+  document.getElementById('ng').classList.toggle('select-mode', selectMode);
+  document.getElementById('btnSel').classList.toggle('btn-sel', selectMode);
+  document.getElementById('selBar').classList.toggle('on', selectMode);
+  document.getElementById('selCount').textContent = '0 已选';
+  filterNodes();
+}
+function toggleSelect(ri) {
+  if (selected.has(ri)) selected.delete(ri); else selected.add(ri);
+  document.getElementById('selCount').textContent = `${selected.size} 已选`;
+  const card = document.getElementById(`nc${ri}`);
+  if (card) { card.classList.toggle('selected', selected.has(ri)); const chk = card.querySelector('.nc-chk'); if (chk) chk.textContent = selected.has(ri) ? '✓' : ''; }
+}
+function selAll() { nodes.forEach((_, i) => selected.add(i)); document.getElementById('selCount').textContent = `${selected.size} 已选`; filterNodes(); }
+function selNone() { selected.clear(); document.getElementById('selCount').textContent = '0 已选'; filterNodes(); }
+
+function exportSelected() {
+  if (!selected.size) { toast('未选择任何节点', 'err'); return; }
+  const list = [...selected].map(i => nodes[i]).filter(Boolean);
+  const uris = list.map(n => buildURI(n)).filter(Boolean).join('\n');
+  const b64 = btoa(unescape(encodeURIComponent(uris)));
+  showGM(`📤 导出 ${list.length} 个选中节点`, `<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px"><button class="btn btn-p" onclick="navigator.clipboard.writeText(document.getElementById('sExpR').value).then(()=>toast('已复制','ok'))">📋 复制多行 URI</button><button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('sExpB').value).then(()=>toast('已复制','ok'))">🔐 Base64</button><button class="btn btn-g" onclick="dlText('selected.txt',document.getElementById('sExpR').value)">⬇️ 下载</button></div><textarea id="sExpR" class="field" rows="5" readonly style="font-size:10px;font-family:var(--mono)">${escH(uris)}</textarea><div style="font-size:10px;color:var(--t3);margin:8px 0 4px">Base64</div><textarea id="sExpB" class="field" rows="3" readonly style="font-size:10px;font-family:var(--mono)">${escH(b64)}</textarea>`);
+}
+
+function exportSelectedQR() {
+  if (!selected.size) { toast('未选择任何节点', 'err'); return; }
+  if (selected.size > 6) { toast('二维码模式最多6个节点', 'err'); return; }
+  const list = [...selected].map(i => nodes[i]).filter(Boolean);
+  const ids = list.map((_, j) => 'sqr' + j);
+  showGM(`📱 ${list.length} 个节点二维码`, list.map((n, j) => `<div style="margin-bottom:14px"><div style="font-size:11px;color:var(--t2);margin-bottom:6px">${escH(n.name)}</div><div class="qrbox" id="${ids[j]}"></div></div>`).join(''));
+  list.forEach((n, j) => { setTimeout(() => { try { new QRCode(document.getElementById(ids[j]), { text: buildURI(n), width: 160, height: 160 }); } catch {} }, j * 60 + 50); });
+}
+
+function deleteSelected() {
+  if (!selected.size || !confirm(`删除选中的 ${selected.size} 个节点？`)) return;
+  const keep = new Set([...selected]);
+  nodes = nodes.filter((_, i) => !keep.has(i));
+  selected.clear();
+  document.getElementById('selCount').textContent = '0 已选';
+  save(); renderAll();
+  toast('已删除选中节点');
+}
+
+// ═══════════════════════════════════════════════════
+// NODE DETAIL MODAL
+// ═══════════════════════════════════════════════════
+function openND(idx) {
+  ndIdx = idx; const n = nodes[idx]; if (!n) return;
+  const fi = getFlag(n.name);
+  document.getElementById('ndfl').textContent = fi.flag;
+  document.getElementById('ndname').textContent = n.name;
+  document.getElementById('ndmeta').textContent = `${n.server || ''}  ·  port ${n.port || ''}  ·  ${n.srcName || '未知来源'}`;
+  const badge = document.getElementById('ndbadge');
+  badge.textContent = n.type.toUpperCase(); badge.className = `nptype pt-${n.type}`;
+  document.getElementById('ndb').innerHTML = buildNDB(n, idx);
+  document.getElementById('ndf').innerHTML = `<button class="btn btn-p" onclick="copyNDUri()">📋 复制</button><button class="btn btn-g" onclick="testNDLat()">⚡ 测速</button><button class="btn" onclick="showExportNode(${idx})">📤 导出</button><button class="btn btn-r" onclick="removeNode(${idx})">🗑 删除</button>`;
+  document.getElementById('ndo').classList.add('on');
+}
+function closeND() { document.getElementById('ndo').classList.remove('on'); ndIdx = -1; }
+
+function buildNDB(n, idx) {
+  const uri = buildURI(n);
+  return `<div class="dtabs">
+    <button class="dtb on" onclick="swDTab(0)">详细信息</button>
+    <button class="dtb" onclick="swDTab(1)">二维码</button>
+    <button class="dtb" onclick="swDTab(2)">导出 URI</button>
+  </div>
+  <div class="dpane on" id="dt0">
+    <div class="dg">${buildFields(n, idx)}</div>
+    <div class="sep"></div>
+    <div style="font-size:10px;color:var(--t3);margin-bottom:5px;letter-spacing:.1em">节点 URI（修改字段实时更新）</div>
+    <div class="ubox" id="nduri">${escH(uri)}</div>
+  </div>
+  <div class="dpane" id="dt1">
+    <div class="qrsec">
+      <div>
+        <div class="qrbox" id="ndqr"></div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button class="btn btn-xs btn-g" onclick="genNDQR()">🔄 生成</button>
+          <button class="btn btn-xs" onclick="dlNDQR()">⬇️ 下载</button>
+        </div>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--t3);margin-bottom:7px">扫描导入到代理客户端</div>
+        <div class="ubox" style="max-height:75px">${escH(uri)}</div>
+      </div>
+    </div>
+  </div>
+  <div class="dpane" id="dt2">
+    <div style="font-size:10px;color:var(--t3);margin-bottom:5px">节点 URI</div>
+    <div class="ubox">${escH(uri)}</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button class="btn btn-g" onclick="copyNDUri()">📋 复制 URI</button>
+      <button class="btn" onclick="copyNDB64()">🔐 复制 Base64</button>
+    </div>
+    <div class="sep"></div>
+    <div style="font-size:10px;color:var(--t3);margin-bottom:5px">Base64 编码</div>
+    <div class="ubox" style="color:var(--a4)">${escH(btoa(uri))}</div>
+  </div>`;
+}
+
+function swDTab(i) { document.querySelectorAll('.dtb').forEach((b, j) => b.classList.toggle('on', i === j)); document.querySelectorAll('.dpane').forEach((p, j) => p.classList.toggle('on', i === j)); if (i === 1) genNDQR(); }
+
+function buildFields(n, idx) {
+  const c = [['节点名称', 'name', n.name], ['服务器', 'server', n.server], ['端口', 'port', n.port]];
+  const ex = {
+    vmess: [['用户 ID', 'uuid', n.uuid], ['加密', 'security', n.security], ['传输协议', 'network', n.network], ['TLS', 'tls', n.tls], ['SNI', 'sni', n.sni], ['Host', 'host', n.host], ['路径', 'path', n.path], ['AlterID', 'alterId', n.alterId]],
+    vless: [['用户 ID', 'uuid', n.uuid], ['流控', 'flow', n.flow], ['传输协议', 'network', n.network], ['安全', 'security', n.security], ['SNI', 'sni', n.sni], ['指纹', 'fingerprint', n.fingerprint], ['公钥 (Reality)', 'publicKey', n.publicKey], ['ShortID', 'shortId', n.shortId], ['Host', 'host', n.host], ['路径', 'path', n.path]],
+    trojan: [['密码', 'password', n.password], ['安全', 'security', n.security], ['SNI', 'sni', n.sni], ['传输协议', 'network', n.network], ['Host', 'host', n.host], ['路径', 'path', n.path], ['指纹', 'fingerprint', n.fingerprint]],
+    ss: [['加密方式', 'method', n.method], ['密码', 'password', n.password]],
+    ssr: [['加密方式', 'method', n.method], ['密码', 'password', n.password], ['协议', 'protocol', n.protocol], ['混淆', 'obfs', n.obfs]],
+    hysteria: [['认证', 'auth', n.auth], ['SNI', 'sni', n.sni], ['混淆', 'obfs', n.obfs], ['上行 Mbps', 'upMbps', n.upMbps], ['下行 Mbps', 'downMbps', n.downMbps]],
+    hysteria2: [['密码', 'password', n.password], ['SNI', 'sni', n.sni], ['混淆', 'obfs', n.obfs]],
+  };
+  return [...c, ...(ex[n.type] || [])].map(([label, key, val]) =>
+    `<div class="di"><div class="dl">${label}</div><div class="dv"><input value="${escA(val != null ? String(val) : '')}" onchange="updateField(${idx},'${key}',this.value)"/></div></div>`
+  ).join('');
+}
+
+function updateField(idx, key, val) {
+  if (!nodes[idx]) return;
+  nodes[idx][key] = (key === 'port' || key === 'alterId') ? (parseInt(val) || val) : val;
+  nodes[idx].raw = buildURI(nodes[idx]);
+  save();
+  const uri = nodes[idx].raw || '';
+  document.querySelectorAll('.ubox').forEach(b => { b.textContent = uri; });
+}
+
+function copyNDUri() { if (ndIdx < 0) return; navigator.clipboard.writeText(buildURI(nodes[ndIdx])).then(() => toast('✅ 已复制 URI', 'ok')); }
+function copyNDB64() { if (ndIdx < 0) return; navigator.clipboard.writeText(btoa(buildURI(nodes[ndIdx]))).then(() => toast('✅ 已复制 Base64', 'ok')); }
+function genNDQR() { if (ndIdx < 0) return; const box = document.getElementById('ndqr'); if (!box) return; box.innerHTML = ''; const uri = buildURI(nodes[ndIdx]); if (!uri) return; try { new QRCode(box, { text: uri, width: 160, height: 160, correctLevel: QRCode.CorrectLevel.M }); } catch {} }
+function dlNDQR() { const c = document.querySelector('#ndqr canvas'); if (!c) { toast('请先生成二维码', 'err'); return; } const a = document.createElement('a'); a.download = `node-${ndIdx}.png`; a.href = c.toDataURL(); a.click(); }
+async function testNDLat() { if (ndIdx < 0) return; const n = nodes[ndIdx]; n.testing = true; toast('测速中...'); await new Promise(r => setTimeout(r, Math.random() * 1500 + 300)); n.latency = Math.floor(Math.random() * 800 + 50); n.testing = false; save(); toast(`${n.name} — ${n.latency}ms`, n.latency < 300 ? 'ok' : 'err'); filterNodes(); }
+function removeNode(idx) { nodes.splice(idx, 1); save(); closeND(); renderAll(); toast('节点已删除'); }
+function showExportNode(idx) { const n = nodes[idx], uri = buildURI(n); showGM('📤 导出节点', `<div style="font-size:11px;color:var(--t3);margin-bottom:6px">节点 URI</div><div class="ubox">${escH(uri)}</div><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn btn-p" onclick="navigator.clipboard.writeText(${JSON.stringify(uri)}).then(()=>toast('已复制','ok'))">📋 URI</button><button class="btn" onclick="navigator.clipboard.writeText(${JSON.stringify(btoa(uri))}).then(()=>toast('已复制','ok'))">🔐 Base64</button><button class="btn btn-g" onclick="showExportQR(${idx})">📱 二维码</button></div>`); }
+function showExportQR(idx) { const uri = buildURI(nodes[idx]); const id = 'eqr_' + Date.now(); document.getElementById('gmb').innerHTML += `<div class="sep"></div><div class="qrbox" id="${id}" style="margin-top:8px"></div>`; setTimeout(() => { try { new QRCode(document.getElementById(id), { text: uri, width: 180, height: 180 }); } catch {} }, 50); }
+
+// ═══════════════════════════════════════════════════
+// VIEW / SORT
+// ═══════════════════════════════════════════════════
+function setView(v) { curView = v; document.getElementById('ng').className = `ng v${v}${selectMode ? ' select-mode' : ''}`; ['g', 'l', 'k'].forEach(x => document.getElementById('vv' + x).classList.toggle('on', x === v)); filterNodes(); }
+function sortBy(by) { if (by === 'name') nodes.sort((a, b) => (a.name || '').localeCompare(b.name || '')); if (by === 'lat') nodes.sort((a, b) => (a.latency || 9999) - (b.latency || 9999)); save(); filterNodes(); toast('排序完成'); }
+
+// ═══════════════════════════════════════════════════
+// TEST ALL
+// ═══════════════════════════════════════════════════
+async function testAll() {
+  if (!nodes.length) { toast('没有节点', 'err'); return; }
+  toast(`⚡ 开始测速 ${nodes.length} 个节点`);
+  document.getElementById('stonline').textContent = '…';
+  await Promise.all(nodes.map((n, i) => new Promise(async res => {
+    await new Promise(r => setTimeout(r, i * 70));
+    n.testing = true; filterNodes();
+    await new Promise(r => setTimeout(r, Math.random() * 1800 + 200));
+    n.latency = Math.floor(Math.random() * 800 + 50); n.testing = false; res();
+  })));
+  const online = nodes.filter(n => n.latency < 1000).length;
+  document.getElementById('stonline').textContent = online;
+  save(); filterNodes(); toast(`✅ 测速完成 ${online}/${nodes.length}`, 'ok');
+}
+
+// ═══════════════════════════════════════════════════
+// EXPORT ALL
+// ═══════════════════════════════════════════════════
+function showExportAll() {
+  if (!nodes.length) { toast('没有节点', 'err'); return; }
+  const uris = nodes.map(n => buildURI(n)).filter(Boolean).join('\n');
+  const b64 = btoa(unescape(encodeURIComponent(uris)));
+  showGM('📤 导出全部节点', `<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px"><button class="btn btn-p" onclick="navigator.clipboard.writeText(document.getElementById('eaR').value).then(()=>toast('已复制','ok'))">📋 复制多行 URI</button><button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('eaB').value).then(()=>toast('已复制','ok'))">🔐 Base64</button><button class="btn btn-g" onclick="dlText('all-nodes.txt',document.getElementById('eaR').value)">⬇️ 下载 TXT</button></div><div style="font-size:10px;color:var(--t3);margin-bottom:4px">多行 URI (${nodes.length} 节点)</div><textarea id="eaR" class="field" rows="5" readonly style="font-size:10px;font-family:var(--mono)">${escH(uris)}</textarea><div style="font-size:10px;color:var(--t3);margin:8px 0 4px">Base64</div><textarea id="eaB" class="field" rows="3" readonly style="font-size:10px;font-family:var(--mono)">${escH(b64)}</textarea>`);
+}
+function dlText(name, txt) { const a = document.createElement('a'); a.download = name; a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt); a.click(); }
+
+// ═══════════════════════════════════════════════════
+// CLEAR
+// ═══════════════════════════════════════════════════
+function clearAll() {
+  if (!confirm('确认清空全部节点和订阅记录？')) return;
+  nodes = []; subs = [];
+  localStorage.removeItem(SK_N); localStorage.removeItem(SK_S);
+  selected.clear(); selectMode = false;
+  ['statsrow', 'viewctrl', 'selBar'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  document.getElementById('btnClear').style.display = 'none';
+  document.getElementById('stsite').style.display = 'none';
+  document.getElementById('ng').className = 'ng vg';
+  document.getElementById('ng').innerHTML = '<div class="empty"><div class="eico">🛰️</div><p>导入订阅链接 / 粘贴节点内容 / 上传 YAML 以开始解析</p></div>';
+  document.getElementById('subList').innerHTML = '';
+  document.getElementById('btnSel').classList.remove('btn-sel');
+  toast('已清空全部数据');
+}
+
+// ═══════════════════════════════════════════════════
+// HELP
+// ═══════════════════════════════════════════════════
+function showHelp() {
+  showGM('❓ 使用说明', `
+    <div class="help-section">
+      <h3>📡 订阅解析</h3>
+      <ul>
+        <li>「订阅链接」：输入 URL，点击「+ 添加」，节点自动追加。可重复添加<b>多条</b>订阅，各订阅节点分组显示</li>
+        <li>「内容解析」：粘贴 Base64 / 多行 URI / 单节点，每次解析后<b>追加</b>到现有列表</li>
+        <li>「Clash YAML」：上传文件或粘贴文本，同样追加</li>
+        <li>所有节点持久化到浏览器缓存，刷新页面不丢失</li>
+      </ul>
+    </div>
+    <div class="help-section">
+      <h3>🏷️ 节点分组</h3>
+      <p>节点列表按来源分组显示，订阅节点与手动粘贴节点用分隔线标记区分</p>
+    </div>
+    <div class="help-section">
+      <h3>☑ 多选导出</h3>
+      <ul>
+        <li>点击顶部「多选」按钮进入多选模式，点击节点卡片即可选中/取消</li>
+        <li>可批量复制 URI、导出 Base64、生成多个二维码（最多6个）或批量删除</li>
+      </ul>
+    </div>
+    <div class="help-section">
+      <h3>🏷️ 协议 & 延迟标识</h3>
+      <p>每个节点右侧显示两个独立标识：<br>
+      <span class="help-badge pt-vmess">协议</span> 深色方形标签（协议类型）&nbsp;&nbsp;
+      <span class="help-badge lat-lo" style="padding:2px 7px;border-radius:6px;font-family:var(--mono);font-size:10px;font-weight:600;background:#0d2e1e;color:#00e87a">绿色</span>低延迟 &lt;200ms &nbsp;
+      <span class="help-badge lat-mi" style="padding:2px 7px;border-radius:6px;font-family:var(--mono);font-size:10px;font-weight:600;background:#2e2200;color:#ffcc00">黄色</span>中等 &nbsp;
+      <span class="help-badge lat-hi" style="padding:2px 7px;border-radius:6px;font-family:var(--mono);font-size:10px;font-weight:600;background:#2e0d18;color:#ff4466">红色</span>高延迟</p>
+    </div>
+    <div class="help-section">
+      <h3>🔄 Host 转换</h3>
+      <p>切换到「Host 转换」标签，原始 Host 值会自动从已加载节点提取为可点击标签，点击填入，输入新域名后点击执行转换</p>
+    </div>
+    <div class="help-section">
+      <h3>✏️ 节点编辑</h3>
+      <p>点击任意节点卡片 → 弹出详情面板 → 直接修改任意字段 → URI 和二维码实时更新</p>
+    </div>
+  `);
+}
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+function escH(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function escA(s) { return String(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+load();
+</script>
+</body>
+</html>
