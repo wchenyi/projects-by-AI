@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>数学公式编辑器 | LaTeX Studio</title>
+<meta name="description" content="在线LaTeX数学公式编辑器，实时预览，支持复制和导出图片" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --surface2: #f1f3f5;
+    --border: #dee2e6;
+    --text: #212529;
+    --text-muted: #6c757d;
+    --primary: #4361ee;
+    --primary-dark: #3451d1;
+    --accent: #7209b7;
+    --success: #2b9348;
+    --radius: 10px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --mono: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  }
+
+  .dark {
+    --bg: #0f1117;
+    --surface: #1a1d2e;
+    --surface2: #252840;
+    --border: #2d3058;
+    --text: #e8eaf6;
+    --text-muted: #9098c0;
+    --primary: #6c8eff;
+    --primary-dark: #5a7bff;
+    --shadow: 0 2px 12px rgba(0,0,0,0.4);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .logo-text h1 { font-size: 16px; font-weight: 700; line-height: 1.1; }
+  .logo-text span { font-size: 11px; color: var(--text-muted); }
+
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn:hover { background: var(--surface2); }
+  .btn-primary {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+  .btn-icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 8px;
+  }
+
+  /* MAIN LAYOUT */
+  main {
+    display: grid;
+    grid-template-columns: 260px 1fr 1fr;
+    flex: 1;
+    min-height: 0;
+    height: calc(100vh - 56px);
+  }
+
+  /* SIDEBAR */
+  aside {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-bottom: 2px solid transparent;
+    letter-spacing: 0.02em;
+  }
+
+  .sidebar-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: var(--surface2);
+  }
+
+  .sidebar-content { flex: 1; overflow-y: auto; padding: 12px; }
+
+  .history-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted);
+    font-size: 13px;
+    gap: 8px;
+    padding: 40px 20px;
+    text-align: center;
+  }
+
+  .history-empty svg { opacity: 0.4; }
+
+  .history-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .history-item:hover { border-color: var(--primary); background: var(--bg); }
+
+  .history-preview {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+  }
+
+  .history-rendered { text-align: center; padding: 4px; }
+
+  .example-category { margin-bottom: 14px; }
+  .example-category-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .example-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 12px;
+  }
+
+  .example-item:hover { border-color: var(--primary); }
+  .example-item-label { color: var(--text-muted); font-size: 11px; margin-bottom: 2px; }
+  .example-item-code { font-family: var(--mono); font-size: 10px; color: var(--text); word-break: break-all; }
+
+  /* EDITOR PANEL */
+  .editor-panel {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+    overflow: hidden;
+  }
+
+  .toolbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .toolbar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    padding: 0 8px;
+    gap: 2px;
+  }
+
+  .toolbar-tab {
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+  }
+
+  .toolbar-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  .toolbar-symbols {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px;
+  }
+
+  .sym-btn {
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--mono);
+    min-width: 36px;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .sym-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+  .editor-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .editor-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+  }
+
+  textarea {
+    flex: 1;
+    width: 100%;
+    resize: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 14px;
+    outline: none;
+    transition: border 0.15s;
+  }
+
+  textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(67,97,238,0.12); }
+
+  .render-mode-toggle {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .render-mode-toggle label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+
+  /* PREVIEW PANEL */
+  .preview-panel {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    overflow: hidden;
+  }
+
+  .preview-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .preview-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .preview-header-right { display: flex; gap: 6px; }
+
+  .preview-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    padding: 24px;
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .formula-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 36px 48px;
+    box-shadow: var(--shadow-lg);
+    max-width: 100%;
+    overflow-x: auto;
+    min-width: 200px;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .formula-output {
+    font-size: 26px;
+    text-align: center;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .error-msg {
+    color: #dc3545;
+    font-size: 13px;
+    font-family: var(--mono);
+    background: rgba(220, 53, 69, 0.08);
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(220, 53, 69, 0.2);
+  }
+
+  .preview-footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .color-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .color-control-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .color-swatch-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .color-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.12s, border-color 0.12s;
+    flex-shrink: 0;
+  }
+
+  .color-swatch:hover { transform: scale(1.2); }
+  .color-swatch.active { border-color: var(--primary); transform: scale(1.15); }
+
+  .color-picker-wrap {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+  }
+
+  .color-picker-wrap input[type="color"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+  }
+
+  .color-picker-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px dashed var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);
+    pointer-events: none;
+  }
+
+  .footer-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .size-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .size-control input[type="range"] {
+    width: 70px;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1a1d2e;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; grid-template-rows: auto 1fr 1fr; height: auto; }
+    aside { border-right: none; border-bottom: 1px solid var(--border); max-height: 200px; }
+    .editor-panel { border-right: none; min-height: 300px; }
+  }
+
+  .katex-display { overflow-x: auto; overflow-y: hidden; }
+  .katex { font-size: 1em; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">
+    <div class="logo-icon">∑</div>
+    <div class="logo-text">
+      <h1>Equatio</h1>
+      <span>LaTeX Studio</span>
+    </div>
+  </a>
+  <div class="header-actions">
+    <button class="btn btn-icon" id="themeToggle" title="切换主题">🌙</button>
+  </div>
+</header>
+
+<main>
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" onclick="switchSideTab('history', this)">历史记录</button>
+      <button class="sidebar-tab" onclick="switchSideTab('examples', this)">示例公式</button>
+    </div>
+    <div class="sidebar-content" id="sideContent">
+      <div id="historyPanel">
+        <div class="history-empty" id="historyEmpty">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>
+          </svg>
+          <div>暂无历史记录</div>
+          <div style="font-size:11px">输入公式后会自动保存</div>
+        </div>
+        <div id="historyList"></div>
+      </div>
+      <div id="examplesPanel" style="display:none"></div>
+    </div>
+  </aside>
+
+  <!-- EDITOR -->
+  <div class="editor-panel">
+    <div class="toolbar">
+      <div class="toolbar-tabs">
+        <button class="toolbar-tab active" onclick="switchToolTab('basic', this)">基础</button>
+        <button class="toolbar-tab" onclick="switchToolTab('operators', this)">运算符</button>
+        <button class="toolbar-tab" onclick="switchToolTab('symbols', this)">符号</button>
+        <button class="toolbar-tab" onclick="switchToolTab('greek', this)">希腊字母</button>
+      </div>
+      <div class="toolbar-symbols" id="toolbarSymbols"></div>
+    </div>
+    <div class="editor-area">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span class="editor-label">LaTeX 输入</span>
+        <div class="render-mode-toggle">
+          <label><input type="radio" name="mode" value="display" checked onchange="setMode(this)"> 块级</label>
+          <label><input type="radio" name="mode" value="inline" onchange="setMode(this)"> 行内</label>
+        </div>
+      </div>
+      <textarea id="latexInput" placeholder="在此输入 LaTeX 公式，例如：\int_a^b f(x) \, dx = F(b) - F(a)" spellcheck="false"></textarea>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-panel">
+    <div class="preview-header">
+      <div class="preview-header-left">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+        实时预览
+      </div>
+      <div class="preview-header-right">
+        <button class="btn" id="rawToggle" onclick="toggleRaw()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+          </svg>
+          Raw
+        </button>
+      </div>
+    </div>
+    <div class="preview-area" id="previewArea">
+      <div class="formula-card">
+        <div class="formula-output" id="formulaOutput"></div>
+      </div>
+    </div>
+    <div class="preview-footer">
+      <div class="color-controls">
+        <div class="color-control-group">
+          <span>颜色</span>
+          <div class="color-swatch-row" id="colorSwatches"></div>
+          <div class="color-picker-wrap" title="自定义颜色">
+            <input type="color" id="customColorPicker" value="#212529" oninput="applyCustomColor(this.value)" />
+            <div class="color-picker-icon"></div>
+          </div>
+        </div>
+        <div class="size-control">
+          <span>大小</span>
+          <input type="range" id="fontSizeSlider" min="14" max="60" value="26" oninput="applyFontSize(this.value)" />
+          <span id="fontSizeLabel">26px</span>
+        </div>
+      </div>
+      <div class="footer-actions">
+        <button class="btn" onclick="copyLatex()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+          </svg>
+          复制 LaTeX
+        </button>
+        <button class="btn btn-primary" onclick="saveImage()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          透明PNG
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== STATE =====
+let isDark = false;
+let renderMode = 'display'; // display | inline
+let showRaw = false;
+let history = JSON.parse(localStorage.getItem('mfe_history') || '[]');
+let activeToolTab = 'basic';
+let activeSideTab = 'history';
+let formulaColor = '#212529';
+let formulaFontSize = 26;
+
+// ===== COLOR PRESETS =====
+const COLOR_PRESETS = [
+  { color: '#212529', label: '黑色' },
+  { color: '#1971c2', label: '蓝色' },
+  { color: '#2f9e44', label: '绿色' },
+  { color: '#c2255c', label: '红色' },
+  { color: '#7048e8', label: '紫色' },
+  { color: '#f08c00', label: '橙色' },
+  { color: '#0c8599', label: '青色' },
+  { color: '#ffffff', label: '白色' },
+];
+
+function buildColorSwatches() {
+  const row = document.getElementById('colorSwatches');
+  COLOR_PRESETS.forEach(function(p) {
+    const sw = document.createElement('div');
+    sw.className = 'color-swatch' + (p.color === formulaColor ? ' active' : '');
+    sw.style.background = p.color;
+    sw.style.boxShadow = p.color === '#ffffff' ? 'inset 0 0 0 1px #ccc' : '';
+    sw.title = p.label;
+    sw.onclick = function() { applyColor(p.color, sw); };
+    row.appendChild(sw);
+  });
+}
+
+function applyColor(color, swatchEl) {
+  formulaColor = color;
+  document.getElementById('formulaOutput').style.color = color;
+  document.getElementById('customColorPicker').value = color;
+  document.querySelectorAll('.color-swatch').forEach(function(s) { s.classList.remove('active'); });
+  if (swatchEl) swatchEl.classList.add('active');
+}
+
+function applyCustomColor(color) {
+  formulaColor = color;
+  document.getElementById('formulaOutput').style.color = color;
+  document.querySelectorAll('.color-swatch').forEach(function(s) { s.classList.remove('active'); });
+}
+
+function applyFontSize(val) {
+  formulaFontSize = parseInt(val);
+  document.getElementById('formulaOutput').style.fontSize = val + 'px';
+  document.getElementById('fontSizeLabel').textContent = val + 'px';
+}
+
+// ===== TOOLBAR DATA =====
+const TOOLBAR = {
+  basic: [
+    { label: 'x²', insert: '^{2}' },
+    { label: 'xⁿ', insert: '^{n}' },
+    { label: 'x₀', insert: '_{0}' },
+    { label: '√', insert: '\\sqrt{}' },
+    { label: 'ⁿ√', insert: '\\sqrt[n]{}' },
+    { label: 'a/b', insert: '\\frac{}{}' },
+    { label: '|x|', insert: '\\left| \\right|' },
+    { label: '()', insert: '\\left( \\right)' },
+    { label: '[]', insert: '\\left[ \\right]' },
+    { label: '{}', insert: '\\{ \\}' },
+    { label: 'lim', insert: '\\lim_{x \\to }' },
+    { label: 'log', insert: '\\log_{}' },
+    { label: 'ln', insert: '\\ln' },
+    { label: 'sin', insert: '\\sin' },
+    { label: 'cos', insert: '\\cos' },
+    { label: 'tan', insert: '\\tan' },
+    { label: 'max', insert: '\\max' },
+    { label: 'min', insert: '\\min' },
+    { label: '∑', insert: '\\sum_{i=1}^{n}' },
+    { label: '∏', insert: '\\prod_{i=1}^{n}' },
+    { label: '∫', insert: '\\int_{}^{}' },
+    { label: '∬', insert: '\\iint_{}^{}' },
+    { label: '∮', insert: '\\oint' },
+    { label: 'dx', insert: '\\, dx' },
+    { label: 'd/dx', insert: '\\frac{d}{dx}' },
+    { label: '∂/∂x', insert: '\\frac{\\partial}{\\partial x}' },
+    { label: '∇', insert: '\\nabla' },
+    { label: 'matrix', insert: '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}' },
+    { label: 'cases', insert: '\\begin{cases} x & \\text{if } x>0 \\\\ -x & \\text{otherwise} \\end{cases}' },
+    { label: 'align', insert: '\\begin{aligned} a &= b + c \\\\ &= d \\end{aligned}' },
+  ],
+  operators: [
+    { label: '±', insert: '\\pm' },
+    { label: '∓', insert: '\\mp' },
+    { label: '×', insert: '\\times' },
+    { label: '÷', insert: '\\div' },
+    { label: '·', insert: '\\cdot' },
+    { label: '⊕', insert: '\\oplus' },
+    { label: '⊗', insert: '\\otimes' },
+    { label: '≠', insert: '\\neq' },
+    { label: '≈', insert: '\\approx' },
+    { label: '≡', insert: '\\equiv' },
+    { label: '≤', insert: '\\leq' },
+    { label: '≥', insert: '\\geq' },
+    { label: '≪', insert: '\\ll' },
+    { label: '≫', insert: '\\gg' },
+    { label: '∝', insert: '\\propto' },
+    { label: '∈', insert: '\\in' },
+    { label: '∉', insert: '\\notin' },
+    { label: '⊂', insert: '\\subset' },
+    { label: '⊆', insert: '\\subseteq' },
+    { label: '∪', insert: '\\cup' },
+    { label: '∩', insert: '\\cap' },
+    { label: '∅', insert: '\\emptyset' },
+    { label: '∀', insert: '\\forall' },
+    { label: '∃', insert: '\\exists' },
+    { label: '¬', insert: '\\neg' },
+    { label: '∧', insert: '\\wedge' },
+    { label: '∨', insert: '\\vee' },
+    { label: '→', insert: '\\rightarrow' },
+    { label: '⇒', insert: '\\Rightarrow' },
+    { label: '⟺', insert: '\\Leftrightarrow' },
+    { label: '∞', insert: '\\infty' },
+    { label: '…', insert: '\\ldots' },
+    { label: '⋯', insert: '\\cdots' },
+    { label: '⋮', insert: '\\vdots' },
+    { label: '⋱', insert: '\\ddots' },
+  ],
+  symbols: [
+    { label: '℃', insert: '^{\\circ}C' },
+    { label: 'ℏ', insert: '\\hbar' },
+    { label: '∠', insert: '\\angle' },
+    { label: '△', insert: '\\triangle' },
+    { label: '□', insert: '\\square' },
+    { label: '⊥', insert: '\\perp' },
+    { label: '∥', insert: '\\parallel' },
+    { label: '∼', insert: '\\sim' },
+    { label: '≅', insert: '\\cong' },
+    { label: '⌈⌉', insert: '\\lceil \\rceil' },
+    { label: '⌊⌋', insert: '\\lfloor \\rfloor' },
+    { label: 'vec', insert: '\\vec{a}' },
+    { label: 'hat', insert: '\\hat{a}' },
+    { label: 'bar', insert: '\\bar{a}' },
+    { label: 'dot', insert: '\\dot{a}' },
+    { label: 'ddot', insert: '\\ddot{a}' },
+    { label: 'tilde', insert: '\\tilde{a}' },
+    { label: 'bold', insert: '\\mathbf{A}' },
+    { label: 'bb', insert: '\\mathbb{R}' },
+    { label: 'cal', insert: '\\mathcal{L}' },
+    { label: 'N', insert: '\\mathbb{N}' },
+    { label: 'Z', insert: '\\mathbb{Z}' },
+    { label: 'Q', insert: '\\mathbb{Q}' },
+    { label: 'R', insert: '\\mathbb{R}' },
+    { label: 'C', insert: '\\mathbb{C}' },
+  ],
+  greek: [
+    { label: 'α', insert: '\\alpha' },
+    { label: 'β', insert: '\\beta' },
+    { label: 'γ', insert: '\\gamma' },
+    { label: 'Γ', insert: '\\Gamma' },
+    { label: 'δ', insert: '\\delta' },
+    { label: 'Δ', insert: '\\Delta' },
+    { label: 'ε', insert: '\\epsilon' },
+    { label: 'ε', insert: '\\varepsilon' },
+    { label: 'ζ', insert: '\\zeta' },
+    { label: 'η', insert: '\\eta' },
+    { label: 'θ', insert: '\\theta' },
+    { label: 'Θ', insert: '\\Theta' },
+    { label: 'ι', insert: '\\iota' },
+    { label: 'κ', insert: '\\kappa' },
+    { label: 'λ', insert: '\\lambda' },
+    { label: 'Λ', insert: '\\Lambda' },
+    { label: 'μ', insert: '\\mu' },
+    { label: 'ν', insert: '\\nu' },
+    { label: 'ξ', insert: '\\xi' },
+    { label: 'Ξ', insert: '\\Xi' },
+    { label: 'π', insert: '\\pi' },
+    { label: 'Π', insert: '\\Pi' },
+    { label: 'ρ', insert: '\\rho' },
+    { label: 'σ', insert: '\\sigma' },
+    { label: 'Σ', insert: '\\Sigma' },
+    { label: 'τ', insert: '\\tau' },
+    { label: 'φ', insert: '\\phi' },
+    { label: 'φ', insert: '\\varphi' },
+    { label: 'Φ', insert: '\\Phi' },
+    { label: 'χ', insert: '\\chi' },
+    { label: 'ψ', insert: '\\psi' },
+    { label: 'Ψ', insert: '\\Psi' },
+    { label: 'ω', insert: '\\omega' },
+    { label: 'Ω', insert: '\\Omega' },
+  ]
+};
+
+// ===== EXAMPLES =====
+const EXAMPLES = [
+  {
+    cat: '代数', items: [
+      { label: '二次公式', code: 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}' },
+      { label: '二项式定理', code: '(x+y)^n = \\sum_{k=0}^{n}\\binom{n}{k}x^{n-k}y^k' },
+      { label: '复数表示', code: 'z = a + bi = r e^{i\\theta}' },
+    ]
+  },
+  {
+    cat: '微积分', items: [
+      { label: '微积分基本定理', code: '\\int_a^b f(x)\\,dx = F(b) - F(a)' },
+      { label: '泰勒级数', code: 'f(x) = \\sum_{n=0}^{\\infty}\\frac{f^{(n)}(a)}{n!}(x-a)^n' },
+      { label: '欧拉公式', code: 'e^{i\\pi} + 1 = 0' },
+      { label: '高斯积分', code: '\\int_{-\\infty}^{+\\infty} e^{-x^2}\\,dx = \\sqrt{\\pi}' },
+    ]
+  },
+  {
+    cat: '线性代数', items: [
+      { label: '矩阵乘法', code: 'C_{ij} = \\sum_{k=1}^{n} A_{ik}B_{kj}' },
+      { label: '行列式', code: '\\det(A) = \\sum_{\\sigma \\in S_n} \\text{sgn}(\\sigma) \\prod_{i=1}^{n} a_{i,\\sigma(i)}' },
+      { label: '特征方程', code: '\\det(A - \\lambda I) = 0' },
+    ]
+  },
+  {
+    cat: '物理', items: [
+      { label: '薛定谔方程', code: 'i\\hbar\\frac{\\partial}{\\partial t}\\Psi = \\hat{H}\\Psi' },
+      { label: '麦克斯韦方程', code: '\\nabla \\cdot \\mathbf{E} = \\frac{\\rho}{\\varepsilon_0}' },
+      { label: '质能方程', code: 'E = mc^2' },
+      { label: '洛伦兹变换', code: "t' = \\gamma\\left(t - \\frac{vx}{c^2}\\right)" },
+    ]
+  },
+  {
+    cat: '统计', items: [
+      { label: '正态分布', code: 'f(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}} e^{-\\frac{1}{2}\\left(\\frac{x-\\mu}{\\sigma}\\right)^2}' },
+      { label: '贝叶斯定理', code: 'P(A|B) = \\frac{P(B|A)P(A)}{P(B)}' },
+      { label: '标准差', code: '\\sigma = \\sqrt{\\frac{1}{N}\\sum_{i=1}^{N}(x_i - \\mu)^2}' },
+    ]
+  }
+];
+
+// ===== INIT =====
+window.addEventListener('load', function() {
+  buildToolbar('basic');
+  buildExamples();
+  buildColorSwatches();
+  renderHistory();
+
+  // Restore theme
+  if (localStorage.getItem('mfe_dark') === 'true') {
+    toggleTheme(true);
+    // Set default color to white for dark mode
+    formulaColor = '#ffffff';
+    document.getElementById('customColorPicker').value = '#ffffff';
+  }
+
+  const ta = document.getElementById('latexInput');
+  ta.value = '\\int_a^b f(x) \\, dx = F(b) - F(a)';
+  render();
+
+  ta.addEventListener('input', function() {
+    render();
+    scheduleHistorySave();
+  });
+});
+
+// ===== RENDER =====
+let historyTimer;
+function scheduleHistorySave() {
+  clearTimeout(historyTimer);
+  historyTimer = setTimeout(saveToHistory, 1500);
+}
+
+function render() {
+  if (typeof katex === 'undefined') {
+    setTimeout(render, 100);
+    return;
+  }
+  const input = document.getElementById('latexInput').value.trim();
+  const output = document.getElementById('formulaOutput');
+
+  if (!input) {
+    output.innerHTML = '<span style="color:var(--text-muted);font-size:16px">在左侧输入公式查看预览</span>';
+    return;
+  }
+
+  if (showRaw) {
+    output.innerHTML = '<code style="font-family:var(--mono);font-size:14px;word-break:break-all">' + escHtml(input) + '</code>';
+    return;
+  }
+
+  try {
+    const html = katex.renderToString(input, {
+      displayMode: renderMode === 'display',
+      throwOnError: true,
+      trust: false,
+      macros: {}
+    });
+    output.innerHTML = html;
+    output.style.color = formulaColor;
+    output.style.fontSize = formulaFontSize + 'px';
+  } catch (e) {
+    output.innerHTML = '<div class="error-msg">⚠ ' + escHtml(e.message) + '</div>';
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function setMode(el) {
+  renderMode = el.value;
+  render();
+}
+
+function toggleRaw() {
+  showRaw = !showRaw;
+  document.getElementById('rawToggle').style.background = showRaw ? 'var(--primary)' : '';
+  document.getElementById('rawToggle').style.color = showRaw ? 'white' : '';
+  document.getElementById('rawToggle').style.borderColor = showRaw ? 'var(--primary)' : '';
+  render();
+}
+
+// ===== TOOLBAR =====
+function buildToolbar(tab) {
+  const container = document.getElementById('toolbarSymbols');
+  container.innerHTML = '';
+  (TOOLBAR[tab] || []).forEach(function(item) {
+    const btn = document.createElement('button');
+    btn.className = 'sym-btn';
+    btn.textContent = item.label;
+    btn.title = item.insert;
+    btn.onclick = function() { insertSymbol(item.insert); };
+    container.appendChild(btn);
+  });
+}
+
+function switchToolTab(tab, el) {
+  activeToolTab = tab;
+  document.querySelectorAll('.toolbar-tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  buildToolbar(tab);
+}
+
+function insertSymbol(text) {
+  const ta = document.getElementById('latexInput');
+  const start = ta.selectionStart;
+  const end = ta.selectionEnd;
+  const val = ta.value;
+  ta.value = val.slice(0, start) + text + val.slice(end);
+  const newPos = start + text.length;
+  ta.setSelectionRange(newPos, newPos);
+  ta.focus();
+  render();
+  scheduleHistorySave();
+}
+
+// ===== SIDEBAR =====
+function switchSideTab(tab, el) {
+  activeSideTab = tab;
+  document.querySelectorAll('.sidebar-tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('historyPanel').style.display = tab === 'history' ? '' : 'none';
+  document.getElementById('examplesPanel').style.display = tab === 'examples' ? '' : 'none';
+}
+
+// ===== HISTORY =====
+function saveToHistory() {
+  const val = document.getElementById('latexInput').value.trim();
+  if (!val) return;
+  history = history.filter(function(h) { return h !== val; });
+  history.unshift(val);
+  if (history.length > 20) history = history.slice(0, 20);
+  localStorage.setItem('mfe_history', JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  const empty = document.getElementById('historyEmpty');
+  list.innerHTML = '';
+  if (!history.length) {
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  history.forEach(function(formula, i) {
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.title = formula;
+    const preview = document.createElement('div');
+    preview.className = 'history-preview';
+    preview.textContent = formula;
+    const rendered = document.createElement('div');
+    rendered.className = 'history-rendered';
+    if (typeof katex !== 'undefined') {
+      try {
+        rendered.innerHTML = katex.renderToString(formula, { displayMode: true, throwOnError: false });
+      } catch(e) { rendered.textContent = formula; }
+    }
+    div.appendChild(preview);
+    div.appendChild(rendered);
+    div.onclick = function() { loadFormula(formula); };
+    list.appendChild(div);
+  });
+}
+
+function loadFormula(formula) {
+  document.getElementById('latexInput').value = formula;
+  render();
+}
+
+// ===== EXAMPLES =====
+function buildExamples() {
+  const panel = document.getElementById('examplesPanel');
+  panel.innerHTML = '';
+  EXAMPLES.forEach(function(cat) {
+    const section = document.createElement('div');
+    section.className = 'example-category';
+    const title = document.createElement('div');
+    title.className = 'example-category-title';
+    title.textContent = cat.cat;
+    section.appendChild(title);
+    cat.items.forEach(function(item) {
+      const div = document.createElement('div');
+      div.className = 'example-item';
+      const label = document.createElement('div');
+      label.className = 'example-item-label';
+      label.textContent = item.label;
+      const code = document.createElement('div');
+      code.className = 'example-item-code';
+      code.textContent = item.code.length > 60 ? item.code.slice(0, 57) + '…' : item.code;
+      div.appendChild(label);
+      div.appendChild(code);
+      div.onclick = function() { loadFormula(item.code); };
+      section.appendChild(div);
+    });
+    panel.appendChild(section);
+  });
+}
+
+// ===== ACTIONS =====
+function copyLatex() {
+  const val = document.getElementById('latexInput').value;
+  navigator.clipboard.writeText(val).then(function() {
+    showToast('✓ 已复制 LaTeX 代码');
+  }).catch(function() {
+    showToast('⚠ 复制失败，请手动复制');
+  });
+}
+
+function saveImage() {
+  const input = document.getElementById('latexInput').value.trim();
+  if (!input) { showToast('⚠ 请先输入公式'); return; }
+  if (typeof katex === 'undefined') { showToast('⚠ 渲染引擎未就绪'); return; }
+
+  // Render formula to a hidden off-screen element with transparent background
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = [
+    'position:fixed', 'top:-9999px', 'left:-9999px',
+    'background:transparent', 'padding:24px 32px',
+    'font-size:' + formulaFontSize + 'px',
+    'color:' + formulaColor,
+    'display:inline-block',
+    'max-width:1200px',
+    'line-height:1.4'
+  ].join(';');
+
+  try {
+    wrapper.innerHTML = katex.renderToString(input, {
+      displayMode: renderMode === 'display',
+      throwOnError: true,
+      trust: false
+    });
+  } catch (e) {
+    showToast('⚠ 公式错误，无法导出');
+    return;
+  }
+
+  document.body.appendChild(wrapper);
+
+  html2canvas(wrapper, {
+    backgroundColor: null,
+    scale: 3,
+    useCORS: true,
+    logging: false
+  }).then(function(canvas) {
+    document.body.removeChild(wrapper);
+
+    // Trim transparent pixels for a tight crop
+    const trimmed = trimTransparentCanvas(canvas);
+    const link = document.createElement('a');
+    link.download = 'formula.png';
+    link.href = trimmed.toDataURL('image/png');
+    link.click();
+    showToast('✓ 透明PNG已保存');
+  }).catch(function(err) {
+    document.body.removeChild(wrapper);
+    showToast('⚠ 导出失败：' + err.message);
+  });
+}
+
+function trimTransparentCanvas(src) {
+  const ctx = src.getContext('2d');
+  const w = src.width, h = src.height;
+  const data = ctx.getImageData(0, 0, w, h).data;
+  let top = h, bottom = 0, left = w, right = 0;
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const alpha = data[(y * w + x) * 4 + 3];
+      if (alpha > 0) {
+        if (y < top) top = y;
+        if (y > bottom) bottom = y;
+        if (x < left) left = x;
+        if (x > right) right = x;
+      }
+    }
+  }
+
+  // Add small padding around content
+  const pad = 12;
+  top = Math.max(0, top - pad);
+  left = Math.max(0, left - pad);
+  bottom = Math.min(h - 1, bottom + pad);
+  right = Math.min(w - 1, right + pad);
+
+  const trimW = right - left + 1;
+  const trimH = bottom - top + 1;
+  if (trimW <= 0 || trimH <= 0) return src;
+
+  const out = document.createElement('canvas');
+  out.width = trimW;
+  out.height = trimH;
+  out.getContext('2d').drawImage(src, left, top, trimW, trimH, 0, 0, trimW, trimH);
+  return out;
+}
+
+// ===== THEME =====
+document.getElementById('themeToggle').onclick = function() { toggleTheme(); };
+function toggleTheme(force) {
+  isDark = force !== undefined ? force : !isDark;
+  document.body.classList.toggle('dark', isDark);
+  document.getElementById('themeToggle').textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('mfe_dark', isDark);
+  setTimeout(renderHistory, 0);
+}
+
+// ===== TOAST =====
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2500);
+}
+
+// Re-render history when katex loads
+document.addEventListener('DOMContentLoaded', function() {
+  const check = setInterval(function() {
+    if (typeof katex !== 'undefined') {
+      clearInterval(check);
+      renderHistory();
+      render();
+    }
+  }, 100);
+});
+</script>
+</body>
+</html>
