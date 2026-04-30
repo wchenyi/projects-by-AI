@@ -118,7 +118,7 @@ const projects = [
         icon: '⚖️',
         tags: ['Claude'],
         versions: [
-            { name: 'Claude 版', url: 'https://projects.wangcy.site/fakao/c/index' }
+            { name: 'Claude 版', url: 'https://projects.wangcy.site/law/fakao/c/index' }
         ]
     },
     {
@@ -151,7 +151,7 @@ const projects = [
         icon: '📚',
         tags: ['Gemini'],
         versions: [
-            { name: 'Gemini 版', url: 'https://projects.wangcy.site/fakao/g/index' }
+            { name: 'Gemini 版', url: 'https://projects.wangcy.site/law/fakao/g/index' }
         ]
     },
     {
@@ -218,6 +218,17 @@ const projects = [
         tags: ['Claude'],
         versions: [
             { name: '进入系统', url: 'https://projects.wangcy.site/WebOS/webos' }
+        ]
+    },
+    {
+        id: 21,
+        category: 'learning',
+        name: '法条美化',
+        description: '法条美化阅读器',
+        icon: '📖',
+        tags: ['Claude'],
+        versions: [
+            { name: '进入软件', url: 'https://projects.wangcy.site/law/legal-reader }
         ]
     }
 ];
