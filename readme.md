@@ -26,17 +26,18 @@
   - [京房卦训练](https://projects.wangcy.site/八卦/bg-jingfang)
   - [八卦学习](https://projects.wangcy.site/八卦/bg-xuexi)
   - [八卦素材下载](https://projects.wangcy.site/八卦/bg-sucai)
-- [法考主观模拟网站](https://projects.wangcy.site/fakao/c/index)
+- [法考主观模拟网站](https://projects.wangcy.site/law/fakao/c/index)
 - [道家小六壬](https://dao6.dpdns.org)
 - [Sub工具](https://projects.wangcy.site/Sub/indexC)
 - [WebOS](https://projects.wangcy.site/WebOS/webos)
+- [法条美化](https://projects.wangcy.site/law/legal-reader)
 
 > ChatGPT
 - [起始页生成](https://projects.wangcy.site/Auto-search)
 
 > Gemini
 - [appstore](https://projects.wangcy.site/appstore/index.html)
-- [法考主观题模拟](https://projects.wangcy.site/fakao/g/index)
+- [法考主观题模拟](https://projects.wangcy.site/law/fakao/g/index)
 - [favorite](https://projects.wangcy.site/favorite/index)
 - [道家小六壬](http://dao6.wangcy.online/)
 
