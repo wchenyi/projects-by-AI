@@ -9,1152 +9,1265 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <style>
-:root {
-  --bg:#f5f0e8; --bg2:#ede7d9; --bg3:#e4ddd0;
-  --surface:#faf7f2; --surface2:#f0ebe0;
-  --border:#d4c9b8; --border2:#c4b8a6;
-  --text:#2a2018; --text2:#5a4e3e; --text3:#8a7e6e;
-  --accent:#8b4513; --accent2:#c46e32; --accent-light:#f2e6d9;
-  --hl-yellow:#fff3a3; --hl-green:#b8f0c8; --hl-blue:#b8d8f0; --hl-pink:#f0b8d0;
-  --sidebar-width:300px;
-  --font-body:'Noto Serif SC',serif; --font-ui:'Noto Sans SC',sans-serif; --font-mono:'JetBrains Mono',monospace;
-  --font-size:16px; --line-height:2.0; --letter-spacing:0.04em; --para-indent:2em; --content-width:800px;
-  --shadow:0 2px 12px rgba(42,32,24,.08); --shadow-lg:0 8px 32px rgba(42,32,24,.15);
-  --radius:8px; --tr:.2s ease;
+/* ── Themes ── */
+:root{
+  --bg:#f7f3ec;--bg2:#ede8de;--bg3:#e3ddd0;
+  --surface:#faf7f2;--surface2:#f0ebe0;
+  --border:#d8ccb8;--border2:#c8b8a4;
+  --text:#26190e;--text2:#5a4a38;--text3:#8a7a68;
+  --accent:#7c3a12;--accent2:#b85f28;--accent-light:#f5ead8;
+  --hl-y:#fff3a3;--hl-g:#b8f0c8;--hl-b:#b8d8f0;--hl-p:#f0b8d0;
+  --sidebar-w:292px;
+  --font-body:'Noto Serif SC',serif;--font-ui:'Noto Sans SC',sans-serif;--font-mono:'JetBrains Mono',monospace;
+  --fs:16px;--lh:2.1;--ls:0.04em;--indent:2em;--cw:760px;
+  --sh:0 2px 16px rgba(60,30,10,.08);--sh2:0 8px 36px rgba(60,30,10,.16);
+  --r:8px;--t:.18s ease;
 }
-[data-theme=dark]{--bg:#1a1812;--bg2:#221f16;--bg3:#2a261b;--surface:#242019;--surface2:#2e291e;--border:#3a3428;--border2:#4a4438;--text:#e8dfc8;--text2:#b8ae98;--text3:#7a7060;--accent:#d4894a;--accent2:#e8a56e;--accent-light:#3a2818;--hl-yellow:#5a5010;--hl-green:#1a4020;--hl-blue:#182840;--hl-pink:#401828;}
-[data-theme=sepia]{--bg:#f4efe0;--bg2:#ede5cc;--bg3:#e6dcc0;--surface:#faf6ea;--surface2:#f0e8d0;--border:#d0c4a0;--border2:#bfb090;--text:#3a2e18;--text2:#6a5e3e;--text3:#9a8e6e;--accent:#7a5a20;--accent2:#a07830;--accent-light:#f0e4c0;}
-[data-theme=night]{--bg:#0d0f14;--bg2:#131620;--bg3:#181b28;--surface:#111420;--surface2:#1a1e30;--border:#252a3e;--border2:#303560;--text:#c8d8f0;--text2:#8898b8;--text3:#4a5878;--accent:#5a88d0;--accent2:#7aaae8;--accent-light:#1a2040;}
+[data-theme=dark]{--bg:#18160f;--bg2:#201d14;--bg3:#28231a;--surface:#1e1b12;--surface2:#262218;--border:#38321e;--border2:#48402e;--text:#e8dfc8;--text2:#b4a888;--text3:#706050;--accent:#d08040;--accent2:#e09a58;--accent-light:#301e08;--hl-y:#4a4008;--hl-g:#183818;--hl-b:#182038;--hl-p:#381028;}
+[data-theme=sepia]{--bg:#f3ecdc;--bg2:#e8dec8;--bg3:#ddd3b8;--surface:#f8f3e8;--surface2:#ede4ce;--border:#c8ba98;--border2:#b8a880;--text:#362510;--text2:#685838;--text3:#988060;--accent:#6a4c18;--accent2:#9a7030;--accent-light:#ede0c0;}
+[data-theme=night]{--bg:#0c0e14;--bg2:#121520;--bg3:#181b28;--surface:#0f1220;--surface2:#181c30;--border:#22283c;--border2:#2c3458;--text:#c0d0e8;--text2:#809ab8;--text3:#485878;--accent:#5880d0;--accent2:#78a0e8;--accent-light:#14203a;}
 
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-size:var(--font-size);line-height:var(--line-height);transition:background var(--tr),color var(--tr);overflow:hidden;height:100vh;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-size:var(--fs);line-height:var(--lh);transition:background .3s,color .3s;overflow:hidden;height:100vh;-webkit-font-smoothing:antialiased;}
 
-/* LAYOUT */
-.app{display:flex;height:100vh;overflow:hidden;position:relative;}
+/* ── App layout ── */
+.app{display:flex;height:100vh;overflow:hidden;}
 
-/* SIDEBAR */
-.sidebar{width:var(--sidebar-width);min-width:var(--sidebar-width);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow:hidden;transition:width .3s ease,min-width .3s ease,transform .3s ease;position:relative;z-index:10;flex-shrink:0;}
-.sidebar.collapsed{width:0;min-width:0;overflow:hidden;}
-.sidebar-inner{min-width:var(--sidebar-width);display:flex;flex-direction:column;height:100%;overflow:hidden;}
+/* ═══════════════════════ SIDEBAR ═══════════════════════ */
+.sidebar{
+  width:var(--sidebar-w);min-width:var(--sidebar-w);
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;height:100vh;overflow:hidden;
+  transition:width .28s ease,min-width .28s ease,transform .28s ease;
+  position:relative;z-index:20;flex-shrink:0;
+}
+.sidebar.collapsed{width:0;min-width:0;}
+.si{min-width:var(--sidebar-w);display:flex;flex-direction:column;height:100%;overflow:hidden;}
 
-.sidebar-header{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.logo{font-size:17px;font-weight:700;color:var(--accent);letter-spacing:.06em;white-space:nowrap;}
-.logo span{color:var(--text);font-weight:300;}
+/* sidebar header */
+.sb-head{padding:13px 16px 11px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.logo{font-size:16px;font-weight:700;color:var(--accent);letter-spacing:.07em;white-space:nowrap;}
+.logo em{color:var(--text);font-style:normal;font-weight:300;}
 
-.sidebar-actions{padding:9px 12px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-shrink:0;}
-.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--font-ui);font-size:12px;cursor:pointer;transition:all var(--tr);white-space:nowrap;font-weight:500;}
+/* sidebar actions */
+.sb-act{padding:9px 12px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-shrink:0;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--font-ui);font-size:12px;cursor:pointer;transition:all var(--t);white-space:nowrap;font-weight:500;}
 .btn:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
-.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;}
-.btn-primary:hover{background:var(--accent2);border-color:var(--accent2);color:#fff;}
+.btn-p{background:var(--accent);border-color:var(--accent);color:#fff;}
+.btn-p:hover{background:var(--accent2);border-color:var(--accent2);color:#fff;}
 
-.search-box{padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;position:relative;}
-.search-wrap{position:relative;}
-.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none;}
-.search-input{width:100%;padding:7px 10px 7px 32px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-ui);font-size:13px;}
-.search-input:focus{outline:none;border-color:var(--accent);}
+/* search */
+.sb-search{padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;position:relative;}
+.sw{position:relative;}
+.si-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none;}
+.sinput{width:100%;padding:7px 10px 7px 32px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--font-ui);font-size:13px;transition:border var(--t);}
+.sinput:focus{outline:none;border-color:var(--accent);}
+.sres{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);z-index:300;max-height:280px;overflow-y:auto;box-shadow:var(--sh2);display:none;}
+.sres.on{display:block;}
+.sri{padding:8px 12px;font-size:12px;font-family:var(--font-ui);cursor:pointer;border-bottom:1px solid var(--border);color:var(--text2);line-height:1.6;transition:background var(--t);}
+.sri:last-child{border-bottom:none;}
+.sri:hover{background:var(--accent-light);color:var(--accent);}
+.sri-t{font-weight:600;color:var(--text);font-size:11.5px;margin-bottom:2px;}
+mark{background:var(--hl-y);color:inherit;border-radius:2px;padding:0 1px;}
 
-.doc-tabs{display:flex;gap:4px;padding:7px 12px;overflow-x:auto;border-bottom:1px solid var(--border);flex-shrink:0;scrollbar-width:none;}
-.doc-tabs::-webkit-scrollbar{display:none;}
-.doc-tab{padding:3px 9px;border-radius:10px;border:1px solid var(--border);font-size:11px;cursor:pointer;white-space:nowrap;font-family:var(--font-ui);color:var(--text2);transition:all var(--tr);background:transparent;}
-.doc-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
-.doc-tab:hover:not(.active){border-color:var(--accent);color:var(--accent);}
+/* ── Multi-doc panel inside sidebar ── */
+/* Each imported doc gets a collapsible section header + its TOC items */
+.sb-doclist{flex:1;overflow-y:auto;padding:0;}
+.sb-doclist::-webkit-scrollbar{width:3px;}
+.sb-doclist::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
 
-/* TOC */
-.toc{flex:1;overflow-y:auto;padding:4px 0;}
-.toc::-webkit-scrollbar{width:4px;}
-.toc::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+/* Doc section (one per imported file) */
+.doc-sec{border-bottom:1px solid var(--border);}
+.doc-sec-hd{
+  display:flex;align-items:center;gap:0;padding:0;
+  background:var(--surface2);cursor:pointer;
+  transition:background var(--t);user-select:none;flex-shrink:0;
+  border-left:3px solid transparent;
+}
+.doc-sec-hd:hover{background:var(--accent-light);}
+.doc-sec-hd.active-doc{border-left-color:var(--accent);background:var(--accent-light);}
+.doc-sec-arr{width:22px;height:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text3);font-size:9px;transition:transform .2s;}
+.doc-sec.coll .doc-sec-arr{transform:rotate(-90deg);}
+.doc-sec-info{flex:1;padding:9px 10px 9px 0;overflow:hidden;min-width:0;}
+.doc-sec-name{font-family:var(--font-ui);font-size:12.5px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.doc-sec-meta{font-family:var(--font-ui);font-size:10.5px;color:var(--text3);margin-top:1px;}
+.doc-sec-x{width:26px;height:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text3);font-size:12px;transition:all var(--t);border-radius:4px;}
+.doc-sec-x:hover{color:#c0392b;background:rgba(192,57,43,.1);}
 
-/* TOC collapsible groups */
-.toc-group{overflow:hidden;}
-.toc-group-header{display:flex;align-items:stretch;cursor:pointer;border-left:2px solid transparent;transition:all var(--tr);user-select:none;}
-.toc-group-header:hover{background:var(--accent-light);}
-.toc-group-header.active{border-left-color:var(--accent);background:var(--accent-light);}
-.toc-toggle{width:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text3);font-size:9px;transition:transform .2s;}
-.toc-group.collapsed .toc-toggle{transform:rotate(-90deg);}
-.toc-group-body{overflow:hidden;transition:max-height .25s ease;}
-.toc-group.collapsed .toc-group-body{max-height:0!important;}
+/* TOC inside doc section */
+.doc-toc{overflow:hidden;transition:max-height .25s ease;}
+.doc-sec.coll .doc-toc{max-height:0!important;}
 
-.toc-item{padding:5px 12px;cursor:pointer;font-family:var(--font-ui);font-size:12.5px;color:var(--text2);transition:all var(--tr);display:flex;align-items:baseline;gap:6px;border-left:2px solid transparent;line-height:1.4;}
-.toc-item:hover{color:var(--accent);background:var(--accent-light);}
-.toc-item.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-light);}
-.toc-l0{padding-left:12px;font-weight:700;font-size:13px;color:var(--text);}
-.toc-l1{padding-left:12px;font-weight:700;font-size:13px;color:var(--text);}
-.toc-l2{padding-left:22px;font-weight:600;font-size:12.5px;color:var(--text);}
-.toc-l3{padding-left:34px;font-size:12px;}
-.toc-l4{padding-left:46px;font-size:11.5px;color:var(--text3);}
-.toc-num{color:var(--accent);font-family:var(--font-mono);font-size:10px;flex-shrink:0;}
-.toc-badge{font-size:10px;font-family:var(--font-mono);background:var(--accent-light);color:var(--accent);border-radius:10px;padding:1px 6px;flex-shrink:0;}
+/* toc structure entries */
+.toc-group{overflow:visible;}
+.tg-hd{display:flex;align-items:stretch;cursor:pointer;border-left:2px solid transparent;transition:all var(--t);user-select:none;}
+.tg-hd:hover{background:var(--accent-light);}
+.tg-hd.toc-active{border-left-color:var(--accent);background:var(--accent-light);}
+.tg-arr{width:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text3);font-size:9px;transition:transform .2s;}
+.toc-group.coll .tg-arr{transform:rotate(-90deg);}
+.tg-bd{overflow:hidden;transition:max-height .22s ease;}
+.toc-group.coll .tg-bd{max-height:0!important;}
 
-.toc-pian-inner,.toc-zhang-inner{flex:1;display:flex;align-items:center;gap:8px;padding:7px 10px 7px 4px;overflow:hidden;}
-.toc-pian-inner{font-size:13px;font-weight:700;color:var(--text);}
-.toc-zhang-inner{font-size:12.5px;font-weight:600;color:var(--text);}
-.toc-label-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+.ti{padding:5px 12px;cursor:pointer;font-family:var(--font-ui);font-size:12px;color:var(--text2);transition:all var(--t);display:flex;align-items:center;gap:6px;border-left:2px solid transparent;line-height:1.4;}
+.ti:hover{color:var(--accent);background:var(--accent-light);}
+.ti.toc-active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-light);font-weight:500;}
+.tl1{padding-left:6px;font-weight:700;font-size:12.5px;}
+.tl2{padding-left:16px;font-weight:600;font-size:12px;}
+.tl3{padding-left:26px;font-size:12px;}
+.tl4{padding-left:38px;font-size:11.5px;color:var(--text3);}
+.tn{color:var(--accent);font-family:var(--font-mono);font-size:10px;flex-shrink:0;}
+.tbadge{font-size:9.5px;font-family:var(--font-mono);background:var(--accent-light);color:var(--accent);border-radius:10px;padding:1px 6px;flex-shrink:0;}
+.tg-inner{flex:1;display:flex;align-items:center;gap:8px;padding:7px 10px 7px 0;overflow:hidden;}
+.tg-l1 .tg-inner{font-size:12.5px;font-weight:700;color:var(--text);}
+.tg-l2 .tg-inner{font-size:12px;font-weight:600;color:var(--text);}
+.tg-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
 
-/* Bookmark panel */
-.sidebar-panel{border-top:1px solid var(--border);padding:9px 12px;flex-shrink:0;}
-.sidebar-panel-title{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:6px;}
-.bookmark-list{display:flex;flex-direction:column;gap:3px;max-height:100px;overflow-y:auto;}
-.bookmark-item{padding:4px 8px;border-radius:4px;font-size:12px;font-family:var(--font-ui);cursor:pointer;color:var(--text2);display:flex;align-items:center;gap:6px;transition:all var(--tr);}
-.bookmark-item:hover{background:var(--accent-light);color:var(--accent);}
-.bookmark-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+/* bookmark panel */
+.bm-panel{border-top:1px solid var(--border);padding:8px 12px;flex-shrink:0;max-height:180px;display:none;flex-direction:column;}
+.bm-panel.on{display:flex;}
+.bm-title{font-size:10.5px;font-weight:600;color:var(--text3);letter-spacing:.09em;text-transform:uppercase;font-family:var(--font-ui);margin-bottom:6px;flex-shrink:0;}
+.bm-list{overflow-y:auto;display:flex;flex-direction:column;gap:2px;}
+.bm-item{padding:4px 8px;border-radius:5px;font-size:12px;font-family:var(--font-ui);cursor:pointer;color:var(--text2);display:flex;align-items:center;gap:6px;transition:all var(--t);}
+.bm-item:hover{background:var(--accent-light);color:var(--accent);}
+.bm-del{margin-left:auto;font-size:13px;opacity:.4;transition:opacity var(--t);flex-shrink:0;padding:0 2px;}
+.bm-del:hover{opacity:1;color:#c0392b;}
+.bm-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 
-/* MAIN */
+/* ═══════════════════════ MAIN ═══════════════════════ */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
-.progress-bar{height:2px;background:var(--border);flex-shrink:0;}
-.progress-fill{height:100%;background:var(--accent);width:0%;transition:width .3s ease;border-radius:1px;}
-.main-doc-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface2);overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
-.main-doc-tabs::-webkit-scrollbar{display:none;}
-.main-tab{padding:8px 16px;font-family:var(--font-ui);font-size:13px;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;transition:all var(--tr);white-space:nowrap;display:flex;align-items:center;gap:8px;}
-.main-tab:hover{color:var(--text);background:var(--bg2);}
-.main-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--bg);}
-.tab-close{width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;opacity:.4;transition:all var(--tr);}
-.tab-close:hover{opacity:1;background:var(--accent);color:#fff;}
+.prog{height:2px;background:var(--border);flex-shrink:0;}
+.prog-f{height:100%;background:var(--accent);width:0%;transition:width .4s ease;}
 
-/* TOOLBAR */
-.toolbar{display:flex;align-items:center;gap:4px;padding:5px 12px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;min-height:46px;overflow-x:auto;scrollbar-width:none;}
-.toolbar::-webkit-scrollbar{display:none;}
-.sidebar-toggle{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;color:var(--text2);transition:all var(--tr);flex-shrink:0;}
-.sidebar-toggle:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
-.tsep{width:1px;height:22px;background:var(--border);margin:0 3px;flex-shrink:0;}
-.tool-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid transparent;background:transparent;cursor:pointer;color:var(--text2);transition:all var(--tr);position:relative;flex-shrink:0;font-size:13px;font-weight:600;font-family:var(--font-ui);}
-.tool-btn:hover{background:var(--bg2);border-color:var(--border);color:var(--text);}
-.tool-btn.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
-.tool-btn[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:-26px;left:50%;transform:translateX(-50%);background:var(--bg3);color:var(--text);font-family:var(--font-ui);font-size:11px;padding:2px 7px;border-radius:4px;white-space:nowrap;z-index:100;border:1px solid var(--border);pointer-events:none;font-weight:400;}
-.toolbar-select{padding:4px 6px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-ui);font-size:12px;cursor:pointer;max-width:100px;flex-shrink:0;}
-.cdot{width:17px;height:17px;border-radius:50%;border:2px solid var(--border);cursor:pointer;transition:all var(--tr);flex-shrink:0;}
+/* ── Toolbar ── */
+.tb{display:flex;align-items:center;gap:3px;padding:5px 12px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;min-height:46px;overflow-x:auto;scrollbar-width:none;}
+.tb::-webkit-scrollbar{display:none;}
+.tb-sep{width:1px;height:20px;background:var(--border);margin:0 4px;flex-shrink:0;}
+.sb-tog{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;color:var(--text2);transition:all var(--t);flex-shrink:0;}
+.sb-tog:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
+.tbtn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid transparent;background:transparent;cursor:pointer;color:var(--text2);transition:all var(--t);flex-shrink:0;font-size:13px;font-weight:600;font-family:var(--font-ui);position:relative;}
+.tbtn:hover{background:var(--bg2);border-color:var(--border);color:var(--text);}
+.tbtn.on{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
+.tbtn[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:-26px;left:50%;transform:translateX(-50%);background:var(--bg3);color:var(--text);font-family:var(--font-ui);font-size:11px;padding:2px 8px;border-radius:4px;white-space:nowrap;z-index:9999;border:1px solid var(--border);pointer-events:none;font-weight:400;}
+.tsel{padding:4px 6px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-ui);font-size:12px;cursor:pointer;max-width:96px;flex-shrink:0;}
+.cdot{width:17px;height:17px;border-radius:50%;border:2px solid var(--border);cursor:pointer;transition:all var(--t);flex-shrink:0;}
 .cdot:hover,.cdot.active{border-color:var(--accent);transform:scale(1.2);}
+/* font-color button */
+.fc-wrap{position:relative;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid transparent;cursor:pointer;flex-shrink:0;transition:all var(--t);}
+.fc-wrap:hover{background:var(--bg2);border-color:var(--border);}
+.fc-bar{position:absolute;bottom:4px;left:4px;right:4px;height:3px;border-radius:2px;background:#e53935;}
+.fc-wrap input[type=color]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
 
-/* Font color button */
-.fc-btn{position:relative;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid transparent;background:transparent;cursor:pointer;flex-shrink:0;transition:all var(--tr);}
-.fc-btn:hover{background:var(--bg2);border-color:var(--border);}
-.fc-bar{position:absolute;bottom:4px;left:5px;right:5px;height:3px;border-radius:2px;background:#e53935;}
-.fc-btn input[type=color]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+/* ── Reading Area ── */
+.ra{flex:1;overflow-y:auto;scroll-behavior:smooth;}
+.ra::-webkit-scrollbar{width:6px;}
+.ra::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+.ra-inner{padding:48px max(24px,calc((100% - var(--cw))/2));}
 
-/* READING AREA */
-.reading-area{flex:1;overflow-y:auto;padding:40px max(20px,calc((100% - var(--content-width))/2));position:relative;scroll-behavior:smooth;}
-.reading-area::-webkit-scrollbar{width:6px;}
-.reading-area::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+/* ── Welcome screen ── */
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;text-align:center;gap:20px;padding:32px;}
+.w-icon{font-size:52px;opacity:.25;line-height:1;}
+.w-title{font-size:22px;font-weight:700;color:var(--text);letter-spacing:.06em;}
+.w-desc{font-size:13px;color:var(--text3);font-family:var(--font-ui);max-width:360px;line-height:1.9;}
+.dropzone{border:2px dashed var(--border2);border-radius:16px;padding:30px 50px;cursor:pointer;transition:all var(--t);background:var(--surface2);}
+.dropzone:hover,.dropzone.drag{border-color:var(--accent);background:var(--accent-light);}
+.dz-text{font-size:13px;color:var(--text2);font-family:var(--font-ui);margin-top:10px;}
+.dz-fmt{font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:4px;}
 
-/* DOC CONTENT */
-.doc-container{display:none;max-width:var(--content-width);margin:0 auto;animation:fadeIn .3s ease;}
-.doc-container.active{display:block;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+/* ═══════════════════════ DOCUMENT CONTENT ═══════════════════════ */
+.doc{display:none;max-width:var(--cw);margin:0 auto;animation:fi .3s ease;}
+.doc.active{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-.doc-header{text-align:center;margin-bottom:36px;padding-bottom:22px;border-bottom:2px solid var(--border);}
-.doc-title{font-size:22px;font-weight:700;color:var(--text);letter-spacing:.08em;line-height:1.6;margin-bottom:6px;}
-.doc-meta{font-size:13px;color:var(--text3);font-family:var(--font-ui);}
+.doc-hdr{text-align:center;margin-bottom:40px;padding-bottom:24px;border-bottom:2px solid var(--border);}
+.doc-title{font-size:21px;font-weight:700;color:var(--text);letter-spacing:.09em;line-height:1.5;margin-bottom:6px;}
+.doc-meta{font-size:12px;color:var(--text3);font-family:var(--font-ui);}
 
-/* 编 Pian — most prominent */
-.law-pian{margin:44px 0 4px;padding:24px 0 18px;text-align:center;position:relative;}
-.law-pian::before,.law-pian::after{content:'';display:block;height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);}
-.law-pian::before{margin-bottom:18px;}
-.law-pian::after{margin-top:18px;}
-.law-pian-eyebrow{font-size:11px;font-family:var(--font-ui);font-weight:600;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px;}
-.law-pian-title{font-size:21px;font-weight:700;color:var(--text);letter-spacing:.1em;line-height:1.5;}
-.law-pian-ornament{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;opacity:.5;}
-.law-pian-ornament span{display:inline-block;width:30px;height:1px;background:var(--accent);}
-.law-pian-ornament i{font-style:normal;color:var(--accent);font-size:12px;}
+/* 编 */
+.lp{margin:48px 0 0;padding:24px 0 20px;text-align:center;}
+.lp::before,.lp::after{content:'';display:block;height:1px;background:linear-gradient(90deg,transparent,var(--border2) 40%,var(--border2) 60%,transparent);}
+.lp::before{margin-bottom:20px;}
+.lp::after{margin-top:20px;}
+.lp-ey{font-size:10.5px;font-family:var(--font-ui);font-weight:700;color:var(--accent);letter-spacing:.22em;text-transform:uppercase;margin-bottom:8px;}
+.lp-title{font-size:20px;font-weight:700;color:var(--text);letter-spacing:.1em;}
+.lp-orn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;}
+.lp-orn span{display:inline-block;width:22px;height:1px;background:var(--accent);opacity:.5;}
+.lp-orn i{font-style:normal;color:var(--accent);font-size:11px;opacity:.7;}
 
-/* 章 Zhang — secondary */
-.law-zhang{margin:32px 0 4px;padding:18px 0 14px;position:relative;}
-.law-zhang-inner{display:flex;flex-direction:column;align-items:center;gap:6px;}
-.law-zhang-eyebrow{font-size:10.5px;font-family:var(--font-ui);font-weight:600;color:var(--accent2);letter-spacing:.14em;text-transform:uppercase;}
-.law-zhang-title{font-size:17px;font-weight:600;color:var(--text);letter-spacing:.08em;line-height:1.5;}
-.law-zhang-rule{width:100%;height:1px;margin-top:12px;background:linear-gradient(90deg,transparent,var(--border),transparent);}
-/* Side accents for zhang */
-.law-zhang::before{content:'';position:absolute;left:50%;top:0;transform:translateX(-50%);width:40px;height:2px;background:var(--accent2);border-radius:1px;opacity:.6;}
+/* 章 */
+.lz{margin:34px 0 0;padding:16px 0 12px;position:relative;}
+.lz::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:36px;height:2px;background:var(--accent2);border-radius:1px;opacity:.55;}
+.lz-inner{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.lz-ey{font-size:10px;font-family:var(--font-ui);font-weight:700;color:var(--accent2);letter-spacing:.18em;}
+.lz-title{font-size:16.5px;font-weight:600;color:var(--text);letter-spacing:.07em;}
+.lz-rule{width:100%;height:1px;margin-top:12px;background:linear-gradient(90deg,transparent,var(--border) 30%,var(--border) 70%,transparent);}
 
-/* 节 Jie — tertiary */
-.law-jie{margin:20px 0 4px;padding:9px 14px 8px;border-left:3px solid var(--accent2);background:linear-gradient(to right,var(--accent-light),transparent);border-radius:0 var(--radius) var(--radius) 0;}
-.law-jie-eyebrow{font-size:10px;font-family:var(--font-ui);font-weight:600;color:var(--accent2);letter-spacing:.1em;margin-bottom:2px;}
-.law-jie-title{font-size:14px;font-weight:600;color:var(--text);letter-spacing:.04em;}
+/* 节 */
+.ljie{margin:20px 0 4px;padding:9px 14px 8px;border-left:3px solid var(--accent2);background:linear-gradient(to right,var(--accent-light),transparent 70%);border-radius:0 var(--r) var(--r) 0;}
+.ljie-ey{font-size:10px;font-family:var(--font-ui);font-weight:600;color:var(--accent2);letter-spacing:.12em;margin-bottom:2px;}
+.ljie-title{font-size:14px;font-weight:600;color:var(--text);}
 
-/* 条 Tiao */
-.law-tiao{margin-bottom:16px;padding:10px 36px 10px 0;border-bottom:1px dotted var(--border);position:relative;scroll-margin-top:20px;transition:background var(--tr);}
-.law-tiao:last-child{border-bottom:none;}
-.law-tiao:hover{background:linear-gradient(to right,var(--accent-light),transparent 80%);border-radius:0 var(--radius) var(--radius) 0;}
-.law-tiao[data-bookmarked=true]{border-left:3px solid var(--accent);padding-left:11px;}
-.tiao-body{outline:none;caret-color:var(--accent);}
-.tiao-num{font-weight:700;color:var(--accent);font-size:14px;font-family:var(--font-ui);letter-spacing:.04em;display:inline;margin-right:6px;}
-.tiao-content{letter-spacing:var(--letter-spacing);line-height:var(--line-height);color:var(--text);}
-.law-kuan{text-indent:var(--para-indent);letter-spacing:var(--letter-spacing);line-height:var(--line-height);color:var(--text);margin-top:6px;}
-.law-xiang{text-indent:calc(var(--para-indent)*1.5);letter-spacing:var(--letter-spacing);line-height:var(--line-height);color:var(--text2);font-size:.96em;margin-top:4px;}
+/* 条 */
+.lt{margin-bottom:0;padding:12px 4px 12px 20px;border-bottom:1px solid var(--border);position:relative;scroll-margin-top:24px;transition:background .15s;}
+.lt:last-of-type{border-bottom:none;}
+.lt:hover{background:linear-gradient(to right,var(--accent-light) 0%,transparent 85%);}
 
-.copy-tiao{opacity:0;position:absolute;right:4px;top:10px;width:24px;height:24px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:11px;transition:all var(--tr);}
-.law-tiao:hover .copy-tiao{opacity:1;}
-.copy-tiao:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
+/* bookmark flag on tiao */
+.lt-bm-flag{position:absolute;left:3px;top:13px;width:14px;display:none;align-items:center;justify-content:center;color:var(--accent);font-size:13px;opacity:.85;cursor:pointer;}
+.lt[data-bm=true] .lt-bm-flag{display:flex;}
 
-.sticky-note{display:inline-block;margin-top:8px;background:var(--hl-yellow);border-radius:6px;padding:6px 10px;font-size:12px;font-family:var(--font-ui);color:#3a3010;box-shadow:var(--shadow);line-height:1.5;max-width:100%;}
-[data-theme=dark] .sticky-note,[data-theme=night] .sticky-note{color:#c8c070;}
+/* The editable content body of each 条 */
+.lt-body{outline:none;caret-color:var(--accent);word-break:break-all;}
 
-/* Highlights */
-.hl{border-radius:3px;padding:1px 2px;cursor:pointer;}
-.hl-yellow{background:var(--hl-yellow);}
-.hl-green{background:var(--hl-green);}
-.hl-blue{background:var(--hl-blue);}
-.hl-pink{background:var(--hl-pink);}
-.hl-underline{border-bottom:2px solid var(--accent);}
+.lt-num{font-weight:700;color:var(--accent);font-size:14px;font-family:var(--font-ui);letter-spacing:.04em;display:inline;margin-right:5px;user-select:none;}
+.lt-txt{letter-spacing:var(--ls);line-height:var(--lh);color:var(--text);}
+.lt-kuan{text-indent:var(--indent);letter-spacing:var(--ls);line-height:var(--lh);color:var(--text);margin-top:4px;}
+.lt-xiang{text-indent:calc(var(--indent)*1.5);letter-spacing:var(--ls);line-height:var(--lh);color:var(--text2);font-size:.96em;margin-top:3px;}
 
-.doc-stats{display:flex;gap:16px;padding:8px 0;border-top:1px solid var(--border);margin-top:30px;font-size:12px;color:var(--text3);font-family:var(--font-ui);justify-content:center;}
+/* copy btn */
+.lt-cp{opacity:0;position:absolute;right:4px;top:13px;width:24px;height:24px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:11px;transition:all var(--t);}
+.lt:hover .lt-cp{opacity:1;}
+.lt-cp:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
 
-/* WELCOME */
-.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:18px;padding:40px;}
-.welcome-icon{font-size:52px;opacity:.3;}
-.welcome-title{font-size:22px;font-weight:700;color:var(--text);letter-spacing:.06em;}
-.welcome-desc{font-size:13px;color:var(--text3);font-family:var(--font-ui);max-width:360px;line-height:1.8;}
-.upload-zone{border:2px dashed var(--border2);border-radius:14px;padding:30px 50px;cursor:pointer;transition:all var(--tr);background:var(--surface2);}
-.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:var(--accent-light);}
-.upload-zone-text{font-size:13px;color:var(--text2);font-family:var(--font-ui);margin-top:10px;}
-.upload-formats{font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:4px;}
+/* note */
+.lt-note{display:inline-flex;align-items:flex-start;gap:6px;margin-top:10px;background:var(--hl-y);border-radius:6px;padding:7px 11px;font-size:12px;font-family:var(--font-ui);color:#38300a;box-shadow:var(--sh);line-height:1.6;max-width:100%;cursor:pointer;}
+.lt-note:hover{opacity:.85;}
+[data-theme=dark] .lt-note,[data-theme=night] .lt-note{color:#ccc070;}
+[data-theme=sepia] .lt-note{color:#3a2e10;}
 
-/* CONTEXT MENU */
-.sel-menu{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);display:none;flex-direction:column;padding:4px;z-index:1000;font-family:var(--font-ui);min-width:160px;}
-.sel-menu.open{display:flex;}
-.sel-item{padding:6px 11px;border-radius:6px;font-size:13px;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:8px;transition:all var(--tr);}
-.sel-item:hover{background:var(--accent-light);color:var(--accent);}
-.sel-sep{height:1px;background:var(--border);margin:3px 0;}
+/* highlights */
+.hl{border-radius:3px;padding:0 1px;}
+.hl-y{background:var(--hl-y);}
+.hl-g{background:var(--hl-g);}
+.hl-b{background:var(--hl-b);}
+.hl-p{background:var(--hl-p);}
+.hl-u{border-bottom:2.5px solid var(--accent);}
 
-/* DIALOGS */
-.dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;display:none;backdrop-filter:blur(2px);}
-.dialog-overlay.open{display:block;}
-.note-dialog{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;z-index:1000;width:320px;box-shadow:var(--shadow-lg);display:none;}
-.note-dialog.open{display:block;}
-.note-title{font-size:14px;font-weight:600;color:var(--text);font-family:var(--font-ui);margin-bottom:10px;}
-.note-dialog textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:var(--font-body);font-size:14px;resize:vertical;min-height:90px;line-height:1.7;}
-.note-dialog textarea:focus{outline:none;border-color:var(--accent);}
-.note-actions{display:flex;gap:8px;margin-top:12px;justify-content:flex-end;}
+.doc-foot{display:flex;gap:14px;padding:8px 0;border-top:1px solid var(--border);margin-top:36px;font-size:12px;color:var(--text3);font-family:var(--font-ui);justify-content:center;}
 
-/* SETTINGS */
-.settings-panel{position:fixed;top:0;right:-380px;width:360px;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:200;overflow-y:auto;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,.15);}
-.settings-panel.open{right:0;}
-.settings-panel::-webkit-scrollbar{width:4px;}
-.settings-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.settings-header{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
-.settings-title{font-size:15px;font-weight:600;letter-spacing:.04em;}
-.settings-body{padding:14px 20px;display:flex;flex-direction:column;gap:18px;}
-.settings-group{display:flex;flex-direction:column;gap:10px;}
-.settings-label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;font-family:var(--font-ui);}
-.theme-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;}
-.theme-swatch{padding:9px 10px;border-radius:var(--radius);border:2px solid var(--border);cursor:pointer;font-family:var(--font-ui);font-size:12px;text-align:center;transition:all var(--tr);font-weight:500;}
-.theme-swatch:hover,.theme-swatch.active{border-color:var(--accent);}
-.theme-swatch[data-t=light]{background:#f5f0e8;color:#2a2018;}
-.theme-swatch[data-t=dark]{background:#1a1812;color:#e8dfc8;}
-.theme-swatch[data-t=sepia]{background:#f4efe0;color:#3a2e18;}
-.theme-swatch[data-t=night]{background:#0d0f14;color:#c8d8f0;}
-.range-row{display:flex;align-items:center;gap:10px;font-family:var(--font-ui);font-size:13px;}
-.range-label{color:var(--text2);min-width:56px;font-size:12px;}
+/* ═══ INLINE FLOATING FORMAT BAR (appears near selection) ═══ */
+/* This replaces the old cmenu — it's a compact horizontal bar with real format controls */
+.fbar{
+  position:fixed;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  box-shadow:var(--sh2);
+  display:none;
+  align-items:center;
+  gap:1px;
+  padding:4px;
+  z-index:9000;
+  pointer-events:all;
+  user-select:none;
+  /* prevent bar from stealing focus from the selection */
+}
+.fbar.on{display:flex;}
+.fbar-sep{width:1px;height:18px;background:var(--border);margin:0 2px;flex-shrink:0;}
+/* fbar buttons: identical style to toolbar .tbtn but smaller */
+.fb{
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  border-radius:6px;border:none;background:transparent;
+  cursor:pointer;color:var(--text2);transition:all var(--t);flex-shrink:0;
+  font-size:13px;font-weight:700;font-family:var(--font-ui);
+  position:relative;
+}
+.fb:hover{background:var(--accent-light);color:var(--accent);}
+.fb svg{pointer-events:none;}
+/* hl dots in fbar */
+.fb-hl{width:16px;height:16px;border-radius:50%;display:inline-block;border:2px solid rgba(0,0,0,.15);flex-shrink:0;cursor:pointer;}
+/* color input inside fbar */
+.fb-fc{position:relative;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;cursor:pointer;transition:all var(--t);}
+.fb-fc:hover{background:var(--accent-light);}
+.fb-fc-bar{position:absolute;bottom:4px;left:4px;right:4px;height:3px;border-radius:2px;}
+.fb-fc input[type=color]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+/* "more" section: copy + note */
+.fb-copy,.fb-note{font-size:12px;font-family:var(--font-ui);padding:0 6px;height:28px;display:flex;align-items:center;cursor:pointer;border-radius:6px;color:var(--text2);transition:all var(--t);white-space:nowrap;gap:4px;}
+.fb-copy:hover,.fb-note:hover{background:var(--accent-light);color:var(--accent);}
+
+/* ── Dialogs ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1998;display:none;backdrop-filter:blur(3px);}
+.overlay.on{display:block;}
+.dialog{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;z-index:1999;width:340px;box-shadow:var(--sh2);display:none;}
+.dialog.on{display:block;}
+.dlg-title{font-size:14px;font-weight:600;font-family:var(--font-ui);margin-bottom:12px;color:var(--text);}
+.dialog textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:var(--font-body);font-size:14px;resize:vertical;min-height:88px;line-height:1.7;}
+.dialog textarea:focus{outline:none;border-color:var(--accent);}
+.dlg-acts{display:flex;gap:8px;margin-top:12px;justify-content:flex-end;}
+
+/* ── Settings panel ── */
+.spanel{position:fixed;top:0;right:-380px;width:368px;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:400;overflow-y:auto;transition:right .28s ease;box-shadow:-4px 0 28px rgba(0,0,0,.12);}
+.spanel.on{right:0;}
+.spanel::-webkit-scrollbar{width:4px;}
+.spanel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.sp-hd{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
+.sp-title{font-size:15px;font-weight:600;}
+.sp-body{padding:16px 20px;display:flex;flex-direction:column;gap:20px;}
+.sg{display:flex;flex-direction:column;gap:10px;}
+.slabel{font-size:10.5px;font-weight:600;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;font-family:var(--font-ui);}
+.tgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;}
+.tsw{padding:9px;border-radius:var(--r);border:2px solid var(--border);cursor:pointer;font-family:var(--font-ui);font-size:12px;text-align:center;transition:all var(--t);font-weight:500;}
+.tsw:hover,.tsw.active{border-color:var(--accent);}
+.tsw[data-t=light]{background:#f7f3ec;color:#26190e;}
+.tsw[data-t=dark]{background:#18160f;color:#e8dfc8;}
+.tsw[data-t=sepia]{background:#f3ecdc;color:#362510;}
+.tsw[data-t=night]{background:#0c0e14;color:#c0d0e8;}
+.rr{display:flex;align-items:center;gap:10px;}
+.rl{color:var(--text2);min-width:58px;font-size:12px;font-family:var(--font-ui);}
 input[type=range]{flex:1;accent-color:var(--accent);cursor:pointer;}
-.range-val{min-width:34px;text-align:right;color:var(--text3);font-size:12px;font-family:var(--font-mono);}
-.font-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;}
-.font-btn{padding:7px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:13px;text-align:center;transition:all var(--tr);color:var(--text);background:transparent;}
-.font-btn:hover,.font-btn.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent);}
+.rv{min-width:36px;text-align:right;color:var(--text3);font-size:12px;font-family:var(--font-mono);}
+.fgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;}
+.fbtn{padding:8px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:13px;text-align:center;transition:all var(--t);color:var(--text);background:transparent;}
+.fbtn:hover,.fbtn.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent);}
 
-/* EXPORT MENU */
-.export-menu{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);z-index:500;display:none;flex-direction:column;min-width:170px;overflow:hidden;}
-.export-menu.open{display:flex;}
-.export-item{padding:9px 14px;font-family:var(--font-ui);font-size:13px;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:8px;transition:background var(--tr);}
-.export-item:hover{background:var(--accent-light);color:var(--accent);}
+/* ── Export menu ── */
+.emenu{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--sh2);z-index:600;display:none;flex-direction:column;min-width:175px;overflow:hidden;}
+.emenu.on{display:flex;}
+.ei{padding:10px 15px;font-family:var(--font-ui);font-size:13px;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:9px;transition:background var(--t);}
+.ei:hover{background:var(--accent-light);color:var(--accent);}
 
-/* SEARCH RESULTS */
-.search-results{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);position:absolute;top:100%;left:0;right:0;z-index:100;max-height:260px;overflow-y:auto;box-shadow:var(--shadow-lg);display:none;}
-.search-results.open{display:block;}
-.search-result-item{padding:7px 12px;font-size:12px;font-family:var(--font-ui);cursor:pointer;border-bottom:1px solid var(--border);transition:background var(--tr);color:var(--text2);line-height:1.6;}
-.search-result-item:hover{background:var(--accent-light);color:var(--accent);}
-.search-result-item:last-child{border-bottom:none;}
-.srn{font-weight:600;color:var(--text);font-size:12px;}
-.srnum{font-family:var(--font-mono);color:var(--accent);font-size:11px;}
-mark{background:var(--hl-yellow);color:inherit;border-radius:2px;padding:0 1px;}
-[data-theme=dark] mark,[data-theme=night] mark{background:var(--hl-blue);}
+/* ── Quick nav ── */
+.qnav{position:fixed;bottom:56px;right:18px;display:flex;flex-direction:column;gap:5px;z-index:50;}
+.qb{width:34px;height:34px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);box-shadow:var(--sh);transition:all var(--t);font-size:14px;}
+.qb:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
 
-/* MOBILE */
-.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9;}
+/* Loading */
+.lmask{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:3000;flex-direction:column;gap:16px;}
+.lmask.on{display:flex;}
+.spin{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ltxt{font-family:var(--font-ui);font-size:13px;color:var(--text3);}
 
-/* LOADING */
-.loading-mask{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:2000;flex-direction:column;gap:14px;}
-.loading-mask.open{display:flex;}
-.spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-family:var(--font-ui);font-size:13px;color:var(--text3);}
+/* mobile */
+.sb-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:15;}
 
-/* QUICK JUMP */
-.quick-jump{position:fixed;bottom:60px;right:18px;display:flex;flex-direction:column;gap:5px;z-index:50;}
-.quick-btn{width:34px;height:34px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);box-shadow:var(--shadow);transition:all var(--tr);font-size:14px;}
-.quick-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
-
-/* PRINT */
+/* ── Print ── */
 @media print{
-  body{overflow:visible;height:auto;background:#fff!important;color:#000!important;}
+  body{overflow:visible;height:auto;background:#fff!important;color:#000!important;font-size:11pt;}
   .app{display:block;height:auto;overflow:visible;}
-  .sidebar,.toolbar,.main-doc-tabs,.progress-bar,.quick-jump,.loading-mask,
-  .settings-panel,.sel-menu,.note-dialog,.dialog-overlay,.export-menu,
-  .sidebar-overlay,.copy-tiao,.sidebar-toggle,.doc-stats{display:none!important;}
+  .sidebar,.tb,.prog,.qnav,.lmask,.spanel,.fbar,.dialog,.overlay,.emenu,.sb-ov,.lt-cp,.doc-foot{display:none!important;}
   .main{display:block;overflow:visible;}
-  .reading-area{overflow:visible;padding:20px 40px;height:auto;display:block;}
-  .doc-container{display:none!important;max-width:none;}
-  .doc-container.print-target{display:block!important;}
-  .law-tiao{break-inside:avoid;page-break-inside:avoid;border-bottom:1px dotted #ccc;}
-  .law-pian{break-before:page;page-break-before:always;}
-  .law-pian:first-of-type{break-before:auto;page-break-before:auto;}
-  .tiao-num{color:#5a0000!important;}
-  .law-pian-title,.law-zhang-title{color:#000!important;}
-  .hl-yellow{background:#fff3a3!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .hl-green{background:#b8f0c8!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .hl-blue{background:#b8d8f0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .hl-pink{background:#f0b8d0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .hl-underline{border-bottom:2px solid #8b4513!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .sticky-note{background:#fff3a3!important;color:#3a3010!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  @page{margin:2cm;}
+  .ra{overflow:visible;display:block;height:auto;}
+  .ra-inner{padding:0;}
+  .doc{display:none!important;max-width:none;}
+  .doc.print-t{display:block!important;}
+  .lt{break-inside:avoid;page-break-inside:avoid;border-bottom:1px solid #ddd;}
+  .lp{break-before:page;page-break-before:always;}
+  .lp:first-of-type{break-before:auto;}
+  .lt-num{color:#5a0000!important;}
+  .hl-y{background:#fff3a3!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .hl-g{background:#b8f0c8!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .hl-b{background:#b8d8f0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .hl-p{background:#f0b8d0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .hl-u{border-bottom:2px solid #7c3a12!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .lt-note{background:#fff3a3!important;color:#38300a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  @page{margin:2cm;size:A4;}
 }
 
-/* RESPONSIVE */
+/* ── Responsive ── */
 @media(max-width:768px){
-  :root{--sidebar-width:280px;}
-  .sidebar{position:fixed;top:0;left:0;height:100vh;transform:translateX(-100%);z-index:100;width:var(--sidebar-width)!important;min-width:var(--sidebar-width)!important;}
-  .sidebar.mobile-open{transform:translateX(0);}
-  .sidebar.collapsed{transform:translateX(-100%);width:var(--sidebar-width)!important;min-width:var(--sidebar-width)!important;}
-  .sidebar-overlay.open{display:block;}
-  .reading-area{padding:20px 14px;}
-  .settings-panel{width:100%;right:-100%;}
-  .doc-title{font-size:18px;}
-  .note-dialog{width:calc(100vw - 28px);}
-  .tool-btn[data-tip]:hover::after{display:none;}
+  :root{--sidebar-w:280px;}
+  .sidebar{position:fixed;top:0;left:0;height:100vh;transform:translateX(-100%);z-index:100;width:var(--sidebar-w)!important;min-width:var(--sidebar-w)!important;}
+  .sidebar.mobile-on{transform:translateX(0);}
+  .sidebar.collapsed{transform:translateX(-100%)!important;}
+  .sb-ov.on{display:block;}
+  .ra-inner{padding:24px 16px;}
+  .spanel{width:100%;right:-100%;}
+  .dialog{width:calc(100vw - 28px);}
+  .tbtn[data-tip]:hover::after{display:none;}
 }
 </style>
 </head>
 <body>
 
-<div class="loading-mask" id="loadingMask">
-  <div class="spinner"></div>
-  <div class="loading-text" id="loadingText">正在解析文件…</div>
-</div>
+<div class="lmask" id="lmask"><div class="spin"></div><div class="ltxt" id="ltxt">正在解析…</div></div>
 
 <div class="app">
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebarMobile()"></div>
+  <div class="sb-ov" id="sbOv" onclick="closeMobSB()"></div>
 
-  <!-- SIDEBAR -->
+  <!-- ═══ SIDEBAR ═══ -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-inner">
-      <div class="sidebar-header">
-        <div class="logo">律典<span> · 法条阅读器</span></div>
+    <div class="si">
+      <div class="sb-head">
+        <div class="logo">律典<em> · 法条阅读器</em></div>
       </div>
-      <div class="sidebar-actions">
-        <label class="btn btn-primary" for="fileInput" style="cursor:pointer">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+
+      <div class="sb-act">
+        <label class="btn btn-p" for="fInput" style="cursor:pointer">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           导入文件
         </label>
-        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.tex" multiple style="display:none">
-        <button class="btn" id="exportBtn">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <input type="file" id="fInput" accept=".pdf,.doc,.docx,.txt,.tex" multiple style="display:none">
+        <button class="btn" id="expBtn">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           导出
         </button>
       </div>
-      <div class="search-box">
-        <div class="search-wrap">
-          <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input class="search-input" id="searchInput" placeholder="搜索条文… (Ctrl+F)" autocomplete="off">
-          <div class="search-results" id="searchResults"></div>
+
+      <div class="sb-search">
+        <div class="sw">
+          <svg class="si-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input class="sinput" id="sinput" placeholder="搜索条文… (Ctrl+F)" autocomplete="off">
+          <div class="sres" id="sres"></div>
         </div>
       </div>
-      <div class="doc-tabs" id="docTabs"></div>
-      <div class="toc" id="toc">
-        <div id="tocEmpty" style="padding:20px 16px;text-align:center;color:var(--text3);font-size:12px;font-family:var(--font-ui);line-height:1.8">导入法律文件后<br>目录将在此显示</div>
+
+      <!-- Multi-doc list: each file = one collapsible section -->
+      <div class="sb-doclist" id="sbDoclist">
+        <div id="tocEmpty" style="padding:22px 16px;text-align:center;color:var(--text3);font-size:12px;font-family:var(--font-ui);line-height:2">
+          导入法律文件后<br>目录将在此显示
+        </div>
       </div>
-      <div class="sidebar-panel" id="bookmarkPanel" style="display:none">
-        <div class="sidebar-panel-title">📌 书签</div>
-        <div class="bookmark-list" id="bookmarkList"></div>
+
+      <div class="bm-panel" id="bmPanel">
+        <div class="bm-title">📌 书签</div>
+        <div class="bm-list" id="bmList"></div>
       </div>
     </div>
   </aside>
 
-  <!-- MAIN -->
+  <!-- ═══ MAIN ═══ -->
   <div class="main">
-    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-    <div class="main-doc-tabs" id="mainDocTabs" style="display:none"></div>
+    <div class="prog"><div class="prog-f" id="progF"></div></div>
 
-    <!-- TOOLBAR -->
-    <div class="toolbar">
-      <button class="sidebar-toggle" id="sidebarToggle">
+    <!-- Toolbar -->
+    <div class="tb" id="toolbar">
+      <button class="sb-tog" id="sbTog">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
-      <div class="tsep"></div>
+      <div class="tb-sep"></div>
 
-      <!-- Format buttons -->
-      <button class="tool-btn" data-tip="加粗 Ctrl+B" onclick="fmt('bold')"><b>B</b></button>
-      <button class="tool-btn" data-tip="斜体 Ctrl+I" onclick="fmt('italic')" style="font-style:italic">I</button>
-      <button class="tool-btn" data-tip="下划线 Ctrl+U" onclick="fmt('underline')" style="text-decoration:underline">U</button>
-      <button class="tool-btn" data-tip="删除线" onclick="fmt('strikeThrough')" style="text-decoration:line-through">S</button>
-      <div class="tsep"></div>
+      <button class="tbtn" data-tip="加粗 B" id="tbB" onclick="tbFmt('bold')"><b>B</b></button>
+      <button class="tbtn" data-tip="斜体 I" id="tbI" onclick="tbFmt('italic')" style="font-style:italic">I</button>
+      <button class="tbtn" data-tip="下划线 U" id="tbU" onclick="tbFmt('underline')" style="text-decoration:underline">U</button>
+      <button class="tbtn" data-tip="删除线" id="tbS" onclick="tbFmt('strikeThrough')" style="text-decoration:line-through">S</button>
+      <div class="tb-sep"></div>
 
-      <!-- Font color -->
-      <div class="fc-btn" data-tip="字体颜色" id="fcBtn">
+      <div class="fc-wrap" data-tip="字体颜色" id="fcWrap">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4l10.5-10.5a2.83 2.83 0 0 0-4-4L4 16v4z"/></svg>
         <div class="fc-bar" id="fcBar"></div>
-        <input type="color" id="fcPicker" value="#e53935">
+        <input type="color" id="fcPick" value="#e53935">
       </div>
-      <div class="tsep"></div>
+      <div class="tb-sep"></div>
 
-      <!-- Highlights -->
-      <button class="tool-btn" data-tip="黄色高亮" onclick="applyHL('yellow')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff3a3" stroke="#c8a800" stroke-width="1.8"><path d="M9 11l-5 9h16l-5-9V4H9v7z"/></svg>
-      </button>
-      <button class="tool-btn" data-tip="绿色高亮" onclick="applyHL('green')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="#b8f0c8" stroke="#28a048" stroke-width="1.8"><path d="M9 11l-5 9h16l-5-9V4H9v7z"/></svg>
-      </button>
-      <button class="tool-btn" data-tip="蓝色高亮" onclick="applyHL('blue')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="#b8d8f0" stroke="#2070c0" stroke-width="1.8"><path d="M9 11l-5 9h16l-5-9V4H9v7z"/></svg>
-      </button>
-      <button class="tool-btn" data-tip="粉色高亮" onclick="applyHL('pink')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="#f0b8d0" stroke="#c02870" stroke-width="1.8"><path d="M9 11l-5 9h16l-5-9V4H9v7z"/></svg>
-      </button>
-      <div class="tsep"></div>
+      <button class="tbtn" data-tip="黄色高亮" onclick="tbHL('y')"><svg width="13" height="13" viewBox="0 0 24 24" fill="var(--hl-y)" stroke="#c8a000" stroke-width="2"><path d="M9 11l-5 9h16l-5-9V4H9v7z"/></svg></button>
+      <button class="tbtn" data-tip="绿色高亮" onclick="tbHL('g')"><svg width="13" height="13" viewBox="0 0 24 24" fill="var(--hl-g)" stroke="#28a048" stroke-width="2"><path d="M9 11l-5 9h16l-5-9V4H9v7z"/></svg></button>
+      <button class="tbtn" data-tip="蓝色高亮" onclick="tbHL('b')"><svg width="13" height="13" viewBox="0 0 24 24" fill="var(--hl-b)" stroke="#2070c0" stroke-width="2"><path d="M9 11l-5 9h16l-5-9V4H9v7z"/></svg></button>
+      <button class="tbtn" data-tip="粉色高亮" onclick="tbHL('p')"><svg width="13" height="13" viewBox="0 0 24 24" fill="var(--hl-p)" stroke="#c02870" stroke-width="2"><path d="M9 11l-5 9h16l-5-9V4H9v7z"/></svg></button>
+      <div class="tb-sep"></div>
 
-      <!-- Note / Bookmark -->
-      <button class="tool-btn" id="addNoteBtn" data-tip="添加批注">
+      <button class="tbtn" id="noteBtn" data-tip="添加批注">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       </button>
-      <button class="tool-btn" id="addBookmarkBtn" data-tip="添加书签">
+      <button class="tbtn" id="bmBtn" data-tip="添加书签">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
       </button>
-      <div class="tsep"></div>
+      <div class="tb-sep"></div>
 
-      <!-- Font & size -->
-      <select class="toolbar-select" id="fontSelect">
-        <option value="'Noto Serif SC',serif">宋体</option>
-        <option value="'Noto Sans SC',sans-serif">黑体</option>
-        <option value="'KaiTi','STKaiti',serif">楷体</option>
-        <option value="'FangSong','STFangsong',serif">仿宋</option>
-      </select>
-      <button class="tool-btn" data-tip="缩小" onclick="adjustFont(-1)" style="font-size:11px">A−</button>
-      <button class="tool-btn" data-tip="放大" onclick="adjustFont(1)" style="font-size:13px">A+</button>
-      <div class="tsep"></div>
+      <select class="tsel" id="fSel"><option value="'Noto Serif SC',serif">宋体</option><option value="'Noto Sans SC',sans-serif">黑体</option><option value="'KaiTi','STKaiti',serif">楷体</option><option value="'FangSong','STFangsong',serif">仿宋</option></select>
+      <button class="tbtn" data-tip="缩小" onclick="adjFS(-1)" style="font-size:11px">A−</button>
+      <button class="tbtn" data-tip="放大" onclick="adjFS(1)" style="font-size:13px">A+</button>
+      <div class="tb-sep"></div>
 
-      <!-- Theme dots -->
-      <div class="cdot" style="background:#f5f0e8" data-t="light" onclick="setTheme('light')"></div>
-      <div class="cdot" style="background:#1a1812" data-t="dark" onclick="setTheme('dark')"></div>
-      <div class="cdot" style="background:#f4efe0" data-t="sepia" onclick="setTheme('sepia')"></div>
-      <div class="cdot" style="background:#0d0f14" data-t="night" onclick="setTheme('night')"></div>
-      <div class="tsep"></div>
+      <div class="cdot" style="background:#f7f3ec" data-t="light" onclick="setTheme('light')" title="浅色"></div>
+      <div class="cdot" style="background:#18160f" data-t="dark" onclick="setTheme('dark')" title="深色"></div>
+      <div class="cdot" style="background:#f3ecdc" data-t="sepia" onclick="setTheme('sepia')" title="护眼"></div>
+      <div class="cdot" style="background:#0c0e14" data-t="night" onclick="setTheme('night')" title="夜间"></div>
+      <div class="tb-sep"></div>
 
-      <!-- Settings / Focus -->
-      <button class="tool-btn" id="settingsBtn" data-tip="阅读设置">
+      <button class="tbtn" id="spBtn" data-tip="阅读设置">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
-      <button class="tool-btn" id="focusBtn" data-tip="专注模式">
+      <button class="tbtn" id="focBtn" data-tip="专注模式">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
       </button>
     </div>
 
-    <!-- READING AREA -->
-    <div class="reading-area" id="readingArea">
-      <div class="welcome" id="welcomeScreen">
-        <div class="welcome-icon">⚖</div>
-        <div class="welcome-title">律典 · 法条阅读器</div>
-        <div class="welcome-desc">智能解析法律文书结构，自动识别编、章、节、条、款、项</div>
-        <div class="upload-zone" id="uploadZone">
-          <div style="font-size:28px;opacity:.4">📄</div>
-          <div class="upload-zone-text">拖拽文件至此，或点击导入</div>
-          <div class="upload-formats">PDF · DOCX · DOC · TXT · TEX</div>
+    <!-- Reading Area -->
+    <div class="ra" id="ra">
+      <div class="ra-inner" id="raInner">
+        <div class="welcome" id="welcome">
+          <div class="w-icon">⚖</div>
+          <div class="w-title">律典 · 法条阅读器</div>
+          <div class="w-desc">智能解析中国法律文书结构，自动识别编、章、节、条、款、项层次</div>
+          <div class="dropzone" id="dz">
+            <div style="font-size:28px;opacity:.35">📄</div>
+            <div class="dz-text">拖拽文件到此，或点击导入</div>
+            <div class="dz-fmt">PDF · DOCX · DOC · TXT · TEX</div>
+          </div>
+          <button class="btn btn-p" onclick="G('fInput').click()">选择文件</button>
         </div>
-        <button class="btn btn-primary" onclick="G('fileInput').click()">选择文件</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Settings panel -->
-<div class="settings-panel" id="settingsPanel">
-  <div class="settings-header">
-    <div class="settings-title">📖 阅读设置</div>
-    <button class="tool-btn" onclick="closeSettings()" style="border:1px solid var(--border)">✕</button>
-  </div>
-  <div class="settings-body">
-    <div class="settings-group">
-      <div class="settings-label">主题</div>
-      <div class="theme-grid">
-        <div class="theme-swatch active" data-t="light" onclick="setTheme('light')">☀ 浅色</div>
-        <div class="theme-swatch" data-t="dark" onclick="setTheme('dark')">🌙 深色</div>
-        <div class="theme-swatch" data-t="sepia" onclick="setTheme('sepia')">📜 护眼</div>
-        <div class="theme-swatch" data-t="night" onclick="setTheme('night')">🌃 夜间</div>
-      </div>
-    </div>
-    <div class="settings-group">
-      <div class="settings-label">字体</div>
-      <div class="font-grid">
-        <div class="font-btn active" data-font="'Noto Serif SC',serif" onclick="setFont(this)">宋体风格</div>
-        <div class="font-btn" data-font="'Noto Sans SC',sans-serif" onclick="setFont(this)">黑体风格</div>
-        <div class="font-btn" data-font="'KaiTi','STKaiti',serif" onclick="setFont(this)" style="font-family:'KaiTi','STKaiti',serif">楷体</div>
-        <div class="font-btn" data-font="'FangSong','STFangsong',serif" onclick="setFont(this)" style="font-family:'FangSong','STFangsong',serif">仿宋</div>
-      </div>
-    </div>
-    <div class="settings-group">
-      <div class="settings-label">字号</div>
-      <div class="range-row">
-        <span class="range-label">字体大小</span>
-        <input type="range" min="12" max="22" value="16" id="fontSizeRange" oninput="applyFontSize(this.value)">
-        <span class="range-val" id="fontSizeVal">16px</span>
-      </div>
-    </div>
-    <div class="settings-group">
-      <div class="settings-label">排版</div>
-      <div class="range-row">
-        <span class="range-label">行间距</span>
-        <input type="range" min="1.4" max="3.0" step="0.1" value="2.0" id="lineHeightRange" oninput="applyLineHeight(this.value)">
-        <span class="range-val" id="lineHeightVal">2.0</span>
-      </div>
-      <div class="range-row">
-        <span class="range-label">字间距</span>
-        <input type="range" min="0" max="0.15" step="0.01" value="0.04" id="letterSpacingRange" oninput="applyLetterSpacing(this.value)">
-        <span class="range-val" id="letterSpacingVal">0.04</span>
-      </div>
-      <div class="range-row">
-        <span class="range-label">段落缩进</span>
-        <input type="range" min="0" max="4" step="0.5" value="2" id="indentRange" oninput="applyIndent(this.value)">
-        <span class="range-val" id="indentVal">2em</span>
-      </div>
-      <div class="range-row">
-        <span class="range-label">正文宽度</span>
-        <input type="range" min="500" max="1000" step="50" value="800" id="widthRange" oninput="applyWidth(this.value)">
-        <span class="range-val" id="widthVal">800</span>
-      </div>
+<div class="spanel" id="spanel">
+  <div class="sp-hd"><div class="sp-title">📖 阅读设置</div><button class="tbtn" onclick="closeSettings()" style="border:1px solid var(--border)">✕</button></div>
+  <div class="sp-body">
+    <div class="sg"><div class="slabel">主题</div><div class="tgrid">
+      <div class="tsw active" data-t="light" onclick="setTheme('light')">☀ 浅色</div>
+      <div class="tsw" data-t="dark" onclick="setTheme('dark')">🌙 深色</div>
+      <div class="tsw" data-t="sepia" onclick="setTheme('sepia')">📜 护眼</div>
+      <div class="tsw" data-t="night" onclick="setTheme('night')">🌃 夜间</div>
+    </div></div>
+    <div class="sg"><div class="slabel">字体</div><div class="fgrid">
+      <div class="fbtn active" data-font="'Noto Serif SC',serif" onclick="setFont(this)">宋体风格</div>
+      <div class="fbtn" data-font="'Noto Sans SC',sans-serif" onclick="setFont(this)">黑体风格</div>
+      <div class="fbtn" data-font="'KaiTi','STKaiti',serif" style="font-family:'KaiTi','STKaiti',serif" onclick="setFont(this)">楷体</div>
+      <div class="fbtn" data-font="'FangSong','STFangsong',serif" style="font-family:'FangSong','STFangsong',serif" onclick="setFont(this)">仿宋</div>
+    </div></div>
+    <div class="sg"><div class="slabel">字号</div><div class="rr"><span class="rl">大小</span><input type="range" min="12" max="22" value="16" id="fsRange" oninput="applyFS(this.value)"><span class="rv" id="fsVal">16px</span></div></div>
+    <div class="sg"><div class="slabel">排版</div>
+      <div class="rr"><span class="rl">行间距</span><input type="range" min="1.4" max="3.2" step="0.1" value="2.1" id="lhRange" oninput="applyLH(this.value)"><span class="rv" id="lhVal">2.1</span></div>
+      <div class="rr"><span class="rl">字间距</span><input type="range" min="0" max="0.15" step="0.01" value="0.04" id="lsRange" oninput="applyLS(this.value)"><span class="rv" id="lsVal">0.04</span></div>
+      <div class="rr"><span class="rl">段落缩进</span><input type="range" min="0" max="4" step="0.5" value="2" id="indRange" oninput="applyInd(this.value)"><span class="rv" id="indVal">2em</span></div>
+      <div class="rr"><span class="rl">正文宽度</span><input type="range" min="520" max="1000" step="40" value="760" id="cwRange" oninput="applyCW(this.value)"><span class="rv" id="cwVal">760</span></div>
     </div>
   </div>
 </div>
 
-<!-- Selection context menu -->
-<div class="sel-menu" id="selMenu">
-  <div class="sel-item" onclick="fmtSel('bold')"><b>B</b> 加粗</div>
-  <div class="sel-item" onclick="fmtSel('italic')" style="font-style:italic">I 斜体</div>
-  <div class="sel-item" onclick="fmtSel('underline')"><u>U</u> 下划线</div>
-  <div class="sel-item" onclick="fmtSel('strikeThrough')" style="text-decoration:line-through">S 删除线</div>
-  <div class="sel-sep"></div>
-  <div class="sel-item" onclick="applyHL('yellow')"><span style="color:#c8a800">■</span> 黄色高亮</div>
-  <div class="sel-item" onclick="applyHL('green')"><span style="color:#28a048">■</span> 绿色高亮</div>
-  <div class="sel-item" onclick="applyHL('blue')"><span style="color:#2070c0">■</span> 蓝色高亮</div>
-  <div class="sel-item" onclick="applyHL('pink')"><span style="color:#c02870">■</span> 粉色高亮</div>
-  <div class="sel-sep"></div>
-  <div class="sel-item" onclick="addNoteFromSel()">✏ 添加批注</div>
-  <div class="sel-item" onclick="copySelection()">⧉ 复制</div>
+<!-- Floating format bar (appears near text selection) -->
+<div class="fbar" id="fbar">
+  <!-- Bold / Italic / Underline / Strike -->
+  <button class="fb" onmousedown="fbFmt(event,'bold')" title="加粗"><b>B</b></button>
+  <button class="fb" onmousedown="fbFmt(event,'italic')" title="斜体" style="font-style:italic">I</button>
+  <button class="fb" onmousedown="fbFmt(event,'underline')" title="下划线" style="text-decoration:underline">U</button>
+  <button class="fb" onmousedown="fbFmt(event,'strikeThrough')" title="删除线" style="text-decoration:line-through">S</button>
+  <div class="fbar-sep"></div>
+  <!-- Font color -->
+  <div class="fb-fc" title="字体颜色" id="fbFcWrap">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="pointer-events:none"><path d="M4 20h4l10.5-10.5a2.83 2.83 0 0 0-4-4L4 16v4z"/></svg>
+    <div class="fb-fc-bar" id="fbFcBar" style="background:#e53935"></div>
+    <input type="color" id="fbFcPick" value="#e53935" onmousedown="event.stopPropagation()" onchange="fbFcApply(this.value)">
+  </div>
+  <div class="fbar-sep"></div>
+  <!-- Highlights -->
+  <div class="fb-hl" style="background:#fff3a3" title="黄色高亮" onmousedown="fbHL(event,'y')"></div>
+  <div class="fb-hl" style="background:#b8f0c8" title="绿色高亮" onmousedown="fbHL(event,'g')"></div>
+  <div class="fb-hl" style="background:#b8d8f0" title="蓝色高亮" onmousedown="fbHL(event,'b')"></div>
+  <div class="fb-hl" style="background:#f0b8d0" title="粉色高亮" onmousedown="fbHL(event,'p')"></div>
+  <div class="fbar-sep"></div>
+  <!-- Copy / Note -->
+  <div class="fb-copy" onmousedown="fbCopy(event)" title="复制">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+    复制
+  </div>
+  <div class="fb-note" onmousedown="fbNote(event)" title="批注">✏ 批注</div>
 </div>
 
 <!-- Note dialog -->
-<div class="dialog-overlay" id="dialogOverlay" onclick="closeNoteDialog()"></div>
-<div class="note-dialog" id="noteDialog">
-  <div class="note-title">✏ 添加批注</div>
-  <textarea id="noteTextarea" placeholder="输入批注内容…"></textarea>
-  <div class="note-actions">
-    <button class="btn" onclick="closeNoteDialog()">取消</button>
-    <button class="btn btn-primary" onclick="saveNote()">保存</button>
-  </div>
+<div class="overlay" id="overlay" onclick="closeNote()"></div>
+<div class="dialog" id="dlg">
+  <div class="dlg-title">✏ 添加批注</div>
+  <textarea id="dlgTA" placeholder="输入批注内容…"></textarea>
+  <div class="dlg-acts"><button class="btn" onclick="closeNote()">取消</button><button class="btn btn-p" onclick="saveNote()">保存</button></div>
 </div>
 
 <!-- Export menu -->
-<div class="export-menu" id="exportMenu">
-  <div class="export-item" onclick="exportMD()">📄 导出为 Markdown</div>
-  <div class="export-item" onclick="exportTXT()">📝 导出为 TXT</div>
-  <div class="export-item" onclick="exportPDF()">🖨 打印 / 导出 PDF</div>
+<div class="emenu" id="emenu">
+  <div class="ei" onclick="expMD()">📄 导出为 Markdown</div>
+  <div class="ei" onclick="expTXT()">📝 导出为 TXT</div>
+  <div class="ei" onclick="expPDF()">🖨 打印 / 导出 PDF</div>
 </div>
 
-<!-- Quick jump -->
-<div class="quick-jump">
-  <button class="quick-btn" onclick="G('readingArea').scrollTo({top:0,behavior:'smooth'})">↑</button>
-  <button class="quick-btn" onclick="G('readingArea').scrollTo({top:9e9,behavior:'smooth'})">↓</button>
+<div class="qnav">
+  <button class="qb" onclick="G('ra').scrollTo({top:0,behavior:'smooth'})" title="顶部">↑</button>
+  <button class="qb" onclick="G('ra').scrollTo({top:9e9,behavior:'smooth'})" title="底部">↓</button>
 </div>
 
+<!-- ══════════════════════ JAVASCRIPT ══════════════════════ -->
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-/* ── Helpers ── */
-const G = id => document.getElementById(id);
-const Q = (s,ctx=document) => ctx.querySelector(s);
-const QA = (s,ctx=document) => [...ctx.querySelectorAll(s)];
-const esc = s => !s?'':(s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const G=id=>document.getElementById(id);
+const Q=(s,ctx=document)=>ctx.querySelector(s);
+const QA=(s,ctx=document)=>[...ctx.querySelectorAll(s)];
+const esc=s=>(!s?'':(s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'));
+const css=(k,v)=>document.documentElement.style.setProperty(k,v);
 
-/* ── State ── */
-let docs={}, activeId=null, noteTarget=null, isMobile=innerWidth<=768, curFc='#e53935';
+let docs={}, activeId=null, noteTarget=null, isMob=innerWidth<=768;
+let curFC='#e53935'; // current font color
 
-/* ── DOM ── */
-const readingArea=G('readingArea'), sidebar=G('sidebar'), sidebarOverlay=G('sidebarOverlay');
-const toc=G('toc'), docTabs=G('docTabs'), mainDocTabs=G('mainDocTabs');
-const selMenu=G('selMenu'), settingsPanel=G('settingsPanel');
-const searchInput=G('searchInput'), searchResults=G('searchResults');
-const exportMenu=G('exportMenu'), bookmarkPanel=G('bookmarkPanel'), bookmarkList=G('bookmarkList');
-const progressFill=G('progressFill'), fcPicker=G('fcPicker'), fcBar=G('fcBar');
+const ra=G('ra'), raI=G('raInner'), sidebar=G('sidebar'), sbOv=G('sbOv');
+const sbDoclist=G('sbDoclist'), spanel=G('spanel');
+const sinput=G('sinput'), sres=G('sres'), emenu=G('emenu');
+const bmPanel=G('bmPanel'), bmList=G('bmList'), progF=G('progF');
+const fcPick=G('fcPick'), fcBar=G('fcBar');
+const fbar=G('fbar');
 
-/* ── File handling ── */
-G('fileInput').addEventListener('change',e=>loadFiles(e.target.files));
-const upZone=G('uploadZone');
-upZone.addEventListener('click',()=>G('fileInput').click());
-upZone.addEventListener('dragover',e=>{e.preventDefault();upZone.classList.add('dragover');});
-upZone.addEventListener('dragleave',()=>upZone.classList.remove('dragover'));
-upZone.addEventListener('drop',e=>{e.preventDefault();upZone.classList.remove('dragover');loadFiles(e.dataTransfer.files);});
-readingArea.addEventListener('dragover',e=>e.preventDefault());
-readingArea.addEventListener('drop',e=>{e.preventDefault();loadFiles(e.dataTransfer.files);});
+/* ═══ File loading ═══ */
+G('fInput').addEventListener('change',e=>loadFiles(e.target.files));
+const dz=G('dz');
+dz.addEventListener('click',()=>G('fInput').click());
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');loadFiles(e.dataTransfer.files);});
+ra.addEventListener('dragover',e=>e.preventDefault());
+ra.addEventListener('drop',e=>{e.preventDefault();loadFiles(e.dataTransfer.files);});
 
 async function loadFiles(files){for(const f of files)await loadFile(f);}
 
 async function loadFile(file){
   showLoad(true,'解析中：'+file.name);
   try{
-    let text='';
     const ext=file.name.split('.').pop().toLowerCase();
+    let text='';
     if(ext==='pdf') text=await extractPDF(file);
     else if(ext==='docx') text=await extractDocx(file);
     else if(ext==='doc') text=await extractDoc(file);
     else if(ext==='txt'||ext==='tex') text=await file.text();
-    else{alert('不支持的格式：'+ext);showLoad(false);return;}
-
+    else{alert('不支持的格式: '+ext);showLoad(false);return;}
     const id='d'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
     const title=file.name.replace(/\.[^/.]+$/,'');
     docs[id]={title,raw:text,parsed:parseLaw(text,title),notes:{},bookmarks:[]};
     addDocUI(id);
-    switchDoc(id);
-    G('welcomeScreen').style.display='none';
-  }catch(e){console.error(e);alert('解析失败：'+e.message);}
+    swDoc(id);
+    G('welcome').style.display='none';
+  }catch(e){console.error(e);alert('解析失败: '+e.message);}
   showLoad(false);
 }
 
-/* ── PDF ── */
+/* ══════════════════════════════════════════════════════════════
+   PDF EXTRACTION — line-joining aware of Chinese law structure
+   ══════════════════════════════════════════════════════════════
+   Strategy:
+   1. Extract all text items per page with their x/y coordinates.
+   2. Group items into visual rows (same Y ± tolerance).
+   3. Join items within each row (handle spacing gaps).
+   4. Collect raw visual lines.
+   5. POST-PROCESS: merge continuation lines into their paragraph.
+      A line is a "continuation" if it does NOT start with a
+      structural keyword (第X编/章/节/条) and the previous line
+      does NOT end with a sentence-final punctuation (。！？…).
+      Continuation lines are joined (no newline) to the previous line.
+   ══════════════════════════════════════════════════════════════ */
 async function extractPDF(file){
   const ab=await file.arrayBuffer();
   const pdf=await pdfjsLib.getDocument({data:ab}).promise;
-  let out='';
-  for(let i=1;i<=pdf.numPages;i++){
-    const page=await pdf.getPage(i);
-    const c=await page.getTextContent();
-    const items=c.items.map(it=>({str:it.str,x:it.transform[4],y:it.transform[5]}));
-    items.sort((a,b)=>b.y-a.y||a.x-b.x);
-    let lastY=null,line='';
+
+  /* Structural-start patterns – lines beginning with these are NEVER merged upward */
+  const STRUCT_RE=/^[\s　]*(第[一二三四五六七八九十百千零〇\d]+[编章节条]|（[一二三四五六七八九十\d]+）|[一二三四五六七八九十\d]+[、．])/;
+  const SENT_END=/[。！？…」』]\s*$/;
+
+  const rawLines=[];
+
+  for(let p=1;p<=pdf.numPages;p++){
+    const page=await pdf.getPage(p);
+    const ct=await page.getTextContent({normalizeWhitespace:false,disableCombineTextItems:false});
+    const vp=page.getViewport({scale:1});
+    const H=vp.height;
+
+    /* collect items */
+    const items=ct.items
+      .filter(it=>it.str&&it.str.trim())
+      .map(it=>({
+        y:Math.round((H-it.transform[5])*2)/2, // bucket to 0.5pt
+        x:it.transform[4],
+        str:it.str,
+        w:it.width||0
+      }));
+
+    /* group into rows by Y */
+    const rows=[];
     for(const it of items){
-      if(lastY!==null&&Math.abs(it.y-lastY)>3){out+=line.trim()+'\n';line='';}
-      line+=it.str;lastY=it.y;
+      let row=rows.find(r=>Math.abs(r.y-it.y)<5);
+      if(!row){row={y:it.y,items:[]};rows.push(row);}
+      row.items.push(it);
     }
-    if(line.trim())out+=line.trim()+'\n';
-    out+='\n';
+    rows.sort((a,b)=>a.y-b.y);
+
+    /* join each row into a string */
+    for(const row of rows){
+      row.items.sort((a,b)=>a.x-b.x);
+      let line='';let prevEnd=null;
+      for(const it of row.items){
+        if(prevEnd!==null){
+          const gap=it.x-prevEnd;
+          // Chinese chars ~10-12pt wide; gap > 8pt = intentional space
+          if(gap>8&&!line.endsWith(' ')) line+=' ';
+        }
+        line+=it.str;
+        prevEnd=it.x+it.w;
+      }
+      line=line.trim();
+      // Remove common PDF number-repeat artifacts like "1 1" page numbers
+      line=line.replace(/^(\d+)\s+\1$/, '');
+      if(line) rawLines.push(line);
+    }
+    rawLines.push('__PAGE__');
   }
-  return out;
+
+  /* ── Post-process: merge continuation lines ── */
+  const merged=[];
+  for(let i=0;i<rawLines.length;i++){
+    const line=rawLines[i];
+    if(line==='__PAGE__'){merged.push('');continue;}
+
+    /* always start a new paragraph for structural lines */
+    if(STRUCT_RE.test(line)){merged.push(line);continue;}
+
+    /* if previous non-empty logical line ended with sentence-final punct,
+       this is a new paragraph */
+    const prev=merged[merged.length-1];
+    if(!prev||prev===''||SENT_END.test(prev)){
+      merged.push(line);
+    } else {
+      /* continuation: join to previous line without adding newline */
+      merged[merged.length-1]+=line;
+    }
+  }
+
+  /* ── Clean up ── */
+  let text=merged.join('\n');
+  text=text.replace(/([。，、；：！？])\1+/g,'$1');  // repeated punct
+  text=text.replace(/\n{3,}/g,'\n\n');               // excess blanks
+  text=text.replace(/ +/g,' ');                       // multi-spaces
+  return text;
 }
 
-/* ── DOCX / DOC ── */
 async function extractDocx(file){const ab=await file.arrayBuffer();return(await mammoth.extractRawText({arrayBuffer:ab})).value;}
-async function extractDoc(file){try{return await extractDocx(file);}catch(e){return await file.text();}}
+async function extractDoc(file){try{return await extractDocx(file);}catch{return await file.text();}}
 
-/* ── Parser ── */
+/* ═══ Parser ═══ */
 function parseLaw(text,defaultTitle){
   text=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n{3,}/g,'\n\n');
-  const lines=text.split('\n');
   const RE={
-    titleKw:/(?:法|条例|规定|办法|规则|章程|决定|通知|制度|暂行|实施|管理|保护)/,
+    kw:/(?:法|条例|规定|办法|规则|章程|决定|通知|制度|暂行|实施|管理|保护|促进)/,
     pian:/^[\s　]*(第[一二三四五六七八九十百千零〇\d]+编)\s*(.*)?$/,
     zhang:/^[\s　]*(第[一二三四五六七八九十百千零〇\d]+章)\s*(.*)?$/,
     jie:/^[\s　]*(第[一二三四五六七八九十百千零〇\d]+节)\s*(.*)?$/,
     tiao:/^[\s　]*(第[一二三四五六七八九十百千零〇\d]+条)\s*([\s\S]*)?$/,
+    xiang:/^[\s　]*[（(][一二三四五六七八九十百\d]+[）)]\s*/,
+    xiang2:/^[\s　]*[一二三四五六七八九十百\d]+[、．.]\s+\S/,
   };
-  let docTitle=defaultTitle, blocks=[], currentTiao=null;
-  let artCount=0, structCount=0, foundTitle=false;
-
+  const lines=text.split('\n');
+  let blocks=[],curr=null,ac=0,sc=0,titleFound=false,docTitle=defaultTitle;
   for(let i=0;i<lines.length;i++){
-    const raw=lines[i], line=raw.trim();
+    const line=lines[i].trim();
     if(!line) continue;
-    if(!foundTitle&&i<20&&line.length<=50&&RE.titleKw.test(line)&&!RE.tiao.test(line)&&!RE.pian.test(line)&&!RE.zhang.test(line)){
-      docTitle=line; foundTitle=true; blocks.push({type:'title',text:line}); continue;
+    if(!titleFound&&i<25&&line.length<=60&&RE.kw.test(line)&&!RE.tiao.test(line)&&!RE.pian.test(line)&&!RE.zhang.test(line)){
+      docTitle=line;titleFound=true;blocks.push({type:'title',text:line});continue;
     }
-    const mP=line.match(RE.pian), mZ=line.match(RE.zhang), mJ=line.match(RE.jie), mT=line.match(RE.tiao);
-    if(mP){currentTiao=null;structCount++;blocks.push({type:'pian',num:mP[1],title:(mP[2]||'').trim(),id:'pian-'+structCount});}
-    else if(mZ){currentTiao=null;structCount++;blocks.push({type:'zhang',num:mZ[1],title:(mZ[2]||'').trim(),id:'zhang-'+structCount});}
-    else if(mJ){currentTiao=null;blocks.push({type:'jie',num:mJ[1],title:(mJ[2]||'').trim()});}
-    else if(mT){
-      artCount++;
-      currentTiao={type:'tiao',num:mT[1],content:(mT[2]||'').trim(),kuan:[],id:'tiao-'+artCount,rawNum:artCount};
-      blocks.push(currentTiao);
-    } else if(currentTiao){
-      const isX=/^[（(][一二三四五六七八九十\d]+[）)]/.test(line)||/^[一二三四五六七八九十\d]+[、．.]\s/.test(line);
-      currentTiao.kuan.push({type:isX?'xiang':'kuan',text:line});
-    } else{
-      blocks.push({type:'text',text:line});
-    }
+    const mp=line.match(RE.pian),mz=line.match(RE.zhang),mj=line.match(RE.jie),mt=line.match(RE.tiao);
+    if(mp){curr=null;sc++;blocks.push({type:'pian',num:mp[1],title:(mp[2]||'').trim(),id:'pian-'+sc});}
+    else if(mz){curr=null;sc++;blocks.push({type:'zhang',num:mz[1],title:(mz[2]||'').trim(),id:'zhang-'+sc});}
+    else if(mj){curr=null;blocks.push({type:'jie',num:mj[1],title:(mj[2]||'').trim()});}
+    else if(mt){ac++;curr={type:'tiao',num:mt[1],content:(mt[2]||'').trim(),kuan:[],id:'tiao-'+ac,n:ac};blocks.push(curr);}
+    else if(curr){const isX=RE.xiang.test(line)||RE.xiang2.test(line);curr.kuan.push({type:isX?'xiang':'kuan',text:line});}
+    else blocks.push({type:'text',text:line});
   }
-
-  // Remove duplicate pian/zhang/jie before the first tiao
-  // (table-of-contents entries that appear again inside the body)
-  const firstTiaoIdx=blocks.findIndex(b=>b.type==='tiao');
-  let filtered=blocks;
-  if(firstTiaoIdx>0){
-    const bodyBlocks=blocks.slice(firstTiaoIdx);
-    filtered=blocks.filter((b,idx)=>{
-      if(idx>=firstTiaoIdx) return true;
-      if(b.type==='title') return true;
-      if(b.type==='text') return false;
-      // Drop if same struct (pian/zhang) appears again after first tiao
-      const again=bodyBlocks.some(b2=>b2.type===b.type&&b2.num===b.num);
-      return !again;
+  /* remove duplicate struct headings before first tiao */
+  const fi=blocks.findIndex(b=>b.type==='tiao');
+  if(fi>0){
+    const body=blocks.slice(fi);
+    blocks=blocks.filter((b,i)=>{
+      if(i>=fi)return true;
+      if(b.type==='title')return true;
+      if(b.type==='text')return false;
+      return !body.some(b2=>b2.type===b.type&&b2.num===b.num);
     });
   }
-
-  return{title:docTitle,blocks:filtered,artCount};
+  return{title:docTitle,blocks,ac};
 }
 
-/* ── Render ── */
+/* ═══ Render ═══ */
 function renderDoc(id){
   G('doc-'+id)?.remove();
-  const doc=docs[id], parsed=doc.parsed;
-  const wrap=document.createElement('div');
-  wrap.className='doc-container'; wrap.id='doc-'+id;
-
-  // Header
-  const hdr=document.createElement('div'); hdr.className='doc-header';
-  hdr.innerHTML=`<div class="doc-title">${esc(parsed.title)}</div><div class="doc-meta">共 ${parsed.artCount} 条</div>`;
+  const doc=docs[id],p=doc.parsed;
+  const wrap=document.createElement('div');wrap.className='doc';wrap.id='doc-'+id;
+  const hdr=document.createElement('div');hdr.className='doc-hdr';
+  hdr.innerHTML=`<div class="doc-title">${esc(p.title)}</div><div class="doc-meta">共 ${p.ac} 条</div>`;
   wrap.appendChild(hdr);
 
-  for(const block of parsed.blocks){
-    if(block.type==='title') continue;
-    if(block.type==='pian'){
-      const el=document.createElement('div');el.className='law-pian';el.id=block.id;
-      el.innerHTML=`<div class="law-pian-eyebrow">${esc(block.num)}</div>
-        <div class="law-pian-title">${esc(block.title)||esc(block.num)}</div>
-        <div class="law-pian-ornament"><span></span><i>◆</i><span></span></div>`;
-      wrap.appendChild(el);
-    } else if(block.type==='zhang'){
-      const el=document.createElement('div');el.className='law-zhang';el.id=block.id;
-      el.innerHTML=`<div class="law-zhang-inner">
-        <div class="law-zhang-eyebrow">${esc(block.num)}</div>
-        <div class="law-zhang-title">${esc(block.title)||esc(block.num)}</div>
-      </div>
-      <div class="law-zhang-rule"></div>`;
-      wrap.appendChild(el);
-    } else if(block.type==='jie'){
-      const el=document.createElement('div');el.className='law-jie';
-      el.innerHTML=`<div class="law-jie-eyebrow">${esc(block.num)}</div><div class="law-jie-title">${esc(block.title)}</div>`;
-      wrap.appendChild(el);
-    } else if(block.type==='tiao'){
-      const el=document.createElement('div');el.className='law-tiao';el.id=block.id;
-      el.setAttribute('data-n',block.rawNum);
-      if(doc.bookmarks.includes(block.id)) el.setAttribute('data-bookmarked','true');
-
-      // editable body
-      const body=document.createElement('div');
-      body.className='tiao-body';body.contentEditable='true';body.spellcheck=false;body.style.outline='none';
-
-      let html=`<span class="tiao-num" contenteditable="false">${esc(block.num)}</span><span class="tiao-content">${esc(block.content)}</span>`;
-      for(const k of block.kuan) html+=`<div class="${k.type==='xiang'?'law-xiang':'law-kuan'}">${esc(k.text)}</div>`;
-      if(doc.notes[block.id]) html+=`<div class="sticky-note" contenteditable="false">📝 ${esc(doc.notes[block.id])}</div>`;
-      body.innerHTML=html;
-
-      const cpBtn=document.createElement('button');cpBtn.className='copy-tiao';cpBtn.textContent='⧉';
-      cpBtn.contentEditable='false';cpBtn.onclick=e=>{e.stopPropagation();copyTiaoEl(el);};
-
-      el.appendChild(body);el.appendChild(cpBtn);
-      wrap.appendChild(el);
-    } else if(block.type==='text'){
-      const el=document.createElement('p');
-      el.style.cssText='color:var(--text2);font-size:.95em;margin:8px 0;line-height:var(--line-height)';
-      el.textContent=block.text;wrap.appendChild(el);
-    }
-  }
-
-  const stats=document.createElement('div');stats.className='doc-stats';
-  stats.innerHTML=`<span>📄 ${esc(parsed.title)}</span><span>⚖ ${parsed.artCount} 条</span>`;
-  wrap.appendChild(stats);
-  readingArea.appendChild(wrap);
-  buildToc(id);
-}
-
-/* ── TOC ── */
-function buildToc(id){
-  QA(`[data-doc="${id}"]`,toc).forEach(el=>el.remove());
-  G('tocEmpty')&&(G('tocEmpty').style.display='none');
-
-  const doc=docs[id], blocks=doc.parsed.blocks;
-  const frag=document.createDocumentFragment();
-
-  // Doc heading
-  const dh=document.createElement('div');dh.className='toc-item toc-l0';dh.setAttribute('data-doc',id);
-  dh.style.cssText='padding:9px 12px 6px;justify-content:space-between;';
-  dh.innerHTML=`<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(doc.parsed.title)}</span><span class="toc-badge">${doc.parsed.artCount}条</span>`;
-  dh.onclick=()=>{switchDoc(id);scrollTo('doc-'+id);if(isMobile)closeSidebarMobile();};
-  frag.appendChild(dh);
-
-  let pianG=null, zhangG=null;
-  const getContainer=()=>zhangG?.body||pianG?.body||frag;
-
-  for(const b of blocks){
+  for(const b of p.blocks){
     if(b.type==='title') continue;
     if(b.type==='pian'){
-      zhangG=null;
-      const g=makeTocGroup('pian',b,id);frag.appendChild(g.group);pianG=g;
-    } else if(b.type==='zhang'){
-      zhangG=null;
-      const parent=pianG?pianG.body:frag;
-      const g=makeTocGroup('zhang',b,id);parent.appendChild(g.group);zhangG=g;
-    } else if(b.type==='jie'){
-      const c=getContainer();
-      const el=document.createElement('div');el.className='toc-item toc-l4';el.setAttribute('data-doc',id);
-      el.innerHTML=`<span class="toc-num">${esc(b.num)}</span><span>${esc(b.title)}</span>`;
-      el.onclick=()=>{switchDoc(id);if(isMobile)closeSidebarMobile();};
-      c.appendChild(el);
-    } else if(b.type==='tiao'){
-      const c=getContainer();
-      const el=document.createElement('div');el.className='toc-item toc-l4';
-      el.setAttribute('data-doc',id);el.setAttribute('data-tgt',b.id);
-      const prev=b.content?b.content.slice(0,16)+(b.content.length>16?'…':''):'';
-      el.innerHTML=`<span class="toc-num">${esc(b.num)}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(prev)}</span>`;
-      el.onclick=()=>{switchDoc(id);scrollTo(b.id);QA('.toc-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');if(isMobile)closeSidebarMobile();};
-      c.appendChild(el);
+      const el=document.createElement('div');el.className='lp';el.id=b.id;
+      el.innerHTML=`<div class="lp-ey">${esc(b.num)}</div><div class="lp-title">${esc(b.title||b.num)}</div><div class="lp-orn"><span></span><i>◆</i><span></span></div>`;
+      wrap.appendChild(el);
+    }else if(b.type==='zhang'){
+      const el=document.createElement('div');el.className='lz';el.id=b.id;
+      el.innerHTML=`<div class="lz-inner"><div class="lz-ey">${esc(b.num)}</div><div class="lz-title">${esc(b.title||b.num)}</div></div><div class="lz-rule"></div>`;
+      wrap.appendChild(el);
+    }else if(b.type==='jie'){
+      const el=document.createElement('div');el.className='ljie';
+      el.innerHTML=`<div class="ljie-ey">${esc(b.num)}</div><div class="ljie-title">${esc(b.title)}</div>`;
+      wrap.appendChild(el);
+    }else if(b.type==='tiao'){
+      const el=document.createElement('div');el.className='lt';el.id=b.id;el.setAttribute('data-n',b.n);
+      if(doc.bookmarks.some(bm=>bm.id===b.id)) el.setAttribute('data-bm','true');
+      const flag=document.createElement('div');flag.className='lt-bm-flag';flag.textContent='🔖';
+      flag.title='点击删除书签';flag.onclick=e=>{e.stopPropagation();removeBM(id,b.id);};
+      const body=document.createElement('div');body.className='lt-body';
+      body.contentEditable='true';body.spellcheck=false;body.style.outline='none';
+      let html=`<span class="lt-num" contenteditable="false">${esc(b.num)}</span><span class="lt-txt">${esc(b.content)}</span>`;
+      for(const k of b.kuan) html+=`<div class="${k.type==='xiang'?'lt-xiang':'lt-kuan'}">${esc(k.text)}</div>`;
+      if(doc.notes[b.id]) html+=noteHTML(doc.notes[b.id]);
+      body.innerHTML=html;
+      const cp=document.createElement('button');cp.className='lt-cp';cp.textContent='⧉';
+      cp.contentEditable='false';cp.title='复制本条';
+      cp.onclick=e=>{e.stopPropagation();copyTiao(el);};
+      el.appendChild(flag);el.appendChild(body);el.appendChild(cp);
+      wrap.appendChild(el);
+    }else if(b.type==='text'){
+      const el=document.createElement('p');
+      el.style.cssText='color:var(--text2);font-size:.95em;margin:6px 0;line-height:var(--lh)';
+      el.textContent=b.text;wrap.appendChild(el);
     }
   }
-  toc.appendChild(frag);
+  const foot=document.createElement('div');foot.className='doc-foot';
+  foot.innerHTML=`<span>📄 ${esc(p.title)}</span><span>⚖ ${p.ac} 条</span>`;
+  wrap.appendChild(foot);
+  raI.appendChild(wrap);
 }
+function noteHTML(text){return`<div class="lt-note" contenteditable="false" onclick="editNote(this)" title="点击编辑批注">📝 <span>${esc(text)}</span></div>`;}
 
-function makeTocGroup(type,block,id){
-  const isPian=type==='pian';
-  const group=document.createElement('div');group.className='toc-group';group.setAttribute('data-doc',id);
-
-  const header=document.createElement('div');header.className='toc-group-header';header.setAttribute('data-doc',id);
-
-  const toggle=document.createElement('span');toggle.className='toc-toggle';toggle.innerHTML='▾';
-  const inner=document.createElement('div');inner.className=isPian?'toc-pian-inner':'toc-zhang-inner';
-  inner.innerHTML=`<span>${esc(block.num)}</span>${block.title?`<span class="toc-label-text" style="color:var(--text2);font-weight:400;font-size:11px">${esc(block.title)}</span>`:''}`;
-
-  header.appendChild(toggle);header.appendChild(inner);
-
-  const body=document.createElement('div');body.className='toc-group-body';body.style.maxHeight='9999px';
-
-  // Click toggle area: toggle on toggle icon click, navigate on title click
-  toggle.onclick=e=>{
-    e.stopPropagation();
-    const c=group.classList.toggle('collapsed');
-    if(!c){body.style.maxHeight=body.scrollHeight+'px';setTimeout(()=>body.style.maxHeight='9999px',280);}
-    else{body.style.maxHeight=body.scrollHeight+'px';requestAnimationFrame(()=>body.style.maxHeight='0');}
-  };
-  inner.onclick=()=>{switchDoc(id);scrollTo(block.id);if(isMobile)closeSidebarMobile();};
-
-  group.appendChild(header);group.appendChild(body);
-  return{group,body,header};
-}
-
-function scrollTo(id){const el=G(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
-
-/* ── Doc switching ── */
+/* ═══ Multi-doc sidebar ═══
+   Each doc gets a collapsible section in sbDoclist that contains:
+   [▾] [doc title] [×]
+       └── TOC items (章 / 编 groups → 条 items)
+   Active doc section stays expanded; others collapse.
+════════════════════════════════════════════════════════ */
 function addDocUI(id){
   const doc=docs[id];
-  // Sidebar tab
-  const tab=document.createElement('div');tab.className='doc-tab';tab.setAttribute('data-doc',id);
-  tab.textContent=doc.title.length>12?doc.title.slice(0,10)+'…':doc.title;
-  tab.onclick=()=>switchDoc(id);docTabs.appendChild(tab);
-  // Main tab
-  mainDocTabs.style.display='flex';
-  const mt=document.createElement('div');mt.className='main-tab';mt.setAttribute('data-doc',id);
-  const short=doc.title.length>16?doc.title.slice(0,14)+'…':doc.title;
-  mt.innerHTML=`${esc(short)}<span class="tab-close" onclick="closeDoc('${id}',event)">×</span>`;
-  mt.onclick=e=>{if(!e.target.classList.contains('tab-close'))switchDoc(id);};
-  mainDocTabs.appendChild(mt);
+  G('tocEmpty')&&(G('tocEmpty').style.display='none');
+
+  /* ── sidebar section ── */
+  const sec=document.createElement('div');sec.className='doc-sec';sec.id='sec-'+id;
+
+  const hd=document.createElement('div');hd.className='doc-sec-hd';hd.id='sechd-'+id;
+
+  const arr=document.createElement('span');arr.className='doc-sec-arr';arr.textContent='▾';
+  arr.onclick=e=>{e.stopPropagation();toggleSecColl(id);};
+
+  const info=document.createElement('div');info.className='doc-sec-info';
+  info.innerHTML=`<div class="doc-sec-name">${esc(doc.title)}</div><div class="doc-sec-meta">${doc.parsed.ac}条</div>`;
+  info.onclick=()=>swDoc(id);
+
+  const x=document.createElement('div');x.className='doc-sec-x';x.textContent='×';
+  x.title='关闭文件';x.onclick=e=>{e.stopPropagation();closeDoc(id);};
+
+  hd.appendChild(arr);hd.appendChild(info);hd.appendChild(x);
+
+  /* ── toc body ── */
+  const tocDiv=document.createElement('div');tocDiv.className='doc-toc';tocDiv.id='toc-'+id;
+  tocDiv.style.maxHeight='9999px';
+  buildTOC(id,tocDiv);
+
+  sec.appendChild(hd);sec.appendChild(tocDiv);
+  sbDoclist.appendChild(sec);
+
+  /* render reading area doc */
   renderDoc(id);
 }
 
-function switchDoc(id){
+function toggleSecColl(id){
+  const sec=G('sec-'+id);const toc=G('toc-'+id);const arr=Q('.doc-sec-arr',sec);
+  const coll=sec.classList.toggle('coll');
+  if(!coll){toc.style.maxHeight=toc.scrollHeight+'px';setTimeout(()=>toc.style.maxHeight='9999px',250);}
+  else{toc.style.maxHeight=toc.scrollHeight+'px';requestAnimationFrame(()=>toc.style.maxHeight='0');}
+}
+
+function buildTOC(id,container){
+  container.innerHTML='';
+  const doc=docs[id],b=doc.parsed.blocks;
+  const frag=document.createDocumentFragment();
+  let pianG=null,zhangG=null;
+  const getCont=()=>zhangG?.bd||pianG?.bd||frag;
+
+  for(const blk of b){
+    if(blk.type==='title') continue;
+    if(blk.type==='pian'){
+      zhangG=null;
+      const g=mkTocGrp('tg-l1',blk,id);frag.appendChild(g.el);pianG=g;
+    }else if(blk.type==='zhang'){
+      zhangG=null;
+      const par=pianG?pianG.bd:frag;
+      const g=mkTocGrp('tg-l2',blk,id);par.appendChild(g.el);zhangG=g;
+    }else if(blk.type==='jie'){
+      const c=getCont();
+      const it=mkTI('ti tl3',id);it.setAttribute('data-tgt',blk.id);
+      it.innerHTML=`<span class="tn">${esc(blk.num)}</span><span>${esc(blk.title)}</span>`;
+      it.onclick=()=>{swDoc(id);scrollID(blk.id);if(isMob)closeMobSB();};
+      c.appendChild(it);
+    }else if(blk.type==='tiao'){
+      const c=getCont();
+      const it=mkTI('ti tl4',id);it.setAttribute('data-tgt',blk.id);
+      const prev=blk.content?blk.content.slice(0,14)+(blk.content.length>14?'…':''):'';
+      it.innerHTML=`<span class="tn">${esc(blk.num)}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(prev)}</span>`;
+      it.onclick=()=>{swDoc(id);scrollID(blk.id);deactivateTOC();it.classList.add('toc-active');if(isMob)closeMobSB();};
+      c.appendChild(it);
+    }
+  }
+  container.appendChild(frag);
+}
+
+function mkTI(cls,id){const el=document.createElement('div');el.className=cls;el.setAttribute('data-doc',id);return el;}
+
+function mkTocGrp(lvlCls,blk,id){
+  const group=document.createElement('div');group.className='toc-group';group.setAttribute('data-doc',id);
+  const hd=document.createElement('div');hd.className='tg-hd '+lvlCls;hd.setAttribute('data-doc',id);
+  const arr=document.createElement('span');arr.className='tg-arr';arr.innerHTML='▾';
+  const inner=document.createElement('div');inner.className='tg-inner';
+  inner.innerHTML=`<span>${esc(blk.num)}</span>${blk.title?`<span class="tg-label" style="color:var(--text2);font-weight:400;font-size:11px">${esc(blk.title)}</span>`:''}`;
+  hd.appendChild(arr);hd.appendChild(inner);
+  const bd=document.createElement('div');bd.className='tg-bd';bd.style.maxHeight='9999px';
+  arr.onclick=e=>{
+    e.stopPropagation();
+    const coll=group.classList.toggle('coll');
+    if(!coll){bd.style.maxHeight=bd.scrollHeight+'px';setTimeout(()=>bd.style.maxHeight='9999px',240);}
+    else{bd.style.maxHeight=bd.scrollHeight+'px';requestAnimationFrame(()=>bd.style.maxHeight='0');}
+  };
+  inner.onclick=()=>{swDoc(id);scrollID(blk.id);if(isMob)closeMobSB();};
+  group.appendChild(hd);group.appendChild(bd);
+  return{el:group,bd,hd};
+}
+
+function scrollID(id){const el=G(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+function deactivateTOC(){QA('.ti.toc-active').forEach(el=>el.classList.remove('toc-active'));}
+
+function swDoc(id){
   activeId=id;
-  QA('.doc-tab').forEach(t=>t.classList.toggle('active',t.getAttribute('data-doc')===id));
-  QA('.main-tab').forEach(t=>t.classList.toggle('active',t.getAttribute('data-doc')===id));
-  QA('.doc-container').forEach(c=>c.classList.toggle('active',c.id==='doc-'+id));
-  QA('[data-doc]',toc).forEach(el=>el.style.display=el.getAttribute('data-doc')===id?'':'none');
-  updateBM();
+  /* reading area */
+  QA('.doc').forEach(c=>c.classList.toggle('active',c.id==='doc-'+id));
+  /* sidebar sections: mark active, expand active, leave others as they are */
+  QA('.doc-sec').forEach(sec=>{
+    const sid=sec.id.replace('sec-','');
+    const hd=Q('.doc-sec-hd',sec);
+    if(hd) hd.classList.toggle('active-doc',sid===id);
+    /* auto-expand the newly active doc's toc if collapsed */
+    if(sid===id&&sec.classList.contains('coll')) toggleSecColl(id);
+  });
+  refreshBMPanel();
 }
 
-function closeDoc(id,e){
-  if(e)e.stopPropagation();
-  delete docs[id];G('doc-'+id)?.remove();
-  QA(`[data-doc="${id}"]`).forEach(el=>el.remove());
+function closeDoc(id){
+  delete docs[id];
+  G('doc-'+id)?.remove();
+  G('sec-'+id)?.remove();
   const rem=Object.keys(docs);
-  if(rem.length){switchDoc(rem[rem.length-1]);}
-  else{activeId=null;mainDocTabs.style.display='none';G('welcomeScreen').style.display='';G('tocEmpty').style.display='';}
+  if(rem.length){swDoc(rem[rem.length-1]);}
+  else{activeId=null;G('welcome').style.display='';G('tocEmpty').style.display='';}
 }
 
-/* ── Rich text formatting ── */
-function fmt(cmd){document.execCommand(cmd,false,null);}
-function fmtSel(cmd){document.execCommand(cmd,false,null);hideSelMenu();}
+/* ═══ IntersectionObserver: sync TOC with scroll ═══ */
+const iObs=new IntersectionObserver(entries=>{
+  for(const en of entries){
+    if(!en.isIntersecting) continue;
+    const id=en.target.id;
+    /* find matching toc item across all doc tocs */
+    const it=Q(`.ti[data-tgt="${id}"]`,sbDoclist);
+    if(it){deactivateTOC();it.classList.add('toc-active');}
+  }
+},{root:ra,threshold:0.1,rootMargin:'-5% 0px -72% 0px'});
+new MutationObserver(()=>{
+  QA('.lt[id],.lp[id],.lz[id]').forEach(el=>iObs.observe(el));
+}).observe(raI,{childList:true,subtree:true});
 
-fcPicker.addEventListener('input',()=>{curFc=fcPicker.value;fcBar.style.background=curFc;});
-fcPicker.addEventListener('change',()=>{curFc=fcPicker.value;fcBar.style.background=curFc;fmt2Color(curFc);});
-G('fcBtn').addEventListener('click',e=>{
-  if(e.target===fcPicker) return;
+/* ═══ Reading progress ═══ */
+ra.addEventListener('scroll',()=>{const t=ra.scrollHeight-ra.clientHeight;progF.style.width=(t>0?ra.scrollTop/t*100:0)+'%';});
+
+/* ════════════════════════════════════════════════════════════
+   FORMATTING — toolbar + floating bar
+   KEY INSIGHT: contenteditable loses selection when you click
+   a button outside of it. Solution: use onmousedown + preventDefault
+   on the floating bar, and save/restore range for toolbar.
+════════════════════════════════════════════════════════════ */
+
+let savedRange=null;
+
+function saveRange(){
   const sel=window.getSelection();
-  if(sel&&!sel.isCollapsed) fmt2Color(curFc);
+  if(sel&&sel.rangeCount>0){const r=sel.getRangeAt(0);if(!r.collapsed)savedRange=r.cloneRange();}
+}
+function restoreRange(){
+  if(!savedRange)return false;
+  const sel=window.getSelection();sel.removeAllRanges();sel.addRange(savedRange);
+  return true;
+}
+
+/* Check if a range is inside an lt-body */
+function rangeInBody(range){
+  if(!range)return false;
+  let n=range.commonAncestorContainer;if(n.nodeType===3)n=n.parentNode;
+  return !!(n&&n.closest&&n.closest('.lt-body'));
+}
+
+/* ── TOOLBAR buttons (selection may be lost when button gets focus) ── */
+function tbFmt(cmd){
+  if(!restoreRange())return;
+  if(!rangeInBody(savedRange))return;
+  document.execCommand(cmd,false,null);
+  savedRange=null;
+}
+function tbHL(c){
+  if(!restoreRange())return;
+  if(!rangeInBody(savedRange))return;
+  applyHL(c);
+  savedRange=null;
+}
+function tbFcApply(color){
+  if(!restoreRange())return;
+  if(!rangeInBody(savedRange))return;
+  document.execCommand('foreColor',false,color);
+  savedRange=null;
+}
+
+/* toolbar font color controls */
+fcPick.addEventListener('input',()=>{curFC=fcPick.value;fcBar.style.background=curFC;G('fbFcBar').style.background=curFC;G('fbFcPick').value=curFC;});
+fcPick.addEventListener('change',()=>{curFC=fcPick.value;fcBar.style.background=curFC;tbFcApply(curFC);});
+G('fcWrap').addEventListener('mousedown',e=>{
+  if(e.target===fcPick){e.stopPropagation();return;} // let color input open
+  e.preventDefault();// don't steal focus
+  restoreRange();
+  if(rangeInBody(savedRange)){document.execCommand('foreColor',false,curFC);savedRange=null;}
 });
-function fmt2Color(c){document.execCommand('foreColor',false,c);}
-fcBar.style.background=curFc;
 
-/* ── Highlights ── */
-function applyHL(color){
+fcBar.style.background=curFC;
+
+/* ── FLOATING BAR buttons — use onmousedown+preventDefault so selection survives ── */
+function fbFmt(e,cmd){
+  e.preventDefault();e.stopPropagation();
   const sel=window.getSelection();
-  if(!sel||sel.isCollapsed){hideSelMenu();return;}
+  if(!sel||sel.isCollapsed)return;
+  document.execCommand(cmd,false,null);
+  /* keep bar visible momentarily so user can chain commands */
+}
+function fbHL(e,c){
+  e.preventDefault();e.stopPropagation();
+  applyHL(c);
+  hideFBar();
+}
+function fbFcApply(color){
+  curFC=color;fcBar.style.background=color;G('fbFcBar').style.background=color;fcPick.value=color;G('fbFcPick').value=color;
+  const sel=window.getSelection();
+  if(sel&&!sel.isCollapsed) document.execCommand('foreColor',false,color);
+}
+function fbCopy(e){
+  e.preventDefault();e.stopPropagation();
+  const s=window.getSelection();if(s)navigator.clipboard.writeText(s.toString()).catch(()=>{});
+  hideFBar();
+}
+function fbNote(e){
+  e.preventDefault();e.stopPropagation();
+  hideFBar();
+  openNoteDialog();
+}
+
+/* ── Highlight apply (works with active selection) ── */
+function applyHL(c){
+  const sel=window.getSelection();
+  if(!sel||sel.isCollapsed)return;
   const range=sel.getRangeAt(0);
-  let container=range.commonAncestorContainer;
-  if(container.nodeType===3)container=container.parentNode;
-  if(!container.closest||!container.closest('.tiao-body')){hideSelMenu();return;}
+  let cn=range.commonAncestorContainer;if(cn.nodeType===3)cn=cn.parentNode;
+  if(!cn.closest||!cn.closest('.lt-body'))return;
   try{
-    const sp=document.createElement('span');
-    sp.className=color==='underline'?'hl hl-underline':`hl hl-${color}`;
+    const sp=document.createElement('span');sp.className='hl hl-'+c;
     range.surroundContents(sp);
-  }catch(e){
+  }catch{
     const frag=range.extractContents();
-    const sp=document.createElement('span');
-    sp.className=color==='underline'?'hl hl-underline':`hl hl-${color}`;
+    const sp=document.createElement('span');sp.className='hl hl-'+c;
     sp.appendChild(frag);range.insertNode(sp);
   }
-  sel.removeAllRanges();hideSelMenu();
+  sel.removeAllRanges();
 }
 
-/* ── Selection menu ── */
+/* ── Floating bar show/hide logic ── */
+function showFBar(rect){
+  // position above selection
+  const bw=fbar.offsetWidth||340;
+  const bh=fbar.offsetHeight||40;
+  let left=rect.left+rect.width/2-bw/2;
+  let top=rect.top-bh-8;
+  if(left<8)left=8;
+  if(left+bw>innerWidth-8)left=innerWidth-bw-8;
+  if(top<8)top=rect.bottom+8; // show below if no room above
+  fbar.style.left=left+'px';fbar.style.top=top+'px';
+  fbar.classList.add('on');
+}
+function hideFBar(){fbar.classList.remove('on');}
+
+/* Show fbar on selection — listen to selectionchange for real-time updates */
+document.addEventListener('selectionchange',()=>{
+  const sel=window.getSelection();
+  if(!sel||sel.isCollapsed||!sel.toString().trim()){hideFBar();return;}
+  if(sel.rangeCount===0)return;
+  const range=sel.getRangeAt(0);
+  let cn=range.commonAncestorContainer;if(cn.nodeType===3)cn=cn.parentNode;
+  if(!cn||!cn.closest||!cn.closest('.lt-body')){hideFBar();return;}
+  // save range for toolbar usage
+  saveRange();
+  const rect=range.getBoundingClientRect();
+  if(rect.width===0&&rect.height===0){hideFBar();return;}
+  showFBar(rect);
+});
+
+/* Hide bar when clicking outside of it and outside of lt-body */
+document.addEventListener('mousedown',e=>{
+  if(e.target.closest('#fbar'))return; // clicking inside bar — handled by onmousedown handlers
+  hideFBar();
+});
+
+/* Also save range on mouseup in case selectionchange missed it */
 document.addEventListener('mouseup',e=>{
-  if(e.target.closest('.sel-menu')) return;
-  setTimeout(()=>{
-    const sel=window.getSelection();
-    if(sel&&!sel.isCollapsed&&sel.toString().trim().length>0){
-      const range=sel.getRangeAt(0);
-      let c=range.commonAncestorContainer;if(c.nodeType===3)c=c.parentNode;
-      if(!c.closest||!c.closest('.tiao-body')){hideSelMenu();return;}
-      const rect=range.getBoundingClientRect();
-      const mw=170,mh=240;
-      let left=rect.left+rect.width/2-mw/2,top=rect.top-mh-6;
-      if(left<8)left=8;if(left+mw>innerWidth-8)left=innerWidth-mw-8;
-      if(top<8)top=rect.bottom+6;
-      selMenu.style.left=left+'px';selMenu.style.top=top+'px';selMenu.classList.add('open');
-    } else hideSelMenu();
-  },20);
+  if(e.target.closest('#fbar'))return;
+  saveRange();
 });
-document.addEventListener('mousedown',e=>{if(!e.target.closest('.sel-menu'))hideSelMenu();});
-function hideSelMenu(){selMenu.classList.remove('open');}
-function copySelection(){const s=window.getSelection();if(s)navigator.clipboard.writeText(s.toString()).catch(()=>{});hideSelMenu();}
 
-/* ── Notes ── */
-function addNoteFromSel(){
-  hideSelMenu();
-  const sel=window.getSelection();if(!sel)return;
-  const node=sel.anchorNode;
-  const tiao=node?.closest?.('.law-tiao')||node?.parentElement?.closest('.law-tiao');
-  noteTarget=tiao?tiao.id:null;openNoteDialog();
+/* ═══ Notes ═══ */
+function editNote(el){
+  const tiao=el.closest('.lt');if(!tiao)return;
+  noteTarget=tiao.id;
+  const txt=el.querySelector('span')?.textContent||'';
+  G('dlgTA').value=txt;G('overlay').classList.add('on');G('dlg').classList.add('on');G('dlgTA').focus();
 }
-G('addNoteBtn').addEventListener('click',()=>{
-  noteTarget=null;
-  for(const el of QA('.doc-container.active .law-tiao')){
-    const r=el.getBoundingClientRect();if(r.top>=0&&r.top<innerHeight*.6){noteTarget=el.id;break;}
-  }
-  openNoteDialog();
-});
 function openNoteDialog(){
-  G('noteTextarea').value=noteTarget&&docs[activeId]?.notes[noteTarget]?docs[activeId].notes[noteTarget]:'';
-  G('noteDialog').classList.add('open');G('dialogOverlay').classList.add('open');G('noteTextarea').focus();
+  noteTarget=null;
+  for(const el of QA('.doc.active .lt')){const r=el.getBoundingClientRect();if(r.top>=0&&r.top<innerHeight*.6){noteTarget=el.id;break;}}
+  G('dlgTA').value=noteTarget&&docs[activeId]?.notes[noteTarget]?docs[activeId].notes[noteTarget]:'';
+  G('overlay').classList.add('on');G('dlg').classList.add('on');G('dlgTA').focus();
 }
-function closeNoteDialog(){G('noteDialog').classList.remove('open');G('dialogOverlay').classList.remove('open');noteTarget=null;}
+function closeNote(){G('overlay').classList.remove('on');G('dlg').classList.remove('on');noteTarget=null;}
 function saveNote(){
-  const text=G('noteTextarea').value.trim();if(!text||!activeId){closeNoteDialog();return;}
-  const tid=noteTarget||'tiao-1';docs[activeId].notes[tid]=text;
-  const tiao=G(tid);if(tiao){
-    const body=Q('.tiao-body',tiao);let note=Q('.sticky-note',tiao);
-    if(!note){note=document.createElement('div');note.className='sticky-note';note.contentEditable='false';(body||tiao).appendChild(note);}
-    note.textContent='📝 '+text;
+  const txt=G('dlgTA').value.trim();if(!txt||!activeId){closeNote();return;}
+  const tid=noteTarget||'tiao-1';docs[activeId].notes[tid]=txt;
+  const lt=G(tid);if(lt){
+    const body=Q('.lt-body',lt);let note=Q('.lt-note',lt);
+    if(note){note.innerHTML='📝 <span>'+esc(txt)+'</span>';}
+    else{const d=document.createElement('div');d.className='lt-note';d.contentEditable='false';d.title='点击编辑批注';d.onclick=()=>editNote(d);d.innerHTML='📝 <span>'+esc(txt)+'</span>';(body||lt).appendChild(d);}
   }
-  closeNoteDialog();
+  closeNote();
 }
+G('noteBtn').addEventListener('click',openNoteDialog);
 
-/* ── Bookmarks ── */
-G('addBookmarkBtn').addEventListener('click',()=>{
+/* ═══ Bookmarks ═══ */
+G('bmBtn').addEventListener('click',()=>{
   if(!activeId)return;
   let target=null;
-  for(const el of QA('.doc-container.active .law-tiao')){
-    const r=el.getBoundingClientRect();if(r.top>=40&&r.top<innerHeight*.5){target=el;break;}
-  }
-  if(!target){for(const el of QA('.doc-container.active .law-tiao')){if(el.getBoundingClientRect().bottom>0){target=el;break;}}}
+  for(const el of QA('.doc.active .lt')){const r=el.getBoundingClientRect();if(r.top>=40&&r.top<innerHeight*.55){target=el;break;}}
+  if(!target){for(const el of QA('.doc.active .lt')){if(el.getBoundingClientRect().bottom>0){target=el;break;}}}
   if(!target)return;
   const id=target.id;const doc=docs[activeId];
-  if(!doc.bookmarks.includes(id)){doc.bookmarks.push(id);target.setAttribute('data-bookmarked','true');updateBM();}
+  const numEl=Q('.lt-num',target);const numTxt=numEl?numEl.textContent:id;
+  if(!doc.bookmarks.some(b=>b.id===id)){doc.bookmarks.push({id,num:numTxt});target.setAttribute('data-bm','true');refreshBMPanel();}
 });
-function updateBM(){
-  if(!activeId)return;
+function removeBM(docId,tiaoId){const doc=docs[docId];if(!doc)return;doc.bookmarks=doc.bookmarks.filter(b=>b.id!==tiaoId);const el=G(tiaoId);if(el)el.removeAttribute('data-bm');refreshBMPanel();}
+function refreshBMPanel(){
+  if(!activeId){bmPanel.classList.remove('on');return;}
   const doc=docs[activeId];
-  if(!doc||!doc.bookmarks.length){bookmarkPanel.style.display='none';return;}
-  bookmarkPanel.style.display='';bookmarkList.innerHTML='';
-  const colors=['#e67e22','#27ae60','#2980b9','#8e44ad'];
-  doc.bookmarks.forEach((bid,i)=>{
-    const el=G(bid);if(!el)return;
-    const num=Q('.tiao-num',el)?.textContent||bid;
-    const item=document.createElement('div');item.className='bookmark-item';
-    item.innerHTML=`<div class="bookmark-dot" style="background:${colors[i%colors.length]}"></div><span>${esc(num)}</span>`;
-    item.onclick=()=>scrollTo(bid);bookmarkList.appendChild(item);
+  if(!doc||!doc.bookmarks.length){bmPanel.classList.remove('on');return;}
+  bmPanel.classList.add('on');bmList.innerHTML='';
+  const colors=['#e67e22','#27ae60','#2980b9','#8e44ad','#c0392b'];
+  doc.bookmarks.forEach((bm,i)=>{
+    const item=document.createElement('div');item.className='bm-item';
+    const del=document.createElement('span');del.className='bm-del';del.textContent='✕';del.title='删除书签';del.onclick=e=>{e.stopPropagation();removeBM(activeId,bm.id);};
+    item.innerHTML=`<div class="bm-dot" style="background:${colors[i%colors.length]}"></div><span>${esc(bm.num)}</span>`;
+    item.appendChild(del);item.onclick=()=>scrollID(bm.id);
+    bmList.appendChild(item);
   });
 }
 
-/* ── Copy tiao ── */
-function copyTiaoEl(tiao){
-  const num=Q('.tiao-num',tiao)?.textContent||'';
-  const body=Q('.tiao-body',tiao);
-  const text=body?(num+'　'+(body.innerText||body.textContent)).trim():'';
-  navigator.clipboard.writeText(text).then(()=>{
-    const btn=Q('.copy-tiao',tiao);if(btn){btn.textContent='✓';setTimeout(()=>btn.textContent='⧉',1500);}
-  }).catch(()=>{});
+/* ═══ Copy tiao ═══ */
+function copyTiao(el){
+  const num=Q('.lt-num',el)?.textContent||'';
+  const body=Q('.lt-body',el);
+  const txt=body?(num+'　'+(body.innerText||body.textContent)).trim():'';
+  navigator.clipboard.writeText(txt).then(()=>{const cp=Q('.lt-cp',el);if(cp){cp.textContent='✓';setTimeout(()=>cp.textContent='⧉',1400);}}).catch(()=>{});
 }
 
-/* ── Search ── */
-searchInput.addEventListener('input',debounce(doSearch,200));
-searchInput.addEventListener('focus',()=>{if(searchInput.value.trim())doSearch();});
-document.addEventListener('click',e=>{if(!e.target.closest('.search-box'))searchResults.classList.remove('open');});
-
+/* ═══ Search ═══ */
+sinput.addEventListener('input',debounce(doSearch,200));
+sinput.addEventListener('focus',()=>{if(sinput.value.trim())doSearch();});
+document.addEventListener('click',e=>{if(!e.target.closest('.sb-search'))sres.classList.remove('on');});
 function doSearch(){
-  const q=searchInput.value.trim();if(!q){searchResults.classList.remove('open');return;}
+  const q=sinput.value.trim();if(!q){sres.classList.remove('on');return;}
   const res=[];
   for(const [id,doc] of Object.entries(docs)){
     for(const b of doc.parsed.blocks){
       if(b.type!=='tiao')continue;
       const full=b.num+b.content+b.kuan.map(k=>k.text).join('');
-      if(full.includes(q))res.push({id,bid:b.id,num:b.num,snippet:snippet(full,q,docs[id].parsed.title)});
+      if(full.includes(q))res.push({id,bid:b.id,num:b.num,snip:getSnip(full,q),title:doc.parsed.title});
     }
   }
-  searchResults.innerHTML='';
-  if(!res.length){searchResults.innerHTML='<div class="search-result-item" style="color:var(--text3)">未找到匹配条文</div>';}
-  else{
-    res.slice(0,20).forEach(r=>{
-      const el=document.createElement('div');el.className='search-result-item';
-      el.innerHTML=`<div class="srn"><span class="srnum">${esc(r.num)}</span>　${esc(docs[r.id].parsed.title)}</div><div>${r.snippet}</div>`;
-      el.onclick=()=>{switchDoc(r.id);scrollTo(r.bid);searchResults.classList.remove('open');};
-      searchResults.appendChild(el);
-    });
-  }
-  searchResults.classList.add('open');
+  sres.innerHTML='';
+  if(!res.length){sres.innerHTML='<div class="sri" style="color:var(--text3)">未找到</div>';}
+  else res.slice(0,20).forEach(r=>{
+    const el=document.createElement('div');el.className='sri';
+    el.innerHTML=`<div class="sri-t"><span style="color:var(--accent);font-family:var(--font-mono)">${esc(r.num)}</span>　${esc(r.title)}</div><div>${r.snip}</div>`;
+    el.onclick=()=>{swDoc(r.id);scrollID(r.bid);sres.classList.remove('on');};
+    sres.appendChild(el);
+  });
+  sres.classList.add('on');
 }
-
-function snippet(text,q,title){
-  const idx=text.indexOf(q);if(idx<0)return esc(text.slice(0,60));
-  const s=Math.max(0,idx-18),e=Math.min(text.length,idx+q.length+38);
-  let out=text.slice(s,e);
-  return (s>0?'…':'')+esc(out).replace(new RegExp(esc(q),'g'),`<mark>${esc(q)}</mark>`)+(e<text.length?'…':'');
-}
-
+function getSnip(text,q){const i=text.indexOf(q);if(i<0)return esc(text.slice(0,60));const s=Math.max(0,i-16),e=Math.min(text.length,i+q.length+36);return(s>0?'…':'')+esc(text.slice(s,e)).replace(new RegExp(esc(q),'g'),`<mark>${esc(q)}</mark>`)+(e<text.length?'…':'');}
 function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
 
-/* ── Progress ── */
-readingArea.addEventListener('scroll',()=>{
-  const tot=readingArea.scrollHeight-readingArea.clientHeight;
-  progressFill.style.width=(tot>0?readingArea.scrollTop/tot*100:0)+'%';
-});
+/* ═══ Toolbar events ═══ */
+G('fSel').onchange=function(){css('--font-body',this.value);};
+function adjFS(d){const c=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--fs')||'16');const v=Math.min(22,Math.max(12,c+d));applyFS(v);G('fsRange').value=v;}
+G('spBtn').onclick=()=>spanel.classList.toggle('on');
+G('focBtn').onclick=()=>{sidebar.classList.toggle('collapsed');G('focBtn').classList.toggle('on');};
+G('sbTog').addEventListener('click',()=>{if(isMob)toggleMobSB();else sidebar.classList.toggle('collapsed');});
+function toggleMobSB(){sidebar.classList.toggle('mobile-on');sbOv.classList.toggle('on');}
+function closeMobSB(){sidebar.classList.remove('mobile-on');sbOv.classList.remove('on');}
 
-/* ── Toolbar ── */
-function adjustFont(d){
-  const cur=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--font-size')||'16');
-  const v=Math.min(22,Math.max(12,cur+d));
-  applyFontSize(v);G('fontSizeRange').value=v;
-}
-G('fontSelect').onchange=function(){document.documentElement.style.setProperty('--font-body',this.value);};
-G('settingsBtn').onclick=()=>settingsPanel.classList.toggle('open');
-G('focusBtn').onclick=()=>{sidebar.classList.toggle('collapsed');G('focusBtn').classList.toggle('active');};
-
-/* ── Sidebar ── */
-G('sidebarToggle').addEventListener('click',()=>{
-  if(isMobile){sidebar.classList.toggle('mobile-open');sidebarOverlay.classList.toggle('open');}
-  else sidebar.classList.toggle('collapsed');
-});
-function closeSidebarMobile(){sidebar.classList.remove('mobile-open');sidebarOverlay.classList.remove('open');}
-
-/* ── Settings ── */
-function closeSettings(){settingsPanel.classList.remove('open');}
-function setTheme(t){
-  document.documentElement.setAttribute('data-theme',t);
-  QA('.theme-swatch').forEach(s=>s.classList.toggle('active',s.getAttribute('data-t')===t));
-  QA('.cdot').forEach(s=>s.classList.toggle('active',s.getAttribute('data-t')===t));
-}
-function applyFontSize(v){document.documentElement.style.setProperty('--font-size',v+'px');G('fontSizeVal').textContent=v+'px';}
-function applyLineHeight(v){document.documentElement.style.setProperty('--line-height',v);G('lineHeightVal').textContent=parseFloat(v).toFixed(1);}
-function applyLetterSpacing(v){document.documentElement.style.setProperty('--letter-spacing',v+'em');G('letterSpacingVal').textContent=parseFloat(v).toFixed(2);}
-function applyIndent(v){document.documentElement.style.setProperty('--para-indent',v+'em');G('indentVal').textContent=v+'em';}
-function applyWidth(v){document.documentElement.style.setProperty('--content-width',v+'px');G('widthVal').textContent=v;}
-function setFont(btn){
-  document.documentElement.style.setProperty('--font-body',btn.getAttribute('data-font'));
-  QA('.font-btn').forEach(b=>b.classList.toggle('active',b===btn));
-  G('fontSelect').value=btn.getAttribute('data-font');
-}
-
-/* ── Export ── */
-G('exportBtn').onclick=e=>{
-  const r=e.currentTarget.getBoundingClientRect();
-  exportMenu.style.left=r.left+'px';exportMenu.style.top=(r.bottom+4)+'px';
-  exportMenu.classList.toggle('open');
-};
-document.addEventListener('click',e=>{if(!e.target.closest('#exportBtn')&&!e.target.closest('#exportMenu'))exportMenu.classList.remove('open');});
-
-function exportMD(){
-  exportMenu.classList.remove('open');if(!activeId)return;
-  const doc=docs[activeId];const container=G('doc-'+activeId);
+/* Export */
+G('expBtn').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();emenu.style.left=r.left+'px';emenu.style.top=(r.bottom+4)+'px';emenu.classList.toggle('on');};
+document.addEventListener('click',e=>{if(!e.target.closest('#expBtn')&&!e.target.closest('#emenu'))emenu.classList.remove('on');});
+function expMD(){
+  emenu.classList.remove('on');if(!activeId)return;
+  const doc=docs[activeId],c=G('doc-'+activeId);
   let md=`# ${doc.parsed.title}\n\n`;
   for(const b of doc.parsed.blocks){
-    if(b.type==='title') continue;
-    if(b.type==='pian'){
-      const el=container?.querySelector('#'+b.id);
-      md+=`\n---\n\n## ${b.num}　${b.title}\n\n---\n\n`;
-    } else if(b.type==='zhang'){
-      md+=`\n### ${b.num}　${b.title}\n\n`;
-    } else if(b.type==='jie'){
-      md+=`\n#### ${b.num}　${b.title}\n\n`;
-    } else if(b.type==='tiao'){
-      const el=container?.querySelector('#'+b.id);
-      const body=el?Q('.tiao-body',el):null;
-      if(body){md+=(body.innerText||body.textContent).trim()+'\n\n';}
-      else{md+=`**${b.num}**　${b.content}\n\n`;}
-      if(doc.notes[b.id])md+=`> 📝 ${doc.notes[b.id]}\n\n`;
-    } else if(b.type==='text'){md+=b.text+'\n\n';}
+    if(b.type==='title')continue;
+    if(b.type==='pian')md+=`\n---\n\n## ${b.num}　${b.title}\n\n---\n\n`;
+    else if(b.type==='zhang')md+=`\n### ${b.num}　${b.title}\n\n`;
+    else if(b.type==='jie')md+=`\n#### ${b.num}　${b.title}\n\n`;
+    else if(b.type==='tiao'){const el=c?.querySelector('#'+b.id);const body=el?Q('.lt-body',el):null;md+=(body?(body.innerText||body.textContent).trim():`**${b.num}**　${b.content}`)+'\n\n';if(doc.notes[b.id])md+=`> 📝 ${doc.notes[b.id]}\n\n`;}
+    else if(b.type==='text')md+=b.text+'\n\n';
   }
   dlText(md,doc.parsed.title+'.md','text/markdown');
 }
-
-function exportTXT(){
-  exportMenu.classList.remove('open');if(!activeId)return;
-  const container=G('doc-'+activeId);
-  const text=container?(container.innerText||container.textContent):docs[activeId].raw;
-  dlText(text,docs[activeId].parsed.title+'.txt','text/plain');
+function expTXT(){emenu.classList.remove('on');if(!activeId)return;const c=G('doc-'+activeId);dlText(c?(c.innerText||c.textContent):docs[activeId].raw,docs[activeId].parsed.title+'.txt','text/plain');}
+function expPDF(){
+  emenu.classList.remove('on');if(!activeId)return;
+  QA('.doc').forEach(el=>el.classList.remove('print-t','active'));
+  const c=G('doc-'+activeId);if(c)c.classList.add('print-t','active');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{window.print();setTimeout(()=>{QA('.doc').forEach(el=>el.classList.remove('print-t'));QA('.doc').forEach(el=>el.classList.toggle('active',el.id==='doc-'+activeId));},1500);}));
 }
+function dlText(content,name,mime){const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([content],{type:mime+';charset=utf-8'})),download:name});a.click();URL.revokeObjectURL(a.href);}
 
-function exportPDF(){
-  exportMenu.classList.remove('open');if(!activeId)return;
-  QA('.doc-container').forEach(c=>c.classList.remove('print-target'));
-  const c=G('doc-'+activeId);if(c)c.classList.add('print-target');
-  setTimeout(()=>{
-    window.print();
-    setTimeout(()=>{if(c)c.classList.remove('print-target');},2000);
-  },80);
-}
+/* Settings */
+function closeSettings(){spanel.classList.remove('on');}
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);QA('.tsw').forEach(s=>s.classList.toggle('active',s.getAttribute('data-t')===t));QA('.cdot').forEach(s=>s.classList.toggle('active',s.getAttribute('data-t')===t));}
+function setFont(btn){css('--font-body',btn.getAttribute('data-font'));QA('.fbtn').forEach(b=>b.classList.toggle('active',b===btn));G('fSel').value=btn.getAttribute('data-font');}
+function applyFS(v){css('--fs',v+'px');G('fsVal').textContent=v+'px';}
+function applyLH(v){css('--lh',v);G('lhVal').textContent=parseFloat(v).toFixed(1);}
+function applyLS(v){css('--ls',v+'em');G('lsVal').textContent=parseFloat(v).toFixed(2);}
+function applyInd(v){css('--indent',v+'em');G('indVal').textContent=v+'em';}
+function applyCW(v){css('--cw',v+'px');G('cwVal').textContent=v;}
 
-function dlText(content,filename,mime){
-  const blob=new Blob([content],{type:mime+';charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);
-}
+/* Loading */
+function showLoad(v,msg){G('lmask').classList.toggle('on',v);if(msg)G('ltxt').textContent=msg;}
 
-/* ── Loading ── */
-function showLoad(v,msg){loadingMask.classList.toggle('open',v);if(msg)G('loadingText').textContent=msg;}
+/* Resize */
+window.addEventListener('resize',()=>{isMob=innerWidth<=768;if(!isMob){sidebar.classList.remove('mobile-on');sbOv.classList.remove('on');}});
 
-/* ── Resize ── */
-window.addEventListener('resize',()=>{
-  isMobile=innerWidth<=768;
-  if(!isMobile){sidebar.classList.remove('mobile-open');sidebarOverlay.classList.remove('open');}
-});
-
-/* ── Keyboard ── */
+/* Keyboard shortcuts */
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeSettings();closeNoteDialog();hideSelMenu();exportMenu.classList.remove('open');searchResults.classList.remove('open');if(isMobile)closeSidebarMobile();}
-  if((e.ctrlKey||e.metaKey)&&e.key==='f'){e.preventDefault();searchInput.focus();searchInput.select();}
-  if((e.ctrlKey||e.metaKey)&&e.key===','){e.preventDefault();settingsPanel.classList.toggle('open');}
+  if(e.key==='Escape'){closeSettings();closeNote();hideFBar();emenu.classList.remove('on');sres.classList.remove('on');if(isMob)closeMobSB();}
+  if((e.ctrlKey||e.metaKey)&&e.key==='f'){e.preventDefault();sinput.focus();sinput.select();}
+  if((e.ctrlKey||e.metaKey)&&e.key===','){e.preventDefault();spanel.classList.toggle('on');}
+  /* in-body shortcuts */
+  const act=document.activeElement;
+  if(act&&act.classList.contains('lt-body')){
+    if((e.ctrlKey||e.metaKey)&&e.key==='b'){e.preventDefault();document.execCommand('bold',false,null);}
+    if((e.ctrlKey||e.metaKey)&&e.key==='i'){e.preventDefault();document.execCommand('italic',false,null);}
+    if((e.ctrlKey||e.metaKey)&&e.key==='u'){e.preventDefault();document.execCommand('underline',false,null);}
+  }
 });
-
-/* ── Active toc tracking ── */
-const iObs=new IntersectionObserver(entries=>{
-  entries.forEach(en=>{
-    if(en.isIntersecting){
-      const id=en.target.id;
-      QA('.toc-item[data-tgt]',toc).forEach(item=>item.classList.toggle('active',item.getAttribute('data-tgt')===id));
-    }
-  });
-},{root:readingArea,threshold:.2,rootMargin:'-10% 0px -65% 0px'});
-
-new MutationObserver(()=>{
-  QA('.law-tiao[id],.law-pian[id],.law-zhang[id]').forEach(el=>iObs.observe(el));
-}).observe(readingArea,{childList:true,subtree:true});
 </script>
 </body>
 </html>
