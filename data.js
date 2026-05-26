@@ -228,7 +228,7 @@ const projects = [
         icon: '📖',
         tags: ['Claude'],
         versions: [
-            { name: '进入软件', url: 'https://projects.wangcy.site/law/legal-reader }
+            { name: '进入软件', url: 'https://projects.wangcy.site/law/legal-reader' }
         ]
     }
 ];
