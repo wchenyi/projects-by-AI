@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>周边雷达 — 蓝牙 & WiFi 探测器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c10;
+  --bg2: #11141b;
+  --bg3: #181d26;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #e8eaf0;
+  --text2: #8b90a0;
+  --text3: #4a5068;
+  --green: #00e5a0;
+  --green-dim: rgba(0,229,160,0.12);
+  --purple: #8b7ff5;
+  --purple-dim: rgba(139,127,245,0.12);
+  --blue: #3b9eff;
+  --blue-dim: rgba(59,158,255,0.1);
+  --amber: #f5a623;
+  --amber-dim: rgba(245,166,35,0.1);
+  --red: #ff4d6d;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Sora', sans-serif;
+  --r: 10px;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f0f2f7;
+    --bg2: #ffffff;
+    --bg3: #e8ecf4;
+    --border: rgba(0,0,0,0.07);
+    --border2: rgba(0,0,0,0.12);
+    --text: #1a1d2e;
+    --text2: #5a6080;
+    --text3: #9aa0b8;
+    --green: #00a878;
+    --green-dim: rgba(0,168,120,0.1);
+    --purple: #6b5de0;
+    --purple-dim: rgba(107,93,224,0.1);
+    --blue: #1a7fd4;
+    --blue-dim: rgba(26,127,212,0.08);
+    --amber: #d4880a;
+    --amber-dim: rgba(212,136,10,0.08);
+    --red: #d4294a;
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Layout ── */
+.app { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+header {
+  padding: 20px 0 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap; gap: 12px;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--green-dim); border: 1px solid rgba(0,229,160,0.2);
+  display: flex; align-items: center; justify-content: center;
+}
+.logo-icon svg { width: 18px; height: 18px; stroke: var(--green); fill: none; }
+.logo-text { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
+.logo-sub { font-size: 11px; font-family: var(--mono); color: var(--text3); margin-top: 1px; }
+.header-status { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pill {
+  font-size: 11px; font-family: var(--mono);
+  padding: 3px 10px; border-radius: 100px;
+  border: 1px solid; display: inline-flex; align-items: center; gap: 5px;
+}
+.pill-green { color: var(--green); border-color: rgba(0,229,160,0.25); background: var(--green-dim); }
+.pill-purple { color: var(--purple); border-color: rgba(139,127,245,0.25); background: var(--purple-dim); }
+.pill-dim { color: var(--text3); border-color: var(--border); }
+.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.dot-green { background: var(--green); }
+.dot-purple { background: var(--purple); }
+
+.main { display: grid; grid-template-columns: 1fr 320px; gap: 16px; padding: 16px 0 24px; align-items: start; }
+@media (max-width: 720px) { .main { grid-template-columns: 1fr; } }
+
+/* ── Radar panel ── */
+.radar-panel {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 16px;
+}
+.panel-label {
+  font-size: 10px; font-family: var(--mono); color: var(--text3);
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.panel-label::after { content:''; flex:1; height:1px; background: var(--border); }
+
+.radar-wrap { position: relative; width: 100%; aspect-ratio: 1; }
+canvas#radar { width: 100%; height: 100%; display: block; cursor: crosshair; }
+
+.radar-controls {
+  display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap;
+}
+.ctrl-btn {
+  flex: 1; min-width: 100px;
+  padding: 9px 14px; border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--bg3); color: var(--text);
+  font-family: var(--sans); font-size: 13px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: all 0.15s;
+}
+.ctrl-btn:hover { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+.ctrl-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ctrl-btn.active-bt { border-color: rgba(139,127,245,0.4); color: var(--purple); background: var(--purple-dim); }
+.ctrl-btn.active-wifi { border-color: rgba(0,229,160,0.3); color: var(--green); background: var(--green-dim); }
+.ctrl-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+
+.status-bar {
+  margin-top: 12px; padding: 8px 12px; border-radius: 8px;
+  background: var(--bg3); border: 1px solid var(--border);
+  font-size: 12px; font-family: var(--mono); color: var(--text2);
+  display: flex; align-items: center; gap: 8px;
+}
+.status-bar .pulse {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--text3);
+  flex-shrink: 0; transition: background 0.3s;
+}
+.status-bar.scanning .pulse { background: var(--green); animation: pulse 1s infinite; }
+.status-bar.found .pulse { background: var(--green); }
+.status-bar.error .pulse { background: var(--red); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* ── HTTPS warning ── */
+.https-warning {
+  margin-top: 12px; padding: 10px 14px; border-radius: 8px;
+  background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.25);
+  font-size: 12px; color: var(--amber); line-height: 1.5; display: none;
+}
+.https-warning a { color: var(--amber); }
+
+/* ── Sidebar ── */
+.sidebar { display: flex; flex-direction: column; gap: 12px; }
+
+.filter-row { display: flex; gap: 6px; }
+.ftab {
+  flex: 1; padding: 6px 8px; border-radius: 8px; font-size: 12px;
+  font-family: var(--mono); border: 1px solid var(--border);
+  background: transparent; color: var(--text2); cursor: pointer;
+  transition: all 0.12s; text-align: center;
+}
+.ftab.on { background: var(--bg3); color: var(--text); border-color: var(--border2); }
+.ftab:hover { border-color: var(--border2); }
+
+.dev-list { display: flex; flex-direction: column; gap: 8px; min-height: 200px; }
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 40px 16px; color: var(--text3); font-size: 13px; gap: 10px; text-align: center;
+  font-family: var(--mono);
+}
+.empty-state svg { width: 32px; height: 32px; stroke: var(--text3); fill: none; opacity: 0.5; }
+
+/* ── Device card ── */
+.dev-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 12px; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  animation: fadeUp 0.3s ease both;
+}
+@keyframes fadeUp { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: none; } }
+.dev-card:hover { border-color: var(--border2); background: var(--bg3); }
+.dev-card.sel { border-color: var(--green); }
+.dev-card.sel-bt { border-color: var(--purple); }
+
+.card-top { display: flex; align-items: center; gap: 10px; }
+.card-ico {
+  width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.card-ico svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+.ico-bt { background: var(--purple-dim); color: var(--purple); }
+.ico-wifi { background: var(--green-dim); color: var(--green); }
+.ico-phone { background: var(--blue-dim); color: var(--blue); }
+.ico-laptop { background: var(--amber-dim); color: var(--amber); }
+.ico-head { background: rgba(255,77,109,0.1); color: var(--red); }
+.ico-watch { background: rgba(245,166,35,0.1); color: var(--amber); }
+
+.card-meta { flex: 1; min-width: 0; }
+.card-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-sub { font-size: 11px; font-family: var(--mono); color: var(--text2); margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.card-dist { font-size: 11px; font-family: var(--mono); color: var(--text3); flex-shrink: 0; }
+
+.sig { display: flex; gap: 2px; align-items: flex-end; height: 12px; }
+.sig span { width: 3px; border-radius: 1px; background: var(--border2); }
+
+.card-detail {
+  margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12px; display: none;
+}
+.dev-card.sel .card-detail, .dev-card.sel-bt .card-detail { display: block; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-bottom: 10px; }
+.drow { display: flex; flex-direction: column; gap: 1px; }
+.drow-k { font-size: 10px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
+.drow-v { font-size: 12px; color: var(--text); font-family: var(--mono); }
+
+.action-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 7px; border-radius: 8px; font-size: 12px; font-family: var(--sans);
+  cursor: pointer; border: 1px solid; transition: all 0.15s; text-decoration: none;
+  font-weight: 600;
+}
+.action-btn-green {
+  border-color: rgba(0,229,160,0.3); background: var(--green-dim); color: var(--green);
+}
+.action-btn-green:hover { background: rgba(0,229,160,0.2); }
+.action-btn-purple {
+  border-color: rgba(139,127,245,0.3); background: var(--purple-dim); color: var(--purple);
+}
+.action-btn-purple:hover { background: rgba(139,127,245,0.2); }
+.action-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+/* permission modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: none; align-items: center; justify-content: center; z-index: 999; padding: 16px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--bg2); border: 1px solid var(--border2); border-radius: 14px;
+  padding: 24px; max-width: 380px; width: 100%;
+  animation: scaleIn 0.2s ease;
+}
+@keyframes scaleIn { from { transform: scale(0.95); opacity:0; } to { transform: none; opacity:1; } }
+.modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.modal p { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 16px; }
+.modal-btns { display: flex; gap: 8px; }
+.mbtn {
+  flex: 1; padding: 9px; border-radius: 8px; font-size: 13px; font-family: var(--sans);
+  cursor: pointer; border: 1px solid var(--border2); font-weight: 500;
+}
+.mbtn-cancel { background: var(--bg3); color: var(--text2); }
+.mbtn-ok { background: var(--green-dim); color: var(--green); border-color: rgba(0,229,160,0.3); }
+.mbtn-ok:hover { background: rgba(0,229,160,0.2); }
+.note { font-size: 11px; font-family: var(--mono); color: var(--text3); margin-top: 10px; line-height: 1.5; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">周边雷达</div>
+        <div class="logo-sub">PROXIMITY SCANNER v2.0</div>
+      </div>
+    </div>
+    <div class="header-status" id="header-status">
+      <span class="pill pill-dim">待机</span>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- Radar -->
+    <div class="radar-panel">
+      <div class="panel-label">扫描视图</div>
+      <div class="radar-wrap">
+        <canvas id="radar" width="500" height="500"></canvas>
+      </div>
+      <div class="radar-controls">
+        <button class="ctrl-btn" id="btn-scan" onclick="startScan()">
+          <svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 1 0 14 0"/><path d="M12 5v3M5.6 7.6l2.1 2.1M3 12h3"/></svg>
+          开始扫描
+        </button>
+        <button class="ctrl-btn active-bt" id="btn-bt" onclick="toggleLayer('bt')">
+          <svg viewBox="0 0 24 24"><path d="m7 7 10 10-5 5V2l5 5L7 17"/></svg>
+          蓝牙
+        </button>
+        <button class="ctrl-btn active-wifi" id="btn-wifi" onclick="toggleLayer('wifi')">
+          <svg viewBox="0 0 24 24"><path d="M1.2 8.6a15 15 0 0 1 21.6 0M5 12.6a9 9 0 0 1 14 0M8.8 16.6a4.5 4.5 0 0 1 6.4 0"/><circle cx="12" cy="21" r="1" fill="currentColor"/></svg>
+          WiFi
+        </button>
+      </div>
+      <div class="status-bar" id="status-bar">
+        <span class="pulse"></span>
+        <span id="status-text">准备就绪 — 点击「开始扫描」</span>
+      </div>
+      <div class="https-warning" id="https-warning">
+        ⚠ Web Bluetooth 需要 <strong>HTTPS</strong> 环境。请将此文件部署到 HTTPS 服务器，或使用 <code>localhost</code> 开发。
+        <br>WiFi 扫描需要浏览器支持 <a href="https://developer.mozilla.org/en-US/docs/Web/API/Network_Information_API" target="_blank">Network Information API</a>。
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="filter-row">
+        <button class="ftab on" onclick="setFilter('all',this)">全部</button>
+        <button class="ftab" onclick="setFilter('wifi',this)">WiFi</button>
+        <button class="ftab" onclick="setFilter('bluetooth',this)">蓝牙</button>
+      </div>
+      <div class="dev-list" id="dev-list">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg>
+          等待扫描...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Permission modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>📡 需要设备权限</h3>
+    <p>扫描需要访问蓝牙 API。浏览器将弹出权限请求窗口，请点击「允许」。</p>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:16px">
+      WiFi 网络信息通过 Network Information API 获取（无需特殊权限）。蓝牙设备扫描需要用户手动选择授权设备。
+    </p>
+    <div class="modal-btns">
+      <button class="mbtn mbtn-cancel" onclick="closeModal(false)">取消</button>
+      <button class="mbtn mbtn-ok" onclick="closeModal(true)">继续扫描</button>
+    </div>
+    <div class="note">* 此应用不收集或上传任何设备数据，所有操作均在本地完成。</div>
+  </div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+const state = {
+  devices: [],
+  selectedId: null,
+  filter: 'all',
+  showBt: true,
+  showWifi: true,
+  scanning: false,
+  sweep: 0,
+  animId: null,
+  revealSet: new Set(),
+  btDevice: null,          // real BT device reference
+};
+
+// ─── Device type classifier ───────────────────────────────────────────────────
+const BT_PROFILES = {
+  // Known service UUIDs → category
+  '0000110b': { cat:'音响', icon:'speaker' },
+  '0000110a': { cat:'音响', icon:'speaker' },
+  '0000111e': { cat:'耳机', icon:'headset' },
+  '00001812': { cat:'HID 设备', icon:'keyboard' },
+  '00001800': { cat:'通用设备', icon:'generic' },
+  '0000180a': { cat:'设备信息', icon:'info' },
+  '0000180d': { cat:'心率设备', icon:'watch' },
+  '0000180f': { cat:'电量设备', icon:'battery' },
+  '00001802': { cat:'近距设备', icon:'alert' },
+};
+
+function classifyBT(device) {
+  const name = (device.name || '').toLowerCase();
+  if (/iphone|samsung|pixel|huawei|xiaomi|oppo|vivo|oneplus|realme/.test(name)) return { cat:'手机', ico:'phone' };
+  if (/macbook|laptop|thinkpad|dell|hp |lenovo|asus|acer/.test(name)) return { cat:'电脑', ico:'laptop' };
+  if (/airpod|earbud|headphone|headset|wh-|wf-|jabra|sony|bose|beats|qcy|jbl/.test(name)) return { cat:'耳机', ico:'headset' };
+  if (/watch|band|fit|garmin|polar|amazfit|mi band|galaxy watch/.test(name)) return { cat:'穿戴', ico:'watch' };
+  if (/speaker|soundbar|jbl|bose|harman/.test(name)) return { cat:'音响', ico:'speaker' };
+  if (/keyboard|mouse|trackpad/.test(name)) return { cat:'输入设备', ico:'keyboard' };
+  if (/tv|television|display|monitor/.test(name)) return { cat:'显示器', ico:'tv' };
+  return { cat:'未知设备', ico:'generic' };
+}
+
+function icoClass(ico) {
+  const map = { phone:'ico-phone', laptop:'ico-laptop', headset:'ico-head', watch:'ico-watch', speaker:'ico-bt', keyboard:'ico-bt', tv:'ico-bt', generic:'ico-bt' };
+  return map[ico] || 'ico-bt';
+}
+
+// ─── Canvas Radar ─────────────────────────────────────────────────────────────
+const canvas = document.getElementById('radar');
+const ctx = canvas.getContext('2d');
+const W = 500, CX = W/2, CY = W/2, R = W/2 - 28;
+
+function isDark() {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+function drawRadar() {
+  ctx.clearRect(0, 0, W, W);
+  const dark = isDark();
+  const col = {
+    bg: dark ? '#0e1118' : '#f5f7fc',
+    ring: dark ? 'rgba(0,229,160,0.08)' : 'rgba(0,168,120,0.07)',
+    ringLine: dark ? 'rgba(0,229,160,0.14)' : 'rgba(0,168,120,0.14)',
+    cross: dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)',
+    label: dark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.25)',
+    sweep: dark ? 'rgba(0,229,160,0.13)' : 'rgba(0,168,120,0.1)',
+    sweepLine: dark ? 'rgba(0,229,160,0.6)' : 'rgba(0,168,120,0.55)',
+    center: dark ? '#00e5a0' : '#00a878',
+  };
+
+  // Outer clip
+  ctx.save();
+  ctx.beginPath(); ctx.arc(CX,CY,R,0,Math.PI*2); ctx.clip();
+  ctx.fillStyle = col.bg; ctx.fillRect(0,0,W,W);
+
+  // Rings
+  [0.25,0.5,0.75,1].forEach(f => {
+    ctx.beginPath(); ctx.arc(CX,CY,R*f,0,Math.PI*2);
+    ctx.strokeStyle = col.ringLine; ctx.lineWidth = f===1?1:0.5; ctx.stroke();
+    ctx.fillStyle = col.ring;
+    if(f<1) { ctx.fill(); }
+  });
+
+  // Crosshairs
+  ctx.strokeStyle = col.cross; ctx.lineWidth = 0.5;
+  for (let a=0; a<360; a+=45) {
+    const rad = a*Math.PI/180;
+    ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(CX+Math.cos(rad)*R, CY+Math.sin(rad)*R); ctx.stroke();
+  }
+
+  // Sweep
+  if (state.scanning) {
+    const sa = state.sweep - Math.PI/2;
+    ctx.save();
+    ctx.beginPath(); ctx.moveTo(CX,CY);
+    ctx.arc(CX,CY,R, sa-Math.PI*0.6, sa, false);
+    ctx.closePath();
+    ctx.fillStyle = col.sweep; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(CX,CY);
+    ctx.lineTo(CX+Math.cos(sa)*R, CY+Math.sin(sa)*R);
+    ctx.strokeStyle = col.sweepLine; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.restore();
+  }
+  ctx.restore();
+
+  // Ring labels
+  ctx.fillStyle = col.label; ctx.font = `10px 'JetBrains Mono',monospace`;
+  ctx.textAlign = 'left';
+  ['5m','15m','30m'].forEach((lbl, i) => {
+    const yr = CY - R*(0.25+i*0.25);
+    ctx.fillText(lbl, CX+4, yr-3);
+  });
+
+  // Direction labels
+  ctx.textAlign = 'center'; ctx.font = `11px 'JetBrains Mono',monospace`;
+  [['N',0],['E',90],['S',180],['W',270]].forEach(([d,a]) => {
+    const rad = a*Math.PI/180 - Math.PI/2;
+    const dist = R + 16;
+    ctx.fillStyle = d==='N' ? (isDark()?'rgba(0,229,160,0.5)':'rgba(0,168,120,0.5)') : col.label;
+    ctx.fillText(d, CX+Math.cos(rad)*dist, CY+Math.sin(rad)*dist+4);
+  });
+
+  // Dots
+  state.devices.forEach(d => {
+    if (!state.revealSet.has(d.id)) return;
+    if (d.type==='bluetooth' && !state.showBt) return;
+    if (d.type==='wifi' && !state.showWifi) return;
+    const a = d.angle * Math.PI/180 - Math.PI/2;
+    const r = Math.min(d.dist, 0.95) * R;
+    const x = CX + Math.cos(a)*r, y = CY + Math.sin(a)*r;
+    const isSel = state.selectedId === d.id;
+    const dotCol = d.type==='bluetooth' ? (isDark()?'#8b7ff5':'#6b5de0') : (isDark()?'#00e5a0':'#00a878');
+
+    if (isSel) {
+      ctx.beginPath(); ctx.arc(x,y,16,0,Math.PI*2);
+      ctx.strokeStyle = dotCol; ctx.lineWidth = 0.5;
+      ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+    }
+    // Glow ring
+    ctx.beginPath(); ctx.arc(x,y,isSel?9:6,0,Math.PI*2);
+    ctx.fillStyle = dotCol+'30'; ctx.fill();
+    // Core dot
+    ctx.beginPath(); ctx.arc(x,y,isSel?5:4,0,Math.PI*2);
+    ctx.fillStyle = dotCol; ctx.fill();
+    // Label
+    ctx.fillStyle = isDark()?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.6)';
+    ctx.font = `9px 'JetBrains Mono',monospace`; ctx.textAlign='center';
+    const lbl = (d.name||'??').split(/[\s_-]/)[0].substring(0,10);
+    ctx.fillText(lbl, x, y - 10);
+  });
+
+  // Center
+  ctx.beginPath(); ctx.arc(CX,CY,5,0,Math.PI*2);
+  ctx.fillStyle = col.center; ctx.fill();
+  ctx.beginPath(); ctx.arc(CX,CY,10,0,Math.PI*2);
+  ctx.strokeStyle = col.center+'60'; ctx.lineWidth=1; ctx.stroke();
+}
+
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const scale = W / rect.width;
+  const mx = (e.clientX-rect.left)*scale, my = (e.clientY-rect.top)*scale;
+  let hit = null, best = 1e9;
+  state.devices.forEach(d => {
+    if (!state.revealSet.has(d.id)) return;
+    const a = d.angle*Math.PI/180 - Math.PI/2;
+    const r = Math.min(d.dist,0.95)*R;
+    const x = CX+Math.cos(a)*r, y = CY+Math.sin(a)*r;
+    const dist = Math.hypot(mx-x, my-y);
+    if (dist < 16 && dist < best) { best=dist; hit=d.id; }
+  });
+  if (hit !== null) { state.selectedId = hit; renderList(); drawRadar(); }
+});
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawRadar);
+
+// ─── Scan orchestrator ────────────────────────────────────────────────────────
+function showModal() {
+  return new Promise(res => {
+    document.getElementById('modal').classList.add('show');
+    window._modalResolve = res;
+  });
+}
+function closeModal(ok) {
+  document.getElementById('modal').classList.remove('show');
+  if (window._modalResolve) window._modalResolve(ok);
+}
+
+async function startScan() {
+  if (state.scanning) return;
+  const ok = await showModal();
+  if (!ok) return;
+
+  state.scanning = true;
+  state.devices = [];
+  state.revealSet.clear();
+  state.selectedId = null;
+  state.sweep = 0;
+  setStatus('scanning', '正在扫描周边设备…');
+  document.getElementById('btn-scan').disabled = true;
+  renderList();
+  updateBadges();
+
+  // Launch sweep animation
+  cancelAnimationFrame(state.animId);
+  function anim() {
+    state.sweep += 0.05;
+    drawRadar();
+    state.animId = requestAnimationFrame(anim);
+  }
+  anim();
+
+  // Parallel scan: WiFi + BT
+  await Promise.allSettled([
+    scanWifi(),
+    scanBluetooth(),
+  ]);
+
+  // Stop animation after a moment
+  await new Promise(r => setTimeout(r, 1200));
+  cancelAnimationFrame(state.animId);
+  state.scanning = false;
+  drawRadar();
+  const total = state.devices.length;
+  setStatus('found', `扫描完成 — 共发现 ${total} 台设备`);
+  document.getElementById('btn-scan').disabled = false;
+  document.getElementById('btn-scan').textContent = '重新扫描';
+}
+
+// ─── WiFi scan ────────────────────────────────────────────────────────────────
+async function scanWifi() {
+  // Network Information API (connection info only — no AP list in browsers)
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+
+  // Attempt navigator.getNetworkInformation if available (experimental)
+  // Fall back to constructing current network entry
+  const wifiDevs = [];
+
+  if (conn) {
+    const id = 'wifi-current-' + Date.now();
+    wifiDevs.push({
+      id,
+      name: 'Current Network',
+      type: 'wifi',
+      ico: 'wifi',
+      icoClass: 'ico-wifi',
+      category: '已连接网络',
+      angle: 45 + Math.random()*30,
+      dist: 0.15 + Math.random()*0.1,
+      signal: rssiToSignal(conn.downlink ? -50 : -70),
+      rssi: conn.downlink ? Math.round(-40 - 30/Math.max(conn.downlink,0.1)) : -70,
+      extra: {
+        '网络类型': conn.type || '未知',
+        '有效类型': conn.effectiveType || '未知',
+        '下行速度': conn.downlink ? conn.downlink + ' Mbps' : '未知',
+        'RTT延迟': conn.rtt ? conn.rtt + ' ms' : '未知',
+        '节流模式': conn.saveData ? '省流量' : '正常',
+      },
+      ssid: '当前网络',
+      bssid: '—',
+      secure: 'WPA',
+      channel: '—',
+      actionType: 'wifi-settings',
+    });
+  }
+
+  // Try to get SSID via deprecated window API (some Android browsers expose it)
+  // This is best-effort; most browsers don't expose AP list for privacy
+  if (typeof WifiWizard2 !== 'undefined') {
+    try {
+      const nets = await WifiWizard2.scan();
+      nets.slice(0,6).forEach((n,i) => {
+        wifiDevs.push(makeWifiDevice(n, i));
+      });
+    } catch(e) {}
+  }
+
+  // If nothing found, add a placeholder indicating browser limitation
+  if (!wifiDevs.length) {
+    wifiDevs.push({
+      id: 'wifi-limited',
+      name: '周边 WiFi (受限)',
+      type: 'wifi',
+      ico: 'wifi',
+      icoClass: 'ico-wifi',
+      category: 'WiFi 接入点',
+      angle: 60,
+      dist: 0.2,
+      signal: 3,
+      rssi: -55,
+      extra: {
+        '说明': '浏览器限制',
+        '原因': '隐私保护策略',
+        '建议': '使用原生应用',
+        'API状态': conn ? '已连接' : '不可用',
+      },
+      ssid: '受隐私限制',
+      bssid: '—',
+      secure: '—',
+      channel: '—',
+      actionType: 'wifi-settings',
+    });
+  }
+
+  // Reveal with stagger
+  for (const d of wifiDevs) {
+    await sleep(300 + Math.random()*400);
+    state.devices.push(d);
+    state.revealSet.add(d.id);
+    renderList();
+    updateBadges();
+    drawRadar();
+  }
+}
+
+function makeWifiDevice(raw, idx) {
+  const angle = 20 + idx * 55 + Math.random()*20;
+  const rssi = raw.level || -60;
+  return {
+    id: 'wifi-' + (raw.BSSID||idx),
+    name: raw.SSID || ('WiFi_' + idx),
+    type: 'wifi',
+    ico: 'wifi',
+    icoClass: 'ico-wifi',
+    category: '路由器',
+    angle,
+    dist: rssiToDist(rssi),
+    signal: rssiToSignal(rssi),
+    rssi,
+    extra: {
+      'SSID': raw.SSID || '隐藏',
+      'BSSID': raw.BSSID || '—',
+      '加密': raw.capabilities || 'WPA2',
+      '频段': raw.frequency ? (raw.frequency > 4900 ? '5 GHz' : '2.4 GHz') : '—',
+      '信道': raw.channelWidth || '—',
+    },
+    ssid: raw.SSID,
+    bssid: raw.BSSID,
+    secure: raw.capabilities || 'WPA2',
+    channel: '—',
+    actionType: 'wifi-connect',
+  };
+}
+
+// ─── Bluetooth scan ───────────────────────────────────────────────────────────
+async function scanBluetooth() {
+  if (!navigator.bluetooth) {
+    // BT not supported — show demo entry
+    await sleep(500);
+    const demo = makeDemoBtDevice();
+    state.devices.push(demo);
+    state.revealSet.add(demo.id);
+    renderList(); updateBadges(); drawRadar();
+    setStatus('scanning', 'Web Bluetooth API 不可用（需要 HTTPS + 支持的浏览器）');
+    return;
+  }
+
+  // Check HTTPS
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    document.getElementById('https-warning').style.display = 'block';
+    setStatus('error', '需要 HTTPS 才能使用蓝牙 API');
+    return;
+  }
+
+  try {
+    // Request BT device with broad filters — user selects from browser picker
+    const device = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: [
+        'battery_service', 'device_information', 'heart_rate',
+        'human_interface_device', 'generic_access', 'generic_attribute',
+        '0000110b-0000-1000-8000-00805f9b34fb',  // A2DP audio sink
+        '0000111e-0000-1000-8000-00805f9b34fb',  // Handsfree
+        '00001812-0000-1000-8000-00805f9b34fb',  // HID
+      ],
+    });
+
+    if (!device) return;
+    state.btDevice = device;
+
+    const cls = classifyBT(device);
+    const angle = 180 + Math.random()*120 - 60;
+
+    const btDev = {
+      id: 'bt-' + device.id,
+      name: device.name || '未知蓝牙设备',
+      type: 'bluetooth',
+      ico: cls.ico,
+      icoClass: icoClass(cls.ico),
+      category: cls.cat,
+      angle,
+      dist: 0.2 + Math.random()*0.5,
+      signal: 3,
+      rssi: -55,
+      extra: {
+        '设备名称': device.name || '未命名',
+        '设备ID': device.id.substring(0,12) + '...',
+        '类别': cls.cat,
+        '配对状态': '已授权',
+      },
+      addr: device.id,
+      actionType: 'bt-connect',
+      gatt: device.gatt,
+    };
+
+    // Try to connect GATT and read device info
+    try {
+      setStatus('scanning', `正在读取 ${device.name || '设备'} 信息…`);
+      const server = await device.gatt.connect();
+      btDev.extra['GATT'] = '已连接';
+
+      // Read battery
+      try {
+        const battSvc = await server.getPrimaryService('battery_service');
+        const battChar = await battSvc.getCharacteristic('battery_level');
+        const val = await battChar.readValue();
+        btDev.extra['电池'] = val.getUint8(0) + '%';
+      } catch(e) {}
+
+      // Read device info
+      try {
+        const infoSvc = await server.getPrimaryService('device_information');
+        const chars = ['manufacturer_name_string','model_number_string','firmware_revision_string'];
+        const labels = ['制造商','型号','固件'];
+        for (let i=0; i<chars.length; i++) {
+          try {
+            const c = await infoSvc.getCharacteristic(chars[i]);
+            const v = await c.readValue();
+            btDev.extra[labels[i]] = new TextDecoder().decode(v);
+          } catch(e) {}
+        }
+      } catch(e) {}
+
+      // Signal strength via RSSI (not directly available in Web BT, estimate)
+      btDev.extra['连接状态'] = '已连接';
+    } catch(e) {
+      btDev.extra['连接状态'] = '未连接 (权限不足)';
+    }
+
+    state.devices.push(btDev);
+    state.revealSet.add(btDev.id);
+    renderList(); updateBadges(); drawRadar();
+
+    // Listen for more devices (if supported)
+    if (navigator.bluetooth.requestLEScan) {
+      try {
+        const scan = await navigator.bluetooth.requestLEScan({ acceptAllAdvertisements: true });
+        navigator.bluetooth.addEventListener('advertisementreceived', e => {
+          const existId = 'ble-' + e.device.id;
+          if (!state.devices.find(d=>d.id===existId)) {
+            const c2 = classifyBT(e.device);
+            const rssi = e.rssi || -70;
+            state.devices.push({
+              id: existId,
+              name: e.device.name || e.name || '未知',
+              type: 'bluetooth',
+              ico: c2.ico, icoClass: icoClass(c2.ico),
+              category: c2.cat,
+              angle: Math.random()*360,
+              dist: rssiToDist(rssi),
+              signal: rssiToSignal(rssi),
+              rssi,
+              extra: { '设备名': e.device.name||'—', 'RSSI': rssi+'dBm', '类别': c2.cat, 'BLE': '是' },
+              addr: e.device.id,
+              actionType: 'bt-connect',
+              gatt: e.device.gatt,
+            });
+            state.revealSet.add(existId);
+            renderList(); updateBadges(); drawRadar();
+          }
+        });
+        setTimeout(() => { try { scan.stop(); } catch(e){} }, 8000);
+      } catch(e) {}
+    }
+  } catch(e) {
+    if (e.name !== 'NotFoundError' && e.name !== 'AbortError') {
+      setStatus('error', '蓝牙错误: ' + (e.message||e.name));
+    }
+  }
+}
+
+function makeDemoBtDevice() {
+  return {
+    id: 'bt-demo-unavail',
+    name: 'BT API 不可用',
+    type: 'bluetooth',
+    ico: 'generic', icoClass: 'ico-bt',
+    category: '提示',
+    angle: 220,
+    dist: 0.5,
+    signal: 0,
+    rssi: 0,
+    extra: { '原因': '浏览器不支持', '需要': 'Chrome 56+ / Edge 79+', '条件': 'HTTPS 或 localhost' },
+    addr: '—',
+    actionType: 'none',
+  };
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function rssiToDist(rssi) {
+  // Rough: -40dBm ~ 0.05, -90dBm ~ 0.95
+  return Math.min(0.95, Math.max(0.05, (rssi + 90) / -55 + 0.95));
+}
+
+function rssiToSignal(rssi) {
+  if (rssi >= -50) return 5;
+  if (rssi >= -60) return 4;
+  if (rssi >= -70) return 3;
+  if (rssi >= -80) return 2;
+  return 1;
+}
+
+function distLabel(dist) {
+  const m = Math.round(dist * 35);
+  if (m <= 1) return '<2m';
+  if (m < 10) return '~' + m + 'm';
+  return '~' + m + 'm';
+}
+
+function dirLabel(a) {
+  const dirs = ['正北','东北','正东','东南','正南','西南','正西','西北'];
+  return dirs[Math.round(((a%360)+360)%360/45)%8];
+}
+
+function sigBars(n) {
+  let h = '<div class="sig">';
+  for (let i=1;i<=5;i++) {
+    const on = i<=n;
+    const col = on ? (isDark()?'#00e5a0':'#00a878') : '';
+    h += `<span style="height:${3+i*2}px${on?';background:'+col:''}" ></span>`;
+  }
+  return h + '</div>';
+}
+
+// ─── UI ───────────────────────────────────────────────────────────────────────
+function setStatus(type, msg) {
+  const bar = document.getElementById('status-bar');
+  bar.className = 'status-bar ' + (type==='scanning'?'scanning':type==='found'?'found':type==='error'?'error':'');
+  document.getElementById('status-text').textContent = msg;
+}
+
+function updateBadges() {
+  const bt = state.devices.filter(d=>d.type==='bluetooth'&&state.revealSet.has(d.id)).length;
+  const wifi = state.devices.filter(d=>d.type==='wifi'&&state.revealSet.has(d.id)).length;
+  const el = document.getElementById('header-status');
+  if (!bt && !wifi) { el.innerHTML = '<span class="pill pill-dim">待机</span>'; return; }
+  el.innerHTML =
+    (bt ? `<span class="pill pill-purple"><span class="dot dot-purple"></span>${bt} 蓝牙</span>` : '') +
+    (wifi ? `<span class="pill pill-green"><span class="dot dot-green"></span>${wifi} WiFi</span>` : '');
+}
+
+function setFilter(f, el) {
+  state.filter = f;
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  renderList();
+}
+
+function toggleLayer(type) {
+  if (type==='bt') {
+    state.showBt = !state.showBt;
+    const btn = document.getElementById('btn-bt');
+    btn.classList.toggle('active-bt', state.showBt);
+  } else {
+    state.showWifi = !state.showWifi;
+    const btn = document.getElementById('btn-wifi');
+    btn.classList.toggle('active-wifi', state.showWifi);
+  }
+  renderList(); drawRadar();
+}
+
+function selectDev(id) {
+  state.selectedId = state.selectedId===id ? null : id;
+  renderList(); drawRadar();
+}
+
+function renderList() {
+  const list = document.getElementById('dev-list');
+  const vis = state.devices.filter(d => {
+    if (!state.revealSet.has(d.id)) return false;
+    if (state.filter==='wifi' && d.type!=='wifi') return false;
+    if (state.filter==='bluetooth' && d.type!=='bluetooth') return false;
+    if (d.type==='bluetooth' && !state.showBt) return false;
+    if (d.type==='wifi' && !state.showWifi) return false;
+    return true;
+  });
+
+  if (!vis.length) {
+    list.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01M9.5 14.5s1 1.5 2.5 1.5 2.5-1.5 2.5-1.5"/></svg>
+      ${state.devices.length ? '无匹配设备' : '暂无设备，请扫描'}
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = vis.sort((a,b)=>a.dist-b.dist).map(dev => {
+    const isSel = state.selectedId === dev.id;
+    const selClass = isSel ? (dev.type==='wifi'?'sel':'sel-bt') : '';
+    const detailRows = Object.entries(dev.extra||{}).map(([k,v])=>`
+      <div class="drow"><div class="drow-k">${k}</div><div class="drow-v">${v}</div></div>
+    `).join('');
+
+    const actionBtn = makeActionBtn(dev);
+
+    return `<div class="dev-card ${selClass}" onclick="selectDev('${dev.id}')">
+      <div class="card-top">
+        <div class="card-ico ${dev.icoClass}">${devIcon(dev.ico)}</div>
+        <div class="card-meta">
+          <div class="card-name">${escHtml(dev.name)}</div>
+          <div class="card-sub">
+            <span>${dev.category}</span>
+            <span>·</span>
+            <span>${dirLabel(dev.angle)}</span>
+            ${sigBars(dev.signal)}
+          </div>
+        </div>
+        <div class="card-dist">${distLabel(dev.dist)}</div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-grid">${detailRows}
+          <div class="drow"><div class="drow-k">方向</div><div class="drow-v">${dirLabel(dev.angle)}</div></div>
+          ${dev.rssi ? `<div class="drow"><div class="drow-k">RSSI</div><div class="drow-v">${dev.rssi} dBm</div></div>` : ''}
+        </div>
+        ${actionBtn}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function makeActionBtn(dev) {
+  if (dev.actionType === 'bt-connect') {
+    return `<button class="action-btn action-btn-purple" onclick="connectBt('${dev.id}');event.stopPropagation()">
+      ${devIcon('bluetooth')} 连接蓝牙
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M15 6l6 6-6 6"/></svg>
+    </button>`;
+  }
+  if (dev.actionType === 'wifi-connect' || dev.actionType === 'wifi-settings') {
+    return `<button class="action-btn action-btn-green" onclick="connectWifi('${dev.id}');event.stopPropagation()">
+      ${devIcon('wifi')} 前往网络设置
+      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    </button>`;
+  }
+  return '';
+}
+
+async function connectBt(id) {
+  const dev = state.devices.find(d=>d.id===id);
+  if (!dev || !dev.gatt) {
+    alert(`蓝牙设备：${dev?.name||id}\n\n请在系统蓝牙设置中完成配对。`);
+    return;
+  }
+  try {
+    setStatus('scanning', `连接 ${dev.name}…`);
+    await dev.gatt.connect();
+    setStatus('found', `已连接 ${dev.name}`);
+    dev.extra['连接状态'] = '已连接';
+    renderList();
+  } catch(e) {
+    setStatus('error', '连接失败: ' + e.message);
+  }
+}
+
+function connectWifi(id) {
+  // Browsers cannot programmatically connect to WiFi — direct to OS settings
+  const dev = state.devices.find(d=>d.id===id);
+  const ssid = dev?.ssid || dev?.name || '';
+  // Try to open system WiFi settings via deep link (works on Android Chrome)
+  if (/Android/i.test(navigator.userAgent)) {
+    window.open('intent://settings/wifi#Intent;scheme=android-app;package=com.android.settings;end', '_blank');
+  } else if (/iPhone|iPad/i.test(navigator.userAgent)) {
+    window.open('App-Prefs:WIFI', '_blank');
+  } else {
+    alert(`WiFi 网络：${ssid || '当前网络'}\n\n浏览器无法直接连接 WiFi，请在系统设置中手动选择该网络。\n\nWindows: 任务栏 WiFi 图标\nmacOS: 系统偏好设置 → 网络\nAndroid: 设置 → WiFi\niOS: 设置 → 无线局域网`);
+  }
+}
+
+function devIcon(ico) {
+  const icons = {
+    phone: `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>`,
+    laptop: `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M0 20h24"/></svg>`,
+    headset: `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>`,
+    watch: `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5"><rect x="6" y="6" width="12" height="12" rx="3"/><path d="M9 2h6l1 4H8zM8 18l1 4h6l1-4"/></svg>`,
+    speaker: `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="14" r="3"/><circle cx="12" cy="7" r="1" fill="currentColor"/></svg>`,
+    keyboard: `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>`,
+    tv: `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg>`,
+    generic: `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>`,
+    wifi: `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5"><path d="M1.2 8.6a15 15 0 0 1 21.6 0M5 12.6a9 9 0 0 1 14 0M8.8 16.6a4.5 4.5 0 0 1 6.4 0"/><circle cx="12" cy="21" r="1" fill="currentColor"/></svg>`,
+    bluetooth: `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><path d="m7 7 10 10-5 5V2l5 5L7 17"/></svg>`,
+    info: `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>`,
+    battery: `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M22 11v2"/></svg>`,
+    alert: `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5"><path d="M12 2L2 22h20L12 2z"/><path d="M12 9v4M12 17h.01"/></svg>`,
+  };
+  return icons[ico] || icons.generic;
+}
+
+function escHtml(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+drawRadar();
+// Check BT availability on load
+if (!navigator.bluetooth) {
+  setTimeout(() => {
+    setStatus('error', '此浏览器不支持 Web Bluetooth API（需要 Chrome/Edge + HTTPS）');
+  }, 500);
+}
+</script>
+</body>
+</html>
