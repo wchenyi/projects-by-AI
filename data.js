@@ -230,6 +230,17 @@ const projects = [
         versions: [
             { name: '进入软件', url: 'https://projects.wangcy.site/law/legal-reader' }
         ]
+    },
+    {
+        id: 22,
+        category: 'office',
+        name: '批量奖状',
+        description: '基于模板批量制作奖状',
+        icon: '🏆',
+        tags: ['Gemini'],
+        versions: [
+            { name: '进入软件', url: 'https://projects.wangcy.site/cert/' }
+        ]
     }
 ];
 
