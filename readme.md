@@ -40,4 +40,5 @@
 - [法考主观题模拟](https://projects.wangcy.site/law/fakao/g/index)
 - [favorite](https://projects.wangcy.site/favorite/index)
 - [道家小六壬](http://dao6.wangcy.online/)
+- [批量制作奖状](https://projects.wangcy.site/cert/)
 
