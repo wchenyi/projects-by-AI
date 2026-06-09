@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>现代化批量奖状生成系统 v2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        simsun: ['SimSun', '宋体', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        .font-simsun {
+            font-family: 'SimSun', '宋体', serif;
+            font-weight: bold;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* 统一文本框样式，精准对齐 Canvas 渲染机制 */
+        .draggable-box {
+            position: absolute;
+            box-sizing: border-box;
+            line-height: 1 !important;
+            padding: 4px 6px !important;
+            border-width: 1px;
+            border-style: dashed;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-200">
+
+    <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex justify-between items-center z-10 shadow-sm shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 text-white p-2 rounded-lg">
+                <i data-lucide="award" class="w-6 h-6"></i>
+            </div>
+            <h1 class="text-lg md:text-xl font-bold tracking-tight">批量奖状现代生成系统 <span class="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 px-2 py-0.5 rounded ml-2">v2.0</span></h1>
+        </div>
+        <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+            <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+            <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+        </button>
+    </header>
+
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        
+        <main class="flex-1 bg-gray-100 dark:bg-gray-950 p-4 md:p-6 flex items-center justify-center overflow-auto relative order-1 md:order-2 h-[45vh] md:h-auto border-b md:border-b-0 border-gray-200 dark:border-gray-800">
+            <div id="upload-placeholder" class="text-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-800 rounded-2xl max-w-sm bg-white dark:bg-gray-900 shadow-sm">
+                <i data-lucide="image" class="w-12 h-12 mx-auto text-gray-300 mb-3 animate-pulse"></i>
+                <h3 class="text-base font-semibold mb-1">暂无模板图片</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">请先在下方或左侧上传空白奖状底图，即可激活自由拖拽排版文字。</p>
+            </div>
+
+            <div id="preview-container" class="relative hidden bg-white shadow-2xl rounded-sm overflow-hidden border border-gray-200 dark:border-gray-800 select-none">
+                <img id="preview-img" src="" alt="奖状底图" class="w-full h-auto block pointer-events-none">
+                
+                <div id="render-name" 
+                     onmousedown="startDrag(event, 'name')" ontouchstart="startDrag(event, 'name')"
+                     class="draggable-box border-blue-500 bg-blue-500/10 cursor-move font-simsun text-center">
+                    <span id="text-span-name">张三</span>
+                </div>
+                <div id="render-term" 
+                     onmousedown="startDrag(event, 'term')" ontouchstart="startDrag(event, 'term')"
+                     class="draggable-box border-purple-500 bg-purple-500/10 cursor-move font-simsun">
+                    第24期
+                </div>
+                <div id="render-year" 
+                     onmousedown="startDrag(event, 'year')" ontouchstart="startDrag(event, 'year')"
+                     class="draggable-box border-emerald-500 bg-emerald-500/10 cursor-move font-simsun">
+                    2026
+                </div>
+                <div id="render-month" 
+                     onmousedown="startDrag(event, 'month')" ontouchstart="startDrag(event, 'month')"
+                     class="draggable-box border-amber-500 bg-amber-500/10 cursor-move font-simsun">
+                    06
+                </div>
+            </div>
+
+            <div id="progress-overlay" class="absolute inset-0 bg-black/70 z-50 flex items-center justify-center hidden backdrop-blur-sm">
+                <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl mx-4">
+                    <div class="inline-block p-3 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 animate-spin">
+                        <i data-lucide="loader-2" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-base" id="progress-title">正在处理中...</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" id="progress-detail">进度：0 / 0</p>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="bg-blue-600 h-full w-0 transition-all duration-100"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <aside class="w-full md:w-[420px] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col order-2 md:order-1 h-[55vh] md:h-full overflow-y-auto p-4 md:p-6 space-y-5 no-scrollbar shadow-lg shrink-0">
+            
+            <div class="space-y-1.5">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400">1. 上传空白模板底图</label>
+                <div class="relative group border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-3 text-center hover:border-blue-500 dark:hover:border-blue-400 transition cursor-pointer">
+                    <input type="file" id="bg-upload" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    <div class="flex items-center justify-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
+                        <i data-lucide="upload-cloud" class="w-5 h-5 text-gray-400 group-hover:text-blue-500"></i>
+                        <span class="font-medium">点击或拖拽上传底图</span>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-gray-200 dark:border-gray-800">
+
+            <div class="space-y-3">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400">2. 元素属性与排版调整</label>
+                
+                <div class="grid grid-cols-3 gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-medium">
+                    <button onclick="changeTab('name')" id="tab-name" class="py-1.5 rounded-md bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-white">姓名栏</button>
+                    <button onclick="changeTab('term')" id="tab-term" class="py-1.5 rounded-md text-gray-600 dark:text-gray-400">期数栏</button>
+                    <button onclick="changeTab('date')" id="tab-date" class="py-1.5 rounded-md text-gray-600 dark:text-gray-400">日期组合栏</button>
+                </div>
+
+                <div id="controls-container" class="bg-gray-50 dark:bg-gray-950 p-4 rounded-xl space-y-4 border border-gray-100 dark:border-gray-800">
+                    
+                    <div id="wrapper-single-text">
+                        <label class="block text-xs font-medium text-gray-400 mb-1">预览文本内容</label>
+                        <input type="text" id="ctrl-text" class="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div id="wrapper-date-text" class="hidden grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1">年份文本</label>
+                            <input type="text" id="ctrl-date-year" class="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1">月份文本</label>
+                            <input type="text" id="ctrl-date-month" class="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div id="wrapper-date-sync" class="hidden bg-white dark:bg-gray-900 p-2.5 rounded-lg border border-gray-200 dark:border-gray-800 space-y-1.5 text-xs">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">默认颜色和字号同步变化</span>
+                            <input type="checkbox" id="sync-date-style" checked class="w-4 h-4 accent-blue-600">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">同步锁定状态</span>
+                            <input type="checkbox" id="sync-date-lock" checked class="w-4 h-4 accent-blue-600">
+                        </div>
+                        <div class="border-t border-gray-100 dark:border-gray-800 my-1.5 pt-1.5">
+                            <span class="text-gray-400 font-medium">当前细调/对齐基准：</span>
+                            <div class="inline-flex space-x-3 ml-1">
+                                <label class="inline-flex items-center cursor-pointer"><input type="radio" name="date-sub" value="year" checked onchange="switchDateSubAnchor('year')" class="mr-1 accent-blue-600">年</label>
+                                <label class="inline-flex items-center cursor-pointer"><input type="radio" name="date-sub" value="month" onchange="switchDateSubAnchor('month')" class="mr-1 accent-blue-600">月</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="ctrl-lock-wrapper" class="flex items-center justify-between py-1 border-b border-gray-200 dark:border-gray-800 pb-3">
+                        <span class="text-xs font-medium text-gray-400">位置安全锁定</span>
+                        <button id="ctrl-lock-btn" onclick="toggleLock()" class="flex items-center space-x-1 px-3 py-1 rounded-md text-xs font-medium bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 transition">
+                            <i data-lucide="unlock" class="w-3.5 h-3.5 mr-1"></i><span>未锁定</span>
+                        </button>
+                    </div>
+
+                    <div id="style-controls" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">字体大小 (px)</label>
+                                <input type="number" id="ctrl-size" min="12" max="200" class="w-full px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">字体颜色</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="color" id="ctrl-color" class="w-10 h-8 p-0 bg-transparent border-0 rounded cursor-pointer">
+                                    <span id="ctrl-color-text" class="text-xs uppercase text-gray-500">#000000</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="ctrl-width-wrapper">
+                            <label class="block text-xs font-medium text-gray-400 mb-1">固定名字框宽度 (px)</label>
+                            <input type="range" id="ctrl-width" min="50" max="850" class="w-full accent-blue-600">
+                            <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                                <span>50px</span>
+                                <span id="ctrl-width-val">280px</span>
+                                <span>850px</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-gray-200 dark:border-gray-800 space-y-2">
+                        <label class="block text-xs font-semibold text-blue-600 dark:text-blue-400 flex items-center"><i data-lucide="align-start-vertical" class="w-3.5 h-3.5 mr-1"></i>快捷对齐 (以当前选择元素为基准)</label>
+                        <div class="flex items-center space-x-2">
+                            <select id="align-target-select" class="flex-1 px-2 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </select>
+                            <button onclick="alignElements('top')" class="px-3 py-1.5 bg-gray-200 dark:bg-gray-800 hover:bg-blue-600 hover:text-white rounded-lg text-xs font-medium transition flex items-center"><i data-lucide="align-vertical-space-around" class="w-3 h-3 mr-1"></i>顶部对齐</button>
+                            <button onclick="alignElements('bottom')" class="px-3 py-1.5 bg-gray-200 dark:bg-gray-800 hover:bg-blue-600 hover:text-white rounded-lg text-xs font-medium transition flex items-center"><i data-lucide="align-vertical-space-between" class="w-3 h-3 mr-1"></i>底部对齐</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <hr class="border-gray-200 dark:border-gray-800">
+
+            <div class="space-y-1.5 flex-1 flex flex-col min-h-[140px]">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400">3. 批量导入获奖名单</label>
+                <textarea id="names-input" placeholder="请输入姓名，一行一个。示例：&#10;张三&#10;李四&#10;欧阳六六（名字长会自动缩小匹配框宽）" class="w-full flex-1 p-3 bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono resize-none no-scrollbar"></textarea>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-950 p-3.5 rounded-xl border border-gray-100 dark:border-gray-800 space-y-3">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400">4. 批量导出偏好选项</label>
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                        <label class="block text-gray-400 mb-1">打包模式</label>
+                        <select id="export-mode" class="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none">
+                            <option value="zip">📦 打包成 ZIP 下载</option>
+                            <option value="individual">🖼️ 单张独立连续下载</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 mb-1">输出图片格式</label>
+                        <select id="export-format" class="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none">
+                            <option value="png">PNG (高清无损)</option>
+                            <option value="jpeg">JPG (文件轻量)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-1">
+                <button id="btn-batch-export" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center space-x-2 shadow-md transition">
+                    <i data-lucide="zap" class="w-5 h-5"></i>
+                    <span>开始批量执行生成</span>
+                </button>
+            </div>
+
+        </aside>
+    </div>
+
+    <script>
+        // 初始化全局状态和核心参数
+        lucide.createIcons();
+        
+        // 深色模式切换
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+
+        let currentTab = 'name';          // 当前激活的主Tab: name, term, date
+        let currentFieldId = 'name';      // 真正底层控制更新绑定的 Field 键值: name, term, year, month
+        let originalImage = new Image();
+        let isImageLoaded = false;
+
+        // 全局核心定位元素参数数据（left, top 使用百分比定位）
+        const fields = {
+            name: { text: '张三', size: 36, color: '#000000', left: 25, top: 35, width: 280, locked: false, canLock: false },
+            term: { text: '第 24 期', size: 24, color: '#000000', left: 68, top: 18, width: 140, locked: false, canLock: true },
+            year: { text: '2026', size: 22, color: '#000000', left: 63, top: 82, width: 70, locked: false, canLock: true },
+            month: { text: '06', size: 22, color: '#000000', left: 78, top: 82, width: 40, locked: false, canLock: true }
+        };
+
+        // 绑定底图上传解析
+        const fileInput = document.getElementById('bg-upload');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const previewContainer = document.getElementById('preview-container');
+        const previewImg = document.getElementById('preview-img');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                originalImage.src = event.target.result;
+                originalImage.onload = function() {
+                    previewImg.src = event.target.result;
+                    uploadPlaceholder.classList.add('hidden');
+                    previewContainer.classList.remove('hidden');
+                    isImageLoaded = true;
+                    updateUI();
+                }
+            }
+            reader.readAsDataURL(file);
+        });
+
+        // 获取表单控制 DOM
+        const ctrlText = document.getElementById('ctrl-text');
+        const ctrlDateYear = document.getElementById('ctrl-date-year');
+        const ctrlDateMonth = document.getElementById('ctrl-date-month');
+        const ctrlSize = document.getElementById('ctrl-size');
+        const ctrlColor = document.getElementById('ctrl-color');
+        const ctrlColorText = document.getElementById('ctrl-color-text');
+        const ctrlWidth = document.getElementById('ctrl-width');
+        const ctrlWidthVal = document.getElementById('ctrl-width-val');
+        const ctrlWidthWrapper = document.getElementById('ctrl-width-wrapper');
+        const ctrlLockWrapper = document.getElementById('ctrl-lock-wrapper');
+        const ctrlLockBtn = document.getElementById('ctrl-lock-btn');
+        const styleControls = document.getElementById('style-controls');
+        const syncDateStyle = document.getElementById('sync-date-style');
+        const syncDateLock = document.getElementById('sync-date-lock');
+
+        // 切换控制面板选项卡
+        window.changeTab = function(tabId) {
+            currentTab = tabId;
+            if (tabId === 'date') {
+                // 如果切到日期组合，根据单选框选定是年还是月作为主对齐控制
+                const checkedRadio = document.querySelector('input[name="date-sub"]:checked');
+                currentFieldId = checkedRadio ? checkedRadio.value : 'year';
+            } else {
+                currentFieldId = tabId;
+            }
+
+            ['name', 'term', 'date'].forEach(id => {
+                const tab = document.getElementById(`tab-${id}`);
+                if (id === tabId) {
+                    tab.className = "py-1.5 rounded-md bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-white";
+                } else {
+                    tab.className = "py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900";
+                }
+            });
+
+            updateControlPanel();
+        }
+
+        // 切换日期组合下的二级子控制项（年/月）
+        window.switchDateSubAnchor = function(subId) {
+            if (currentTab === 'date') {
+                currentFieldId = subId;
+                updateControlPanel();
+            }
+        }
+
+        // 面板UI与当前状态同步刷新
+        function updateControlPanel() {
+            // 根据Tab切换输入表单形态
+            if (currentTab === 'date') {
+                document.getElementById('wrapper-single-text').classList.add('hidden');
+                document.getElementById('wrapper-date-text').classList.remove('hidden');
+                document.getElementById('wrapper-date-sync').classList.remove('hidden');
+                ctrlWidthWrapper.classList.add('hidden');
+                ctrlLockWrapper.classList.remove('hidden');
+
+                ctrlDateYear.value = fields.year.text;
+                ctrlDateMonth.value = fields.month.text;
+                
+                // 大小与颜色表单显示当前激活子项(年/月)的值
+                ctrlSize.value = fields[currentFieldId].size;
+                ctrlColor.value = fields[currentFieldId].color;
+                ctrlColorText.innerText = fields[currentFieldId].color;
+
+                const isLocked = fields[currentFieldId].locked;
+                if (isLocked) {
+                    ctrlLockBtn.innerHTML = `<i data-lucide="lock" class="w-3.5 h-3.5 mr-1 text-red-500"></i><span class="text-red-500">已锁定</span>`;
+                    styleControls.classList.add('opacity-40', 'pointer-events-none');
+                } else {
+                    ctrlLockBtn.innerHTML = `<i data-lucide="unlock" class="w-3.5 h-3.5 mr-1"></i><span>未锁定</span>`;
+                    styleControls.classList.remove('opacity-40', 'pointer-events-none');
+                }
+            } else {
+                document.getElementById('wrapper-single-text').classList.remove('hidden');
+                document.getElementById('wrapper-date-text').classList.add('hidden');
+                document.getElementById('wrapper-date-sync').classList.add('hidden');
+
+                const field = fields[currentFieldId];
+                ctrlText.value = field.text;
+                ctrlSize.value = field.size;
+                ctrlColor.value = field.color;
+                ctrlColorText.innerText = field.color;
+
+                if (currentFieldId === 'name') {
+                    ctrlWidth.value = field.width;
+                    ctrlWidthVal.innerText = field.width + 'px';
+                    ctrlWidthWrapper.classList.remove('hidden');
+                    ctrlLockWrapper.classList.add('hidden');
+                    styleControls.classList.remove('opacity-40', 'pointer-events-none');
+                } else {
+                    // 期数栏
+                    ctrlWidthWrapper.classList.add('hidden');
+                    ctrlLockWrapper.classList.remove('hidden');
+                    if (field.locked) {
+                        ctrlLockBtn.innerHTML = `<i data-lucide="lock" class="w-3.5 h-3.5 mr-1 text-red-500"></i><span class="text-red-500">已锁定</span>`;
+                        styleControls.classList.add('opacity-40', 'pointer-events-none');
+                    } else {
+                        ctrlLockBtn.innerHTML = `<i data-lucide="unlock" class="w-3.5 h-3.5 mr-1"></i><span>未锁定</span>`;
+                        styleControls.classList.remove('opacity-40', 'pointer-events-none');
+                    }
+                }
+            }
+            updateAlignDropdown();
+            lucide.createIcons();
+        }
+
+        // 新增：动态更新快捷对齐下拉单列表
+        function updateAlignDropdown() {
+            const select = document.getElementById('align-target-select');
+            select.innerHTML = '';
+            const desc = { name: '姓名栏', term: '期数栏', year: '日期-年', month: '日期-月' };
+            
+            Object.keys(fields).forEach(key => {
+                if (key !== currentFieldId) {
+                    const opt = document.createElement('option');
+                    opt.value = key;
+                    opt.innerText = desc[key];
+                    select.appendChild(opt);
+                }
+            });
+        }
+
+        // 新增：快捷一键顶部/底部对齐核心机制
+        window.alignElements = function(type) {
+            const targetId = document.getElementById('align-target-select').value;
+            if (!targetId) return;
+            if (fields[targetId].locked) {
+                alert('提示：目标元素处于锁定状态，请先解除目标锁定再执行对齐。');
+                return;
+            }
+
+            const currentEl = document.getElementById(`render-${currentFieldId}`);
+            const targetEl = document.getElementById(`render-${targetId}`);
+            const containerH = previewContainer.clientHeight;
+
+            if (type === 'top') {
+                fields[targetId].top = fields[currentFieldId].top;
+            } else if (type === 'bottom') {
+                // 将真实的 DOM offsetHeight 高度转换为视窗百分比单位进行换算
+                const currentH_pct = (currentEl.offsetHeight / containerH) * 100;
+                const targetH_pct = (targetEl.offsetHeight / containerH) * 100;
+                fields[targetId].top = fields[currentFieldId].top + currentH_pct - targetH_pct;
+            }
+            updateUI();
+        }
+
+        // 锁定控制切换
+        window.toggleLock = function() {
+            if (currentTab === 'date' && syncDateLock.checked) {
+                const state = !fields[currentFieldId].locked;
+                fields.year.locked = state;
+                fields.month.locked = state;
+                applyLockStyle('year');
+                applyLockStyle('month');
+            } else {
+                fields[currentFieldId].locked = !fields[currentFieldId].locked;
+                applyLockStyle(currentFieldId);
+            }
+            updateControlPanel();
+        }
+
+        function applyLockStyle(id) {
+            const renderEl = document.getElementById(`render-${id}`);
+            if (fields[id].locked) {
+                renderEl.classList.remove('cursor-move', 'border-blue-500', 'border-purple-500', 'border-emerald-500', 'border-amber-500');
+                renderEl.classList.add('cursor-not-allowed', 'border-gray-400', 'opacity-70');
+            } else {
+                renderEl.classList.remove('cursor-not-allowed', 'border-gray-400', 'opacity-70');
+                renderEl.classList.add('cursor-move');
+                if (id === 'name') renderEl.classList.add('border-blue-500');
+                if (id === 'term') renderEl.classList.add('border-purple-500');
+                if (id === 'year') renderEl.classList.add('border-emerald-500');
+                if (id === 'month') renderEl.classList.add('border-amber-500');
+            }
+        }
+
+        // 输入监听器绑定
+        ctrlText.addEventListener('input', (e) => { fields[currentFieldId].text = e.target.value; updateUI(); });
+        ctrlDateYear.addEventListener('input', (e) => { fields.year.text = e.target.value; updateUI(); });
+        ctrlDateMonth.addEventListener('input', (e) => { fields.month.text = e.target.value; updateUI(); });
+        
+        ctrlSize.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value) || 12;
+            if (currentTab === 'date' && syncDateStyle.checked) {
+                if (!fields.year.locked) fields.year.size = val;
+                if (!fields.month.locked) fields.month.size = val;
+            } else {
+                if (!fields[currentFieldId].locked) fields[currentFieldId].size = val;
+            }
+            updateUI();
+        });
+
+        ctrlColor.addEventListener('input', (e) => {
+            const val = e.target.value;
+            ctrlColorText.innerText = val;
+            if (currentTab === 'date' && syncDateStyle.checked) {
+                if (!fields.year.locked) fields.year.color = val;
+                if (!fields.month.locked) fields.month.color = val;
+            } else {
+                if (!fields[currentFieldId].locked) fields[currentFieldId].color = val;
+            }
+            updateUI();
+        });
+
+        ctrlWidth.addEventListener('input', (e) => {
+            fields.name.width = parseInt(e.target.value);
+            ctrlWidthVal.innerText = e.target.value + 'px';
+            updateUI();
+        });
+
+        // 名字过长自动完美缩放匹配框宽度算法
+        function autoScaleNameFont(renderEl, baseSize) {
+            const span = document.getElementById('text-span-name');
+            let currentSize = baseSize;
+            renderEl.style.fontSize = currentSize + 'px';
+            // 减去 padding 边距的安全内宽
+            while (span.offsetWidth > renderEl.clientWidth - 14 && currentSize > 10) {
+                currentSize--;
+                renderEl.style.fontSize = currentSize + 'px';
+            }
+            return currentSize;
+        }
+
+        // 同步状态渲染至前端视图
+        function updateUI() {
+            if (!isImageLoaded) return;
+            Object.keys(fields).forEach(id => {
+                const field = fields[id];
+                const renderEl = document.getElementById(`render-${id}`);
+                if (id === 'name') {
+                    document.getElementById('text-span-name').innerText = field.text;
+                    renderEl.style.width = field.width + 'px';
+                } else {
+                    renderEl.innerText = field.text;
+                }
+                renderEl.style.left = field.left + '%';
+                renderEl.style.top = field.top + '%';
+                renderEl.style.color = field.color;
+                renderEl.style.fontSize = field.size + 'px';
+            });
+            autoScaleNameFont(document.getElementById('render-name'), fields.name.size);
+        }
+
+        // ------------------ 兼容桌面端(Mouse)与移动端(Touch)拖拽核心架构 ------------------
+        let dragContext = null;
+
+        window.startDrag = function(e, id) {
+            if (fields[id].locked) return;
+            
+            const isTouch = e.type.startsWith('touch');
+            const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+            const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+
+            // 阻止默认滚动行为，确保移动端拖曳顺畅
+            e.preventDefault();
+            
+            // 智能激活对应的排版Tab
+            if (id === 'year' || id === 'month') {
+                changeTab('date');
+                document.querySelector(`input[name="date-sub"][value="${id}"]`).checked = true;
+                currentFieldId = id;
+                updateControlPanel();
+            } else {
+                changeTab(id);
+            }
+
+            const renderEl = document.getElementById(`render-${id}`);
+            const containerRect = previewContainer.getBoundingClientRect();
+
+            dragContext = {
+                id: id,
+                el: renderEl,
+                isTouch: isTouch,
+                containerWidth: containerRect.width,
+                containerHeight: containerRect.height,
+                startX: clientX,
+                startY: clientY,
+                startLeftPct: fields[id].left,
+                startTopPct: fields[id].top
+            };
+
+            if (isTouch) {
+                document.addEventListener('touchmove', onDragging, { passive: false });
+                document.addEventListener('touchend', stopDragging);
+            } else {
+                document.addEventListener('mousemove', onDragging);
+                document.addEventListener('mouseup', stopDragging);
+            }
+        }
+
+        function onDragging(e) {
+            if (!dragContext) return;
+            
+            const clientX = dragContext.isTouch ? e.touches[0].clientX : e.clientX;
+            const clientY = dragContext.isTouch ? e.touches[0].clientY : e.clientY;
+
+            const deltaX = clientX - dragContext.startX;
+            const deltaY = clientY - dragContext.startY;
+
+            let finalLeft = dragContext.startLeftPct + (deltaX / dragContext.containerWidth) * 100;
+            let finalTop = dragContext.startTopPct + (deltaY / dragContext.containerHeight) * 100;
+
+            finalLeft = Math.max(0, Math.min(100, finalLeft));
+            finalTop = Math.max(0, Math.min(100, finalTop));
+
+            fields[dragContext.id].left = finalLeft;
+            fields[dragContext.id].top = finalTop;
+
+            dragContext.el.style.left = finalLeft + '%';
+            dragContext.el.style.top = finalTop + '%';
+
+            if (dragContext.id === 'name') {
+                autoScaleNameFont(dragContext.el, fields.name.size);
+            }
+        }
+
+        function stopDragging() {
+            if (!dragContext) return;
+            if (dragContext.isTouch) {
+                document.removeEventListener('touchmove', onDragging);
+                document.removeEventListener('touchend', stopDragging);
+            } else {
+                document.removeEventListener('mousemove', onDragging);
+                document.removeEventListener('mouseup', stopDragging);
+            }
+            dragContext = null;
+        }
+
+        // 初始化一击
+        updateControlPanel();
+
+        // ------------------ 离屏 Canvas 高清高精度批量生成与分流下载架构 ------------------
+        const btnBatchExport = document.getElementById('btn-batch-export');
+        const namesInput = document.getElementById('names-input');
+        const progressOverlay = document.getElementById('progress-overlay');
+        const progressDetail = document.getElementById('progress-detail');
+        const progressBar = document.getElementById('progress-bar');
+        const progressTitle = document.getElementById('progress-title');
+
+        btnBatchExport.addEventListener('click', async () => {
+            if (!isImageLoaded) {
+                alert('请先上传一张空白奖状底图模板！');
+                return;
+            }
+            const lines = namesInput.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if (lines.length === 0) {
+                alert('请输入至少一个获奖人姓名（一行一个）！');
+                return;
+            }
+
+            const exportMode = document.getElementById('export-mode').value;
+            const exportFormat = document.getElementById('export-format').value;
+            const mimeType = exportFormat === 'png' ? 'image/png' : 'image/jpeg';
+            const fileExt = exportFormat === 'png' ? 'png' : 'jpg';
+
+            progressOverlay.classList.remove('hidden');
+            progressTitle.innerText = "生成进行中...";
+            progressDetail.innerText = `准备中... 0 / ${lines.length}`;
+            progressBar.style.width = '0%';
+
+            const originalWidth = originalImage.naturalWidth;
+            const originalHeight = originalImage.naturalHeight;
+            const scaleFactor = originalWidth / previewContainer.clientWidth;
+
+            if (exportMode === 'zip') {
+                // ZIP 打包下载分支
+                const zip = new JSZip();
+                for (let i = 0; i < lines.length; i++) {
+                    const name = lines[i];
+                    progressDetail.innerText = `正在加工: ${name} (${i + 1} / ${lines.length})`;
+                    progressBar.style.width = `${((i + 1) / lines.length) * 100}%`;
+
+                    const blob = await generateCanvasBlob(name, originalWidth, originalHeight, scaleFactor, mimeType);
+                    zip.file(`${i + 1}_${name}.${fileExt}`, blob);
+                }
+                progressTitle.innerText = "正在归档压缩...";
+                progressDetail.innerText = "正在将大图打包至ZIP，请稍候...";
+                const content = await zip.generateAsync({ type: 'blob' });
+                triggerDownload(URL.createObjectURL(content), `批量生成奖状归档_${Date.now()}.zip`);
+            } else {
+                // 单张独立连续下载分支 (浏览器依次弹出保存)
+                for (let i = 0; i < lines.length; i++) {
+                    const name = lines[i];
+                    progressDetail.innerText = `正在下载: ${name} (${i + 1} / ${lines.length})`;
+                    progressBar.style.width = `${((i + 1) / lines.length) * 100}%`;
+
+                    const blob = await generateCanvasBlob(name, originalWidth, originalHeight, scaleFactor, mimeType);
+                    const url = URL.createObjectURL(blob);
+                    triggerDownload(url, `${i + 1}_${name}.${fileExt}`);
+                    // 引入安全错峰时延，防止部分现代浏览器直接拦截掉多文件连续下载
+                    await new Promise(r => setTimeout(r, 350));
+                }
+            }
+            progressOverlay.classList.add('hidden');
+        });
+
+        // 统一触发浏览器底层内核级原生下载
+        function triggerDownload(url, filename) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // 核心修复：高精度图像偏移补偿离屏生成机理
+        function generateCanvasBlob(name, canvasW, canvasH, scale, mimeType) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = canvasW;
+                canvas.height = canvasH;
+                const ctx = canvas.getContext('2d');
+
+                // 1. 先粉碎并平铺底图
+                ctx.drawImage(originalImage, 0, 0, canvasW, canvasH);
+
+                // 2. 核心参数对齐：完美对应 CSS 的 px 边距 (padding: 4px 6px, border: 1px) 带来的一致性偏置
+                const borderTop = 1;
+                const paddingTop = 4;
+                const borderLeft = 1;
+                const paddingLeft = 6;
+                const textOffsetY = (borderTop + paddingTop) * scale;
+                const textOffsetX = (borderLeft + paddingLeft) * scale;
+
+                Object.keys(fields).forEach(id => {
+                    const field = fields[id];
+                    const isName = id === 'name';
+                    const drawText = isName ? name : field.text;
+
+                    const targetX = (field.left / 100) * canvasW;
+                    const targetY = (field.top / 100) * canvasH;
+                    let finalFontSize = field.size * scale;
+
+                    if (isName) {
+                        const realBoxWidth = field.width * scale;
+                        ctx.font = `bold ${finalFontSize}px SimSun, 宋体, serif`;
+                        let textWidth = ctx.measureText(drawText).width;
+
+                        // 名字过长时离屏画布同样进行像素等比微调降级
+                        while (textWidth > realBoxWidth - (14 * scale) && finalFontSize > 10) {
+                            finalFontSize--;
+                            ctx.font = `bold ${finalFontSize}px SimSun, 宋体, serif`;
+                            textWidth = ctx.measureText(drawText).width;
+                        }
+
+                        ctx.font = `bold ${finalFontSize}px SimSun, 宋体, serif`;
+                        ctx.fillStyle = field.color;
+                        ctx.textBaseline = 'top';
+                        // 配合 text-center，以水平中点为基准计算渲染 X
+                        const centerOffsetX = targetX + (realBoxWidth / 2) - (textWidth / 2);
+                        ctx.fillText(drawText, centerOffsetX, targetY + textOffsetY);
+                    } else {
+                        // 常规字段
+                        ctx.font = `bold ${finalFontSize}px SimSun, 宋体, serif`;
+                        ctx.fillStyle = field.color;
+                        ctx.textBaseline = 'top';
+                        ctx.fillText(drawText, targetX + textOffsetX, targetY + textOffsetY);
+                    }
+                });
+
+                // 处理压缩率及输出
+                canvas.toBlob((blob) => {
+                    resolve(blob);
+                }, mimeType, mimeType === 'image/jpeg' ? 0.94 : undefined);
+            });
+        }
+    </script>
+</body>
+</html>

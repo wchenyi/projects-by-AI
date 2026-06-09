@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>现代化批量奖状生成工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        simsun: ['SimSun', '宋体', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        /* 针对宋体加粗在某些浏览器下的优化 */
+        .font-simsun {
+            font-family: 'SimSun', '宋体', serif;
+            font-weight: bold;
+        }
+        /* 隐藏滚动条但保持可滚动 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-200">
+
+    <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex justify-between items-center z-10 shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 text-white p-2 rounded-lg">
+                <i data-lucide="award" class="w-6 h-6"></i>
+            </div>
+            <h1 class="text-xl font-bold tracking-tight">批量奖状现代生成系统</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        
+        <aside class="w-full md:w-[420px] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col h-full overflow-y-auto p-6 space-y-6 no-scrollbar shadow-lg">
+            
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">1. 上传奖状空白模板</label>
+                <div class="relative group border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-4 text-center hover:border-blue-500 dark:hover:border-blue-400 transition cursor-pointer">
+                    <input type="file" id="bg-upload" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    <div class="space-y-1 text-center">
+                        <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-gray-400 group-hover:text-blue-500"></i>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 font-medium">点击或拖拽图片到此处上传</p>
+                        <p class="text-xs text-gray-400">支持 PNG, JPG, JPEG</p>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-gray-200 dark:border-gray-800">
+
+            <div class="space-y-4">
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">2. 元素属性调整</label>
+                
+                <div class="grid grid-cols-4 gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-medium">
+                    <button onclick="selectField('name')" id="tab-name" class="py-1.5 rounded-md bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-white">姓名</button>
+                    <button onclick="selectField('term')" id="tab-term" class="py-1.5 rounded-md text-gray-600 dark:text-gray-400">期数</button>
+                    <button onclick="selectField('year')" id="tab-year" class="py-1.5 rounded-md text-gray-600 dark:text-gray-400">年</button>
+                    <button onclick="selectField('month')" id="tab-month" class="py-1.5 rounded-md text-gray-600 dark:text-gray-400">月</button>
+                </div>
+
+                <div id="controls-container" class="bg-gray-50 dark:bg-gray-950 p-4 rounded-xl space-y-4 border border-gray-100 dark:border-gray-800">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-1">预览文本内容</label>
+                        <input type="text" id="ctrl-text" class="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div id="ctrl-lock-wrapper" class="flex items-center justify-between py-1 hidden">
+                        <span class="text-xs font-medium text-gray-400">锁定该元素（防误动）</span>
+                        <button id="ctrl-lock-btn" onclick="toggleLock()" class="flex items-center space-x-1 px-3 py-1 rounded-md text-xs font-medium bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 transition">
+                            <i data-lucide="unlock" class="w-3.5 h-3.5 mr-1"></i><span>未锁定</span>
+                        </button>
+                    </div>
+
+                    <div id="style-controls" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">字体大小 (px)</label>
+                                <input type="number" id="ctrl-size" min="12" max="200" class="w-full px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">字体颜色</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="color" id="ctrl-color" class="w-10 h-8 p-0 bg-transparent border-0 rounded cursor-pointer">
+                                    <span id="ctrl-color-text" class="text-xs uppercase text-gray-500">#000000</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="ctrl-width-wrapper">
+                            <label class="block text-xs font-medium text-gray-400 mb-1">固定文本框宽度 (px)</label>
+                            <input type="range" id="ctrl-width" min="50" max="800" class="w-full accent-blue-600">
+                            <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                                <span>50px</span>
+                                <span id="ctrl-width-val">200px</span>
+                                <span>800px</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-gray-200 dark:border-gray-800">
+
+            <div class="space-y-2 flex-1 flex flex-col min-h-[180px]">
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">3. 批量导入获奖名单</label>
+                <textarea id="names-input" placeholder="请输入姓名，一行一个。例如：&#10;张三&#10;李四&#10;诸葛孔明（名字过长会自动缩小字体）" class="w-full flex-1 p-3 bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono resize-none"></textarea>
+            </div>
+
+            <div class="pt-2">
+                <button id="btn-download-zip" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center space-x-2 shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i data-lucide="download" class="w-5 h-5"></i>
+                    <span>批量生成并下载 ZIP 打包</span>
+                </button>
+            </div>
+
+        </aside>
+
+        <main class="flex-1 bg-gray-100 dark:bg-gray-950 p-6 flex items-center justify-center overflow-auto relative">
+            
+            <div id="upload-placeholder" class="text-center p-8 border-2 border-dashed border-gray-300 dark:border-gray-800 rounded-2xl max-w-md bg-white dark:bg-gray-900 shadow-sm">
+                <i data-lucide="image" class="w-16 h-16 mx-auto text-gray-300 mb-4 animate-pulse"></i>
+                <h3 class="text-lg font-semibold mb-1">暂无模板图片</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">请先在左侧上传一张空白奖状图片作为底图，然后即可在这里自由拖拽排版文字。</p>
+            </div>
+
+            <div id="preview-container" class="relative hidden bg-white shadow-2xl rounded-sm overflow-hidden border border-gray-200 dark:border-gray-800 select-none">
+                <img id="preview-img" src="" alt="奖状底图" class="w-full h-auto block pointer-events-none">
+                
+                <div id="render-name" onmousedown="startDrag(event, 'name')" class="absolute border border-dashed border-blue-500 bg-blue-500/10 cursor-move px-1 py-0.5 font-simsun overflow-hidden whitespace-nowrap flex items-center justify-center">
+                    <span id="text-span-name">张三</span>
+                </div>
+                <div id="render-term" onmousedown="startDrag(event, 'term')" class="absolute border border-dashed border-purple-500 bg-purple-500/10 cursor-move px-1 py-0.5 font-simsun overflow-hidden whitespace-nowrap">
+                    第1期
+                </div>
+                <div id="render-year" onmousedown="startDrag(event, 'year')" class="absolute border border-dashed border-emerald-500 bg-emerald-500/10 cursor-move px-1 py-0.5 font-simsun overflow-hidden whitespace-nowrap">
+                    2026
+                </div>
+                <div id="render-month" onmousedown="startDrag(event, 'month')" class="absolute border border-dashed border-amber-500 bg-amber-500/10 cursor-move px-1 py-0.5 font-simsun overflow-hidden whitespace-nowrap">
+                    06
+                </div>
+            </div>
+
+            <div id="progress-overlay" class="absolute inset-0 bg-black/60 z-50 flex items-center justify-center hidden backdrop-blur-sm">
+                <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl">
+                    <div class="inline-block p-3 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 animate-spin">
+                        <i data-lucide="loader-2" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg" id="progress-title">正在生成奖状...</h4>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" id="progress-detail">进度：0 / 0</p>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="bg-blue-600 h-full w-0 transition-all duration-100"></div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // 初始化 Lucide 图标
+        lucide.createIcons();
+
+        // 深色模式切换逻辑
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+
+        // 核心全局状态数据结构
+        let currentFieldId = 'name';
+        let originalImage = new Image();
+        let isImageLoaded = false;
+
+        const fields = {
+            name: { text: '张三', size: 36, color: '#000000', left: 25, top: 35, width: 280, locked: false, canLock: false },
+            term: { text: '第 24 期', size: 24, color: '#000000', left: 70, top: 15, width: 140, locked: false, canLock: true },
+            year: { text: '2026', size: 22, color: '#000000', left: 65, top: 80, width: 70, locked: false, canLock: true },
+            month: { text: '06', size: 22, color: '#000000', left: 80, top: 80, width: 40, locked: false, canLock: true }
+        };
+
+        // 文件上传监听
+        const fileInput = document.getElementById('bg-upload');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const previewContainer = document.getElementById('preview-container');
+        const previewImg = document.getElementById('preview-img');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                originalImage.src = event.target.result;
+                originalImage.onload = function() {
+                    previewImg.src = event.target.result;
+                    uploadPlaceholder.classList.add('hidden');
+                    previewContainer.classList.remove('hidden');
+                    isImageLoaded = true;
+                    updateUI();
+                }
+            }
+            reader.readAsDataURL(file);
+        });
+
+        // 属性控制组件绑定
+        const ctrlText = document.getElementById('ctrl-text');
+        const ctrlSize = document.getElementById('ctrl-size');
+        const ctrlColor = document.getElementById('ctrl-color');
+        const ctrlColorText = document.getElementById('ctrl-color-text');
+        const ctrlWidth = document.getElementById('ctrl-width');
+        const ctrlWidthVal = document.getElementById('ctrl-width-val');
+        const ctrlWidthWrapper = document.getElementById('ctrl-width-wrapper');
+        const ctrlLockWrapper = document.getElementById('ctrl-lock-wrapper');
+        const ctrlLockBtn = document.getElementById('ctrl-lock-btn');
+        const styleControls = document.getElementById('style-controls');
+
+        function updateControlPanel() {
+            const field = fields[currentFieldId];
+            ctrlText.value = field.text;
+            ctrlSize.value = field.size;
+            ctrlColor.value = field.color;
+            ctrlColorText.innerText = field.color;
+            ctrlWidth.value = field.width;
+            ctrlWidthVal.innerText = field.width + 'px';
+
+            // 是否支持锁定功能控制
+            if (field.canLock) {
+                ctrlLockWrapper.classList.remove('hidden');
+                if (field.locked) {
+                    ctrlLockBtn.innerHTML = `<i data-lucide="lock" class="w-3.5 h-3.5 mr-1 text-red-500"></i><span class="text-red-500">已锁定</span>`;
+                    styleControls.classList.add('opacity-40', 'pointer-events-none');
+                } else {
+                    ctrlLockBtn.innerHTML = `<i data-lucide="unlock" class="w-3.5 h-3.5 mr-1"></i><span>未锁定</span>`;
+                    styleControls.classList.remove('opacity-40', 'pointer-events-none');
+                }
+                lucide.createIcons();
+            } else {
+                ctrlLockWrapper.classList.add('hidden');
+                styleControls.classList.remove('opacity-40', 'pointer-events-none');
+            }
+
+            // 宽度调节只有姓名支持
+            if (currentFieldId === 'name') {
+                ctrlWidthWrapper.classList.remove('hidden');
+            } else {
+                ctrlWidthWrapper.classList.add('hidden');
+            }
+        }
+
+        // 切换选择调整的元素
+        window.selectField = function(fieldId) {
+            currentFieldId = fieldId;
+            ['name', 'term', 'year', 'month'].forEach(id => {
+                const tab = document.getElementById(`tab-${id}`);
+                if (id === fieldId) {
+                    tab.className = "py-1.5 rounded-md bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-white";
+                } else {
+                    tab.className = "py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200";
+                }
+            });
+            updateControlPanel();
+        }
+
+        // 锁定切换
+        window.toggleLock = function() {
+            const field = fields[currentFieldId];
+            if (!field.canLock) return;
+            field.locked = !field.locked;
+            
+            // 锁定样式同步至渲染层
+            const renderEl = document.getElementById(`render-${currentFieldId}`);
+            if (field.locked) {
+                renderEl.classList.remove('cursor-move', 'border-blue-500', 'border-purple-500', 'border-emerald-500', 'border-amber-500');
+                renderEl.classList.add('cursor-not-allowed', 'border-gray-400', 'opacity-80');
+            } else {
+                renderEl.classList.remove('cursor-not-allowed', 'border-gray-400', 'opacity-80');
+                renderEl.classList.add('cursor-move');
+                // 还原特定颜色虚线框
+                if (currentFieldId === 'term') renderEl.classList.add('border-purple-500');
+                if (currentFieldId === 'year') renderEl.classList.add('border-emerald-500');
+                if (currentFieldId === 'month') renderEl.classList.add('border-amber-500');
+            }
+
+            updateControlPanel();
+        }
+
+        // 属性修改监听输入
+        ctrlText.addEventListener('input', (e) => {
+            fields[currentFieldId].text = e.target.value;
+            updateUI();
+        });
+        ctrlSize.addEventListener('input', (e) => {
+            if (fields[currentFieldId].locked) return;
+            fields[currentFieldId].size = parseInt(e.target.value) || 12;
+            updateUI();
+        });
+        ctrlColor.addEventListener('input', (e) => {
+            if (fields[currentFieldId].locked) return;
+            fields[currentFieldId].color = e.target.value;
+            ctrlColorText.innerText = e.target.value;
+            updateUI();
+        });
+        ctrlWidth.addEventListener('input', (e) => {
+            fields[currentFieldId].width = parseInt(e.target.value);
+            ctrlWidthVal.innerText = e.target.value + 'px';
+            updateUI();
+        });
+
+        // 动态根据页面像素，自适应调整姓名缩放算法 (核心需求3)
+        function autoScaleNameFont(renderEl, baseSize) {
+            const span = document.getElementById('text-span-name');
+            let currentSize = baseSize;
+            renderEl.style.fontSize = currentSize + 'px';
+            
+            // 循环向下试探字体大小直到完全不溢出容器
+            while (span.offsetWidth > renderEl.clientWidth - 8 && currentSize > 10) {
+                currentSize--;
+                renderEl.style.fontSize = currentSize + 'px';
+            }
+            // 返回在当前容器宽度下计算出来的实际渲染像素大小
+            return currentSize;
+        }
+
+        // 将状态同步到DOM界面渲染
+        function updateUI() {
+            if (!isImageLoaded) return;
+
+            Object.keys(fields).forEach(id => {
+                const field = fields[id];
+                const renderEl = document.getElementById(`render-${id}`);
+
+                if (id === 'name') {
+                    document.getElementById('text-span-name').innerText = field.text;
+                    renderEl.style.width = field.width + 'px';
+                } else {
+                    renderEl.innerText = field.text;
+                }
+
+                renderEl.style.left = field.left + '%';
+                renderEl.style.top = field.top + '%';
+                renderEl.style.color = field.color;
+                renderEl.style.fontSize = field.size + 'px';
+            });
+
+            // 执行缩放校准
+            const nameRenderEl = document.getElementById('render-name');
+            fields.name.actualVisualSize = autoScaleNameFont(nameRenderEl, fields.name.size);
+        }
+
+        // 拖拽核心算法实现
+        let dragContext = null;
+
+        window.startDrag = function(e, id) {
+            if (fields[id].locked) return; // 触发锁定则拒绝拖拽
+            e.preventDefault();
+            
+            selectField(id); // 联动激活当前操控表单
+
+            const renderEl = document.getElementById(`render-${id}`);
+            const containerRect = previewContainer.getBoundingClientRect();
+            
+            dragContext = {
+                id: id,
+                el: renderEl,
+                containerWidth: containerRect.width,
+                containerHeight: containerRect.height,
+                startX: e.clientX,
+                startY: e.clientY,
+                startLeftPct: fields[id].left,
+                startTopPct: fields[id].top
+            };
+
+            document.addEventListener('mousemove', onDragging);
+            document.addEventListener('mouseup', stopDragging);
+        }
+
+        function onDragging(e) {
+            if (!dragContext) return;
+
+            const deltaX = e.clientX - dragContext.startX;
+            const deltaY = e.clientY - dragContext.startY;
+
+            // 转化为百分比变化量
+            const deltaLeftPct = (deltaX / dragContext.containerWidth) * 100;
+            const deltaTopPct = (deltaY / dragContext.containerHeight) * 100;
+
+            let finalLeft = dragContext.startLeftPct + deltaLeftPct;
+            let finalTop = dragContext.startTopPct + deltaTopPct;
+
+            // 极值边界限制 (0% - 100%)
+            finalLeft = Math.max(0, Math.min(100, finalLeft));
+            finalTop = Math.max(0, Math.min(100, finalTop));
+
+            fields[dragContext.id].left = finalLeft;
+            fields[dragContext.id].top = finalTop;
+
+            dragContext.el.style.left = finalLeft + '%';
+            dragContext.el.style.top = finalTop + '%';
+
+            if (dragContext.id === 'name') {
+                fields.name.actualVisualSize = autoScaleNameFont(dragContext.el, fields.name.size);
+            }
+        }
+
+        function stopDragging() {
+            document.removeEventListener('mousemove', onDragging);
+            document.removeEventListener('mouseup', stopDragging);
+            dragContext = null;
+        }
+
+        // 初始化默认表单
+        updateControlPanel();
+
+        // ------------------ 离屏 Canvas 高清批量生成与打包系统 ------------------
+        const btnDownloadZip = document.getElementById('btn-download-zip');
+        const namesInput = document.getElementById('names-input');
+        const progressOverlay = document.getElementById('progress-overlay');
+        const progressDetail = document.getElementById('progress-detail');
+        const progressBar = document.getElementById('progress-bar');
+
+        btnDownloadZip.addEventListener('click', async () => {
+            if (!isImageLoaded) {
+                alert('请先上传一张奖状底图模板！');
+                return;
+            }
+
+            // 处理输入名单
+            const lines = namesInput.value.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+            if (lines.length === 0) {
+                alert('请在名单输入框中至少输入一个获奖人姓名！');
+                return;
+            }
+
+            // 展开进度条
+            progressOverlay.classList.remove('hidden');
+            progressDetail.innerText = `准备中... 0 / ${lines.length}`;
+            progressBar.style.width = '0%';
+
+            const zip = new JSZip();
+            const originalWidth = originalImage.naturalWidth;
+            const originalHeight = originalImage.naturalHeight;
+
+            // 获取预览视窗实际当前缩放系数比例
+            const containerWidth = previewContainer.clientWidth;
+            const scaleFactor = originalWidth / containerWidth; // 高清比例尺
+
+            // 循环处理每行姓名
+            for (let i = 0; i < lines.length; i++) {
+                const currentName = lines[i];
+                progressDetail.innerText = `正在处理: ${currentName} (${i + 1} / ${lines.length})`;
+                progressBar.style.width = `${((i + 1) / lines.length) * 100}%`;
+
+                // 异步渲染单张画布
+                const canvasBlob = await generateCanvasBlob(currentName, originalWidth, originalHeight, scaleFactor);
+                
+                // 将图片塞入 ZIP 对象
+                const fileName = `${i + 1}_${currentName}.png`;
+                zip.file(fileName, canvasBlob);
+            }
+
+            // 导出并触发系统级下载
+            progressDetail.innerText = '正在归档压缩成 ZIP 文件，请稍候...';
+            const content = await zip.generateAsync({ type: 'blob' });
+            
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(content);
+            downloadLink.download = `批量奖状导出品_${formatDate(new Date())}.zip`;
+            downloadLink.click();
+
+            // 收尾还原隐藏进度条
+            progressOverlay.classList.add('hidden');
+        });
+
+        // 离屏渲染单张图片核心机理
+        function generateCanvasBlob(name, canvasW, canvasH, scale) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = canvasW;
+                canvas.height = canvasH;
+                const ctx = canvas.getContext('2d');
+
+                // 1. 绘制底图背景
+                ctx.drawImage(originalImage, 0, 0, canvasW, canvasH);
+
+                // 2. 依次渲染各个文本信息元素
+                Object.keys(fields).forEach(id => {
+                    const field = fields[id];
+                    const isName = id === 'name';
+                    const drawText = isName ? name : field.text;
+
+                    // 计算得出在原始高清大图上真实的 X 与 Y 坐标
+                    const targetX = (field.left / 100) * canvasW;
+                    const targetY = (field.top / 100) * canvasH;
+
+                    let finalFontSize = field.size * scale; // 默认缩放放大尺寸
+
+                    if (isName) {
+                        // 针对人名，计算在当前图片真实分辨率下，文本框应有的真实宽度上限
+                        const realBoxWidth = field.width * scale;
+                        
+                        // 先用基础设定大小设置字体格式
+                        ctx.font = `bold ${finalFontSize}px SimSun, 宋体, serif`;
+                        let textWidth = ctx.measureText(drawText).width;
+
+                        // 动态等比降级缩减文字像素值，直到符合离屏画布边界
+                        while (textWidth > realBoxWidth - (8 * scale) && finalFontSize > 10) {
+                            finalFontSize--;
+                            ctx.font = `bold ${finalFontSize}px SimSun, 宋体, serif`;
+                            textWidth = ctx.measureText(drawText).width;
+                        }
+
+                        // 人名在限定宽度框内进行绝对水平居中排版处理
+                        ctx.font = `bold ${finalFontSize}px SimSun, 宋体, serif`;
+                        ctx.fillStyle = field.color;
+                        ctx.textBaseline = 'top';
+                        
+                        // 居中 X 算法
+                        const centerOffsetX = targetX + (realBoxWidth / 2) - (textWidth / 2);
+                        ctx.fillText(drawText, centerOffsetX, targetY);
+                    } else {
+                        // 常规期数、日期绘制
+                        ctx.font = `bold ${finalFontSize}px SimSun, 宋体, serif`;
+                        ctx.fillStyle = field.color;
+                        ctx.textBaseline = 'top';
+                        ctx.fillText(drawText, targetX, targetY);
+                    }
+                });
+
+                // 导出 Blob 对象
+                canvas.toBlob((blob) => {
+                    resolve(blob);
+                }, 'image/png');
+            });
+        }
+
+        // 工具函数：日期格式化
+        function formatDate(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            const h = String(date.getHours()).padStart(2, '0');
+            const min = String(date.getMinutes()).padStart(2, '0');
+            return `${y}${m}${d}_${h}${min}`;
+        }
+    </script>
+</body>
+</html>
