@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>现代化批量奖状生成系统 v3.5 高速专业版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { simsun: ['SimSun', '宋体', 'serif'] }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        .font-simsun { font-family: 'SimSun', '宋体', serif; font-weight: bold; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .draggable-box {
+            position: absolute;
+            box-sizing: border-box;
+            line-height: 1 !important;
+            padding: 4px 6px !important;
+            border-width: 1px;
+            border-style: dashed;
+            white-space: nowrap;
+        }
+        .active-layer-box { border-color: #3b82f6 !important; background-color: rgba(59, 130, 246, 0.15) !important; z-index: 40; }
+        .multi-selected-box { border-color: #a855f7 !important; background-color: rgba(168, 85, 247, 0.1) !important; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-200">
+
+    <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex justify-between items-center z-10 shadow-sm shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 text-white p-2 rounded-lg"><i data-lucide="award" class="w-6 h-6"></i></div>
+            <h1 class="text-lg md:text-xl font-bold tracking-tight">批量奖状高阶编排系统 <span class="text-xs bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 px-2 py-0.5 rounded ml-2">v3.5 高速双模版</span></h1>
+        </div>
+        <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+            <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+            <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+        </button>
+    </header>
+
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        
+        <main class="flex-1 bg-gray-100 dark:bg-gray-950 p-4 md:p-6 flex items-center justify-center overflow-auto relative order-1 md:order-2 h-[40vh] md:h-auto border-b md:border-b-0 border-gray-200 dark:border-gray-800">
+            <div id="upload-placeholder" class="text-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-800 rounded-2xl max-w-sm bg-white dark:bg-gray-900 shadow-sm">
+                <i data-lucide="image" class="w-12 h-12 mx-auto text-gray-300 mb-3"></i>
+                <h3 class="text-base font-semibold mb-1">请上传底图启动工作台</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">默认配置姓名、年、月、期数四个基本文本框。</p>
+            </div>
+
+            <div id="preview-container" class="relative hidden bg-white shadow-2xl rounded-sm overflow-hidden border border-gray-200 dark:border-gray-800 select-none">
+                <img id="preview-img" src="" alt="奖状底图" class="w-full h-auto block pointer-events-none">
+            </div>
+
+            <div id="progress-overlay" class="absolute inset-0 bg-black/70 z-50 flex items-center justify-center hidden backdrop-blur-sm">
+                <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl mx-4">
+                    <div class="inline-block p-3 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 animate-spin"><i data-lucide="loader-2" class="w-6 h-6"></i></div>
+                    <div>
+                        <h4 class="font-bold text-base" id="progress-title">生成中...</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" id="progress-detail">进度：0 / 0</p>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="bg-blue-600 h-full w-0 transition-all duration-100"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <aside class="w-full md:w-[440px] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col order-2 md:order-1 h-[60vh] md:h-full overflow-y-auto p-4 md:p-5 space-y-4 no-scrollbar shadow-lg shrink-0">
+            
+            <div class="flex items-center space-x-2">
+                <div class="relative group border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-2.5 text-center hover:border-blue-500 dark:hover:border-blue-400 transition cursor-pointer flex-1">
+                    <input type="file" id="bg-upload" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    <div class="flex items-center justify-center space-x-1.5 text-xs text-gray-600 dark:text-gray-300">
+                        <i data-lucide="upload-cloud" class="w-4 h-4 text-gray-400"></i>
+                        <span class="font-medium">更换系统底图</span>
+                    </div>
+                </div>
+                <button onclick="createNewLayer()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-1 shadow-sm transition shrink-0">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>自定义文本框</span>
+                </button>
+            </div>
+
+            <div class="space-y-1.5">
+                <div class="flex justify-between items-center">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center"><i data-lucide="layers" class="w-3.5 h-3.5 mr-1 text-purple-500"></i>选择窗格 (图层控制)</label>
+                    <span id="selection-count" class="text-[11px] text-purple-500 font-medium bg-purple-50 dark:bg-purple-950/40 px-1.5 py-0.5 rounded">未选定</span>
+                </div>
+                <div id="selection-pane" class="border border-gray-200 dark:border-gray-800 rounded-xl p-2 bg-gray-50 dark:bg-gray-950 space-y-1 max-h-[150px] overflow-y-auto no-scrollbar shadow-inner text-xs"></div>
+            </div>
+
+            <div id="properties-panel" class="bg-gray-50 dark:bg-gray-950 p-4 rounded-xl border border-gray-100 dark:border-gray-800 space-y-4"></div>
+
+            <div class="space-y-1.5">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center justify-between">
+                    <span class="flex items-center"><i data-lucide="users" class="w-3.5 h-3.5 mr-1 text-blue-500"></i>批量替换名单 (一行一个)</span>
+                    <span class="text-[10px] text-gray-400 font-normal">留空即启用单张直接导出</span>
+                </label>
+                <textarea id="names-input" placeholder="（此处留空时，点击下方按钮将直接导出当前画面对应的单张图片）&#10;张三&#10;李四" class="w-full h-24 p-3 bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono resize-none no-scrollbar"></textarea>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-950 p-3 rounded-xl border border-gray-100 dark:border-gray-800 grid grid-cols-2 gap-3 text-xs">
+                <div>
+                    <label class="block text-gray-400 mb-1">打包输出模式</label>
+                    <select id="export-mode" class="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none">
+                        <option value="zip">打包成 ZIP 压缩包</option>
+                        <option value="individual">单张图片连续弹出</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">画面质量与导出速度</label>
+                    <select id="export-quality" class="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none font-medium text-blue-600 dark:text-blue-400">
+                        <option value="lossless">无损 (原尺寸 PNG | 慢)</option>
+                        <option value="high" selected>高质量 (原尺寸 JPG | 快)</option>
+                        <option value="medium">中等质量 (0.75倍缩放 | 极快)</option>
+                        <option value="low">低质量 (0.50倍缩放 | 闪电速)</option>
+                        <option value="verylow">极低质量 (0.35倍缩放 | 极致秒出)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="btn-batch-export" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl flex items-center justify-center space-x-2 shadow-md transition text-sm">
+                <i data-lucide="download" id="btn-icon" class="w-4 h-4"></i>
+                <span id="btn-text">导出当前单张奖状</span>
+            </button>
+
+        </aside>
+    </div>
+
+    <script>
+        // 4、默认初始化配置为：姓名、年、月、期数 四个经典文本框
+        let textLayers = [
+            { id: 'layer_name', name: '姓名栏', text: '张三', size: 38, color: '#000000', left: 20, top: 35, width: 260, isDynamicName: true, locked: false },
+            { id: 'layer_issue', name: '期数栏', text: '第 202601 期', size: 24, color: '#dc2626', left: 45, top: 48, width: 220, isDynamicName: false, locked: false },
+            { id: 'layer_year', name: '年', text: '2026', size: 22, color: '#000000', left: 62, top: 80, width: 80, isDynamicName: false, locked: false },
+            { id: 'layer_month', name: '月', text: '06', size: 22, color: '#000000', left: 75, top: 80, width: 50, isDynamicName: false, locked: false }
+        ];
+        
+        let activeLayerId = 'layer_name';  
+        let checkedLayerIds = [];       
+        let originalImage = new Image();
+        let isImageLoaded = false;
+        let dragContext = null;
+
+        lucide.createIcons();
+        document.getElementById('theme-toggle').addEventListener('click', () => document.documentElement.classList.toggle('dark'));
+
+        const fileInput = document.getElementById('bg-upload');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const previewContainer = document.getElementById('preview-container');
+        const previewImg = document.getElementById('preview-img');
+        const namesInput = document.getElementById('names-input');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                originalImage.src = evt.target.result;
+                originalImage.onload = function() {
+                    previewImg.src = evt.target.result;
+                    uploadPlaceholder.classList.add('hidden');
+                    previewContainer.classList.remove('hidden');
+                    isImageLoaded = true;
+                    refreshCoreDOM();
+                }
+            }
+            reader.readAsDataURL(file);
+        });
+
+        // 监视输入框变化，1、当没有在批量处填写的时候，允许单张导出下载，动态改变按钮文本
+        namesInput.addEventListener('input', updateExportButtonUI);
+
+        function updateExportButtonUI() {
+            const lines = namesInput.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            const btnText = document.getElementById('btn-text');
+            const btnIcon = document.getElementById('btn-icon');
+            if (lines.length === 0) {
+                btnText.innerText = "导出当前单张奖状";
+                btnIcon.setAttribute('data-lucide', 'download');
+            } else {
+                btnText.innerText = `执行批量自动化导出 (${lines.length}张)`;
+                btnIcon.setAttribute('data-lucide', 'zap');
+            }
+            lucide.createIcons();
+        }
+
+        window.createNewLayer = function() {
+            const newId = 'layer_' + Date.now();
+            textLayers.push({
+                id: newId, name: `新文本框 ${textLayers.length + 1}`, text: '新文本内容',
+                size: 24, color: '#000000', left: 35, top: 40, width: 200, isDynamicName: false, locked: false
+            });
+            activeLayerId = newId;
+            refreshCoreDOM();
+        }
+
+        function refreshCoreDOM() {
+            renderPreviewLayers();
+            renderSelectionPane();
+            renderPropertiesPanel();
+            updateExportButtonUI();
+            lucide.createIcons();
+        }
+
+        function renderPreviewLayers() {
+            if (!isImageLoaded) return;
+            previewContainer.querySelectorAll('.draggable-box').forEach(el => el.remove());
+
+            textLayers.forEach(layer => {
+                const div = document.createElement('div');
+                div.id = `render-${layer.id}`;
+                div.className = `draggable-box font-simsun`;
+                
+                if (layer.id === activeLayerId) div.classList.add('active-layer-box');
+                else if (checkedLayerIds.includes(layer.id)) div.classList.add('multi-selected-box');
+
+                div.style.left = layer.left + '%';
+                div.style.top = layer.top + '%';
+                div.style.color = layer.color;
+                div.style.fontSize = layer.size + 'px';
+                div.style.width = layer.width + 'px';
+
+                div.setAttribute('onmousedown', `startDrag(event, '${layer.id}')`);
+                div.setAttribute('ontouchstart', `startDrag(event, '${layer.id}')`);
+
+                if (layer.isDynamicName) {
+                    div.classList.add('text-center');
+                    div.innerHTML = `<span id="text-span-${layer.id}">${layer.text}</span>`;
+                } else {
+                    div.innerText = layer.text;
+                }
+
+                previewContainer.appendChild(div);
+                if (layer.isDynamicName) autoScaleNameFont(div, layer.id, layer.size);
+                applyLockStyles(layer.id);
+            });
+        }
+
+        function renderSelectionPane() {
+            const pane = document.getElementById('selection-pane');
+            pane.innerHTML = '';
+
+            [...textLayers].reverse().forEach((layer) => {
+                const isMainActive = layer.id === activeLayerId;
+                const isChecked = checkedLayerIds.includes(layer.id);
+                const row = document.createElement('div');
+                row.className = `flex items-center justify-between p-2 rounded-lg transition ${isMainActive ? 'bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800/60'}`;
+                
+                row.innerHTML = `
+                    <div class="flex items-center space-x-2 flex-1 min-w-0">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} onclick="toggleLayerCheck(event, '${layer.id}')" class="w-3.5 h-3.5 accent-purple-600 cursor-pointer shrink-0">
+                        <div onclick="selectActiveLayer('${layer.id}')" class="flex-1 cursor-pointer truncate font-medium ${isMainActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}">
+                            ${layer.name} <span class="text-[10px] text-gray-400 font-normal">(${layer.text})</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-1 shrink-0 ml-2">
+                        <button onclick="moveLayerOrder(event, '${layer.id}', 'up')" title="上移" class="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded text-gray-500"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="moveLayerOrder(event, '${layer.id}', 'down')" title="下移" class="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded text-gray-500"><i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="deleteLayer(event, '${layer.id}')" title="删除" class="p-1 hover:bg-red-100 dark:hover:bg-red-950/50 text-gray-400 hover:text-red-500 rounded"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                `;
+                pane.appendChild(row);
+            });
+
+            const countLabel = document.getElementById('selection-count');
+            if (checkedLayerIds.length > 0) {
+                countLabel.innerText = `已选批量项: ${checkedLayerIds.length} 个`;
+            } else if (activeLayerId) {
+                const actL = textLayers.find(l => l.id === activeLayerId);
+                countLabel.innerText = actL ? `当前: ${actL.name}` : '未选定';
+            } else {
+                countLabel.innerText = '未选定';
+            }
+        }
+
+        function renderPropertiesPanel() {
+            const container = document.getElementById('properties-panel');
+            
+            if (checkedLayerIds.length > 1) {
+                container.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center border-b border-purple-200 dark:border-purple-900/50 pb-1.5">
+                            <i data-lucide="sliders" class="w-3.5 h-3.5 mr-1"></i> 批量操作面板
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] text-gray-400 mb-1">统一修改字号 (px)</label>
+                                <input type="number" id="bulk-size" min="12" max="200" class="w-full px-2.5 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-xs focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-gray-400 mb-1">统一修改颜色</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="color" id="bulk-color" value="#000000" class="w-8 h-7 p-0 bg-transparent border-0 cursor-pointer">
+                                    <button onclick="applyBulkColor()" class="bg-purple-600 text-white px-2 py-1 rounded text-[11px] hover:bg-purple-700">应用</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-1.5 flex space-x-2">
+                            <button onclick="applyBulkLock(true)" class="flex-1 py-1.5 bg-gray-200 dark:bg-gray-800 text-[11px] rounded-lg flex items-center justify-center"><i data-lucide="lock" class="w-3 h-3 mr-1"></i>批量锁定</button>
+                            <button onclick="applyBulkLock(false)" class="flex-1 py-1.5 bg-gray-200 dark:bg-gray-800 text-[11px] rounded-lg flex items-center justify-center"><i data-lucide="unlock" class="w-3 h-3 mr-1"></i>解除锁定</button>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('bulk-size').addEventListener('input', (e) => {
+                    const val = parseInt(e.target.value); if (!val) return;
+                    checkedLayerIds.forEach(id => {
+                        const target = textLayers.find(l => l.id === id);
+                        if (target && !target.locked) target.size = val;
+                    });
+                    renderPreviewLayers();
+                });
+                return;
+            }
+
+            const layer = textLayers.find(l => l.id === activeLayerId);
+            if (!layer) {
+                container.innerHTML = `<div class="text-center py-4 text-xs text-gray-400">请选择某个文本框进行单张实时修改</div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="space-y-3.5 text-xs">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[11px] text-gray-400 mb-1">文本框名称</label>
+                            <input type="text" id="prop-name" value="${layer.name}" class="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-gray-400 mb-1">1、单张在此直接修改内容</label>
+                            <input type="text" id="prop-text" value="${layer.text}" class="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border border-blue-500 font-semibold rounded-lg focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between bg-white dark:bg-gray-900 p-2 rounded-lg border border-gray-200 dark:border-gray-800">
+                        <label class="text-[11px] text-gray-500 flex items-center cursor-pointer">
+                            <input type="checkbox" id="prop-isname" ${layer.isDynamicName ? 'checked' : ''} class="mr-1.5 accent-blue-600"> 设为关联批量替换的【名字主轴】
+                        </label>
+                        <button id="prop-lock-btn" class="flex items-center px-2 py-0.5 rounded border text-[11px] font-medium transition"></button>
+                    </div>
+
+                    <div id="single-style-block" class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] text-gray-400 mb-1">字体大小 (px)</label>
+                            <input type="number" id="prop-size" value="${layer.size}" min="12" max="200" class="w-full px-2 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-gray-400 mb-1">字体颜色</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="color" id="prop-color" value="${layer.color}" class="w-8 h-8 p-0 bg-transparent border-0 rounded cursor-pointer">
+                                <span class="uppercase tracking-wider text-gray-400">${layer.color}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="prop-width-wrapper">
+                        <label class="block text-[11px] text-gray-400 mb-0.5">文本框限制宽度: <span id="prop-width-val" class="text-blue-500 font-bold">${layer.width}px</span></label>
+                        <input type="range" id="prop-width" min="40" max="800" value="${layer.width}" class="w-full accent-blue-600">
+                    </div>
+                </div>
+            `;
+
+            // 联动监听
+            document.getElementById('prop-name').addEventListener('input', (e) => { layer.name = e.target.value; renderSelectionPane(); });
+            document.getElementById('prop-text').addEventListener('input', (e) => { 
+                layer.text = e.target.value; 
+                renderPreviewLayers(); 
+                renderSelectionPane(); 
+            });
+            document.getElementById('prop-size').addEventListener('input', (e) => { layer.size = parseInt(e.target.value) || 12; renderPreviewLayers(); });
+            document.getElementById('prop-color').addEventListener('input', (e) => { layer.color = e.target.value; renderPreviewLayers(); renderPropertiesPanel(); });
+            
+            const wSlider = document.getElementById('prop-width');
+            wSlider.addEventListener('input', (e) => {
+                layer.width = parseInt(e.target.value);
+                document.getElementById('prop-width-val').innerText = layer.width + 'px';
+                renderPreviewLayers();
+            });
+
+            document.getElementById('prop-isname').addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    textLayers.forEach(l => l.isDynamicName = false);
+                    layer.isDynamicName = true;
+                } else { layer.isDynamicName = false; }
+                refreshCoreDOM();
+            });
+
+            const lockBtn = document.getElementById('prop-lock-btn');
+            if (layer.locked) {
+                lockBtn.innerHTML = `<i data-lucide="lock" class="w-3 h-3 mr-1 text-red-500"></i><span class="text-red-500">锁定</span>`;
+                document.getElementById('single-style-block').classList.add('opacity-40', 'pointer-events-none');
+                document.getElementById('prop-width-wrapper').classList.add('opacity-40', 'pointer-events-none');
+            } else {
+                lockBtn.innerHTML = `<i data-lucide="unlock" class="w-3 h-3 mr-1 text-gray-500"></i><span>未锁定</span>`;
+            }
+            lockBtn.onclick = () => { layer.locked = !layer.locked; refreshCoreDOM(); };
+        }
+
+        window.selectActiveLayer = function(id) { activeLayerId = id; checkedLayerIds = []; refreshCoreDOM(); }
+        window.toggleLayerCheck = function(e, id) { e.stopPropagation(); if (checkedLayerIds.includes(id)) { checkedLayerIds = checkedLayerIds.filter(cid => cid !== id); } else { checkedLayerIds.push(id); } refreshCoreDOM(); }
+        window.applyBulkColor = function() { const color = document.getElementById('bulk-color').value; checkedLayerIds.forEach(id => { const layer = textLayers.find(l => l.id === id); if (layer && !layer.locked) layer.color = color; }); refreshCoreDOM(); }
+        window.applyBulkLock = function(state) { checkedLayerIds.forEach(id => { const layer = textLayers.find(l => l.id === id); if (layer) layer.locked = state; }); refreshCoreDOM(); }
+        
+        window.deleteLayer = function(e, id) { 
+            e.stopPropagation(); textLayers = textLayers.filter(l => l.id !== id); 
+            if (activeLayerId === id) activeLayerId = textLayers.length ? textLayers[0].id : null;
+            checkedLayerIds = checkedLayerIds.filter(cid => cid !== id); refreshCoreDOM(); 
+        }
+
+        window.moveLayerOrder = function(e, id, direction) {
+            e.stopPropagation(); const idx = textLayers.findIndex(l => l.id === id);
+            if (direction === 'up' && idx < textLayers.length - 1) { let temp = textLayers[idx]; textLayers[idx] = textLayers[idx + 1]; textLayers[idx + 1] = temp; }
+            else if (direction === 'down' && idx > 0) { let temp = textLayers[idx]; textLayers[idx] = textLayers[idx - 1]; textLayers[idx - 1] = temp; }
+            refreshCoreDOM();
+        }
+
+        function applyLockStyles(id) {
+            const el = document.getElementById(`render-${id}`); const layer = textLayers.find(l => l.id === id); if (!el || !layer) return;
+            if (layer.locked) { el.classList.remove('cursor-move'); el.classList.add('cursor-not-allowed', 'opacity-60', 'border-gray-400'); }
+            else { el.classList.add('cursor-move'); }
+        }
+
+        function autoScaleNameFont(renderEl, id, baseSize) {
+            const span = document.getElementById(`text-span-${id}`); if (!span) return;
+            let currentSize = baseSize; renderEl.style.fontSize = currentSize + 'px';
+            while (span.offsetWidth > renderEl.clientWidth - 14 && currentSize > 10) { currentSize--; renderEl.style.fontSize = currentSize + 'px'; }
+        }
+
+        // 双端无感拖拽
+        window.startDrag = function(e, id) {
+            const layer = textLayers.find(l => l.id === id); if (!layer || layer.locked) return;
+            const isTouch = e.type.startsWith('touch');
+            const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+            const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+            e.preventDefault(); selectActiveLayer(id);
+
+            const renderEl = document.getElementById(`render-${id}`);
+            const containerRect = previewContainer.getBoundingClientRect();
+            dragContext = { id, el: renderEl, isTouch, containerW: containerRect.width, containerH: containerRect.height, startX: clientX, startY: clientY, startLeftPct: layer.left, startTopPct: layer.top };
+
+            if (isTouch) { document.addEventListener('touchmove', onDragging, { passive: false }); document.addEventListener('touchend', stopDragging); }
+            else { document.addEventListener('mousemove', onDragging); document.addEventListener('mouseup', stopDragging); }
+        }
+
+        function onDragging(e) {
+            if (!dragContext) return;
+            const clientX = dragContext.isTouch ? e.touches[0].clientX : e.clientX;
+            const clientY = dragContext.isTouch ? e.touches[0].clientY : e.clientY;
+            let fLeft = dragContext.startLeftPct + ((clientX - dragContext.startX) / dragContext.containerW) * 100;
+            let fTop = dragContext.startTopPct + ((clientY - dragContext.startY) / dragContext.containerH) * 100;
+            fLeft = Math.max(0, Math.min(100, fLeft)); fTop = Math.max(0, Math.min(100, fTop));
+
+            const layer = textLayers.find(l => l.id === dragContext.id);
+            layer.left = fLeft; layer.top = fTop;
+            dragContext.el.style.left = fLeft + '%'; dragContext.el.style.top = fTop + '%';
+            if (layer.isDynamicName) autoScaleNameFont(dragContext.el, layer.id, layer.size);
+        }
+
+        function stopDragging() {
+            if (!dragContext) return;
+            if (dragContext.isTouch) { document.removeEventListener('touchmove', onDragging); document.removeEventListener('touchend', stopDragging); }
+            else { document.removeEventListener('mousemove', onDragging); document.removeEventListener('mouseup', stopDragging); }
+            dragContext = null;
+        }
+
+        // 2 & 3、阶梯加速渲染内核
+        const btnBatchExport = document.getElementById('btn-batch-export');
+        const progressOverlay = document.getElementById('progress-overlay');
+        const progressTitle = document.getElementById('progress-title');
+        const progressDetail = document.getElementById('progress-detail');
+        const progressBar = document.getElementById('progress-bar');
+
+        btnBatchExport.addEventListener('click', async () => {
+            if (!isImageLoaded) { alert('请先上传一张空白奖状底图！'); return; }
+            
+            // 提取多行名单
+            const lines = namesInput.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            
+            // 2 & 3、精细化配置导出矩阵参数
+            const qualityMode = document.getElementById('export-quality').value;
+            let resolutionScale = 1.0; 
+            let mimeType = 'image/jpeg';
+            let qualityParam = 0.92;
+
+            if (qualityMode === 'lossless') { mimeType = 'image/png'; qualityParam = undefined; } 
+            else if (qualityMode === 'high') { mimeType = 'image/jpeg'; qualityParam = 0.92; } 
+            else if (qualityMode === 'medium') { resolutionScale = 0.75; mimeType = 'image/jpeg'; qualityParam = 0.80; } 
+            else if (qualityMode === 'low') { resolutionScale = 0.50; mimeType = 'image/jpeg'; qualityParam = 0.60; } 
+            else if (qualityMode === 'verylow') { resolutionScale = 0.35; mimeType = 'image/jpeg'; qualityParam = 0.40; }
+
+            const ext = mimeType === 'image/png' ? 'png' : 'jpg';
+
+            // 1、情况 A：没有在批量处填写，允许单张导出下载
+            if (lines.length === 0) {
+                progressOverlay.classList.remove('hidden');
+                progressTitle.innerText = "正在快速构建单张图像...";
+                progressDetail.innerText = "单张直出无需排队";
+                progressBar.style.width = '50%';
+                
+                const blob = await makeCanvasBlob('', false, resolutionScale, mimeType, qualityParam);
+                downloadURI(URL.createObjectURL(blob), `奖状_单张直出_${Date.now()}.${ext}`);
+                
+                progressBar.style.width = '100%';
+                setTimeout(() => progressOverlay.classList.add('hidden'), 200);
+                return;
+            }
+
+            // 情况 B：常规批量导出
+            const mode = document.getElementById('export-mode').value;
+            progressOverlay.classList.remove('hidden');
+            progressBar.style.width = '0%';
+
+            if (mode === 'zip') {
+                const zip = new JSZip();
+                for (let i = 0; i < lines.length; i++) {
+                    const activeName = lines[i];
+                    progressTitle.innerText = "离屏画布批量极速转码中...";
+                    progressDetail.innerText = `处理中: ${activeName} (${i + 1} / ${lines.length})`;
+                    progressBar.style.width = `${((i + 1) / lines.length) * 100}%`;
+
+                    const blob = await makeCanvasBlob(activeName, true, resolutionScale, mimeType, qualityParam);
+                    zip.file(`${i + 1}_${activeName}.${ext}`, blob);
+                }
+                progressTitle.innerText = "系统打包中...";
+                progressDetail.innerText = "正在压缩高速归档文件...";
+                const content = await zip.generateAsync({ type: 'blob' });
+                downloadURI(URL.createObjectURL(content), `批量奖状打包_${Date.now()}.zip`);
+            } else {
+                for (let i = 0; i < lines.length; i++) {
+                    const activeName = lines[i];
+                    progressTitle.innerText = "并发队列下载中...";
+                    progressDetail.innerText = `唤起浏览器: ${activeName} (${i + 1} / ${lines.length})`;
+                    progressBar.style.width = `${((i + 1) / lines.length) * 100}%`;
+
+                    const blob = await makeCanvasBlob(activeName, true, resolutionScale, mimeType, qualityParam);
+                    downloadURI(URL.createObjectURL(blob), `${i + 1}_${activeName}.${ext}`);
+                    await new Promise(res => setTimeout(res, 250));
+                }
+            }
+            progressOverlay.classList.add('hidden');
+        });
+
+        function downloadURI(url, filename) {
+            const a = document.createElement('a'); a.href = url; a.download = filename;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+
+        // 高速异步离屏渲染单元
+        function makeCanvasBlob(dynamicText, isBatch, resScale, mimeType, qualityParam) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const canvasW = originalImage.naturalWidth * resScale;
+                const canvasH = originalImage.naturalHeight * resScale;
+                canvas.width = canvasW; canvas.height = canvasH;
+                const ctx = canvas.getContext('2d');
+
+                ctx.drawImage(originalImage, 0, 0, canvasW, canvasH);
+
+                const previewW = previewContainer.clientWidth;
+                const scale = canvasW / previewW; 
+
+                const padTop = 4 * scale;
+                const padLeft = 6 * scale;
+                const borderT = 1 * scale;
+
+                textLayers.forEach(layer => {
+                    // 1、单张模式不替换字段，保持文本框当前值
+                    const renderText = (isBatch && layer.isDynamicName) ? dynamicText : layer.text;
+                    const finalX = (layer.left / 100) * canvasW;
+                    const finalY = (layer.top / 100) * canvasH;
+                    let fontPx = layer.size * scale;
+
+                    if (layer.isDynamicName) {
+                        const maxW = layer.width * scale;
+                        ctx.font = `bold ${fontPx}px SimSun, 宋体, serif`;
+                        let tW = ctx.measureText(renderText).width;
+
+                        while (tW > maxW - (14 * scale) && fontPx > 10) {
+                            fontPx--; ctx.font = `bold ${fontPx}px SimSun, 宋体, serif`;
+                            tW = ctx.measureText(renderText).width;
+                        }
+
+                        ctx.fillStyle = layer.color; ctx.textBaseline = 'top';
+                        const centerCenterX = finalX + (maxW / 2) - (tW / 2);
+                        ctx.fillText(renderText, centerCenterX, finalY + padTop + borderT);
+                    } else {
+                        ctx.font = `bold ${fontPx}px SimSun, 宋体, serif`;
+                        ctx.fillStyle = layer.color; ctx.textBaseline = 'top';
+                        ctx.fillText(renderText, finalX + padLeft + borderT, finalY + padTop + borderT);
+                    }
+                });
+
+                canvas.toBlob(b => resolve(b), mimeType, qualityParam);
+            });
+        }
+    </script>
+</body>
+</html>
