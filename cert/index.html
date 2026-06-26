@@ -1,0 +1,2508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#6366f1" id="themeColor">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>奖状生成器</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --bg: #f8f7f4;
+  --bg2: #ffffff;
+  --bg3: #f0eee9;
+  --border: #e2ddd6;
+  --text: #1a1814;
+  --text2: #5a5550;
+  --text3: #9a9590;
+  --accent: #6366f1;
+  --accent2: #4f46e5;
+  --accent-light: #e0e7ff;
+  --gold: #c9a227;
+  --gold-light: #fef3c7;
+  --danger: #ef4444;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --shadow: 0 2px 12px rgba(0,0,0,.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.12);
+  --radius: 10px;
+  --radius-lg: 16px;
+  --toolbar-h: 52px;
+  --nav-h: 64px;
+}
+[data-dark] {
+  --bg: #0f1117;
+  --bg2: #1a1d27;
+  --bg3: #232736;
+  --border: #2e3245;
+  --text: #f0eeeb;
+  --text2: #a8a5a0;
+  --text3: #686460;
+  --accent: #818cf8;
+  --accent2: #6366f1;
+  --accent-light: #1e2035;
+  --gold: #fbbf24;
+  --gold-light: #2d2515;
+  --shadow: 0 2px 12px rgba(0,0,0,.4);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.5);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);transition:background .2s,color .2s;-webkit-tap-highlight-color:transparent}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+/* ── LAYOUT ── */
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+#topbar{display:flex;align-items:center;gap:8px;padding:0 12px;height:var(--toolbar-h);background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;z-index:100;box-shadow:var(--shadow)}
+#main-area{display:flex;flex:1;overflow:hidden;position:relative}
+#sidebar{width:280px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:width .25s,transform .25s}
+/* PS-style canvas viewport: scrollable, canvas always centered */
+#canvas-wrap{flex:1;overflow:auto;background:var(--bg3);position:relative}
+#canvas-scene{min-width:100%;min-height:100%;display:flex;align-items:center;justify-content:center;padding:40px;box-sizing:border-box}
+#right-panel{width:280px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:width .25s}
+
+/* ── TOPBAR ── */
+.tb-logo{font-family:'Noto Serif SC',serif;font-size:16px;font-weight:700;color:var(--gold);letter-spacing:.5px;margin-right:4px}
+.tb-sep{width:1px;height:28px;background:var(--border);margin:0 4px}
+.tb-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border:none;background:transparent;color:var(--text2);cursor:pointer;border-radius:7px;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.tb-btn:hover{background:var(--bg3);color:var(--text)}
+.tb-btn svg{flex-shrink:0}
+.tb-btn.primary{background:var(--accent);color:#fff}
+.tb-btn.primary:hover{background:var(--accent2)}
+.tb-spacer{flex:1}
+.icon-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--text2);cursor:pointer;border-radius:8px;transition:all .15s;flex-shrink:0}
+.icon-btn:hover{background:var(--bg3);color:var(--text)}
+.icon-btn.active{background:var(--accent-light);color:var(--accent)}
+
+/* ── SIDEBAR TABS ── */
+.panel-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.panel-tab{flex:1;padding:10px 4px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;border-bottom:2px solid transparent;display:flex;flex-direction:column;align-items:center;gap:3px}
+.panel-tab svg{opacity:.7}
+.panel-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.panel-tab.active svg{opacity:1}
+.panel-content{flex:1;overflow-y:auto;padding:12px}
+
+/* ── ELEMENTS IN PANEL ── */
+.section-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin:12px 0 6px}
+.section-label:first-child{margin-top:0}
+.form-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.form-label{font-size:12px;color:var(--text2);flex-shrink:0;min-width:52px}
+.form-input{flex:1;padding:6px 9px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:13px;outline:none;transition:border .15s}
+.form-input:focus{border-color:var(--accent)}
+.form-select{flex:1;padding:6px 9px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:13px;outline:none;cursor:pointer}
+.btn-sm{padding:5px 11px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:12px;cursor:pointer;transition:all .15s;font-weight:500}
+.btn-sm:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.btn-sm.danger:hover{background:#fee2e2;border-color:var(--danger);color:var(--danger)}
+.btn-sm.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* ── LAYER ITEM ── */
+.layer-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;cursor:pointer;transition:all .15s;margin-bottom:2px;position:relative}
+.layer-item:hover{background:var(--bg3)}
+.layer-item.selected{background:var(--accent-light);color:var(--accent)}
+.layer-item .layer-name{flex:1;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.layer-item .layer-type{font-size:10px;color:var(--text3);background:var(--bg3);padding:1px 5px;border-radius:4px}
+.layer-actions{display:flex;gap:3px;opacity:0;transition:opacity .15s}
+.layer-item:hover .layer-actions{opacity:1}
+.layer-item.selected .layer-actions{opacity:1}
+.layer-act-btn{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--text2);cursor:pointer;border-radius:4px;transition:background .15s}
+.layer-act-btn:hover{background:var(--bg)}
+
+/* ── CANVAS & ELEMENTS ── */
+#canvas-container{position:relative;background:#fff;box-shadow:var(--shadow-lg);flex-shrink:0;border-radius:4px;overflow:visible;cursor:default}
+#canvas-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none;border-radius:4px}
+.canvas-element{position:absolute;cursor:move;user-select:none;touch-action:none}
+.canvas-element.selected .el-inner{outline:2px solid var(--accent);outline-offset:0px}
+.canvas-element.locked .el-inner{outline:2px dashed var(--gold);outline-offset:0px}
+.canvas-element.locked{cursor:not-allowed}
+.el-inner{position:relative;width:100%;height:100%;overflow:hidden}
+.text-el{width:100%;height:100%;display:flex;align-items:center;overflow:hidden;white-space:nowrap;padding:2px 6px;box-sizing:border-box}
+.img-el{object-fit:contain;width:100%;height:100%;display:block}
+
+/* 8-handle resize system (Office-style) */
+.rh{position:absolute;width:10px;height:10px;background:var(--bg2);border:2px solid var(--accent);border-radius:2px;z-index:20;display:none;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.selected .rh{display:block}
+.locked .rh{display:none}
+.rh-nw{top:-5px;left:-5px;cursor:nw-resize}
+.rh-n {top:-5px;left:calc(50% - 5px);cursor:n-resize}
+.rh-ne{top:-5px;right:-5px;cursor:ne-resize}
+.rh-w {top:calc(50% - 5px);left:-5px;cursor:w-resize}
+.rh-e {top:calc(50% - 5px);right:-5px;cursor:e-resize}
+.rh-sw{bottom:-5px;left:-5px;cursor:sw-resize}
+.rh-s {bottom:-5px;left:calc(50% - 5px);cursor:s-resize}
+.rh-se{bottom:-5px;right:-5px;cursor:se-resize}
+
+/* ── NAMES TEXTAREA ── */
+.names-area{width:100%;min-height:80px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--text);font-size:13px;resize:vertical;outline:none;transition:border .15s;font-family:inherit}
+.names-area:focus{border-color:var(--accent)}
+
+/* ── ALIGN GRID ── */
+.align-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.align-btn{padding:7px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text2);cursor:pointer;font-size:18px;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.align-btn:hover{background:var(--accent-light);border-color:var(--accent)}
+
+/* ── GROUP BADGE ── */
+.group-badge{font-size:10px;padding:1px 5px;border-radius:3px;font-weight:600;color:#fff}
+
+/* ── PROPERTY PANEL TABS ── */
+#prop-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.prop-tab{flex:1;padding:9px 4px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:11px;font-weight:500;border-bottom:2px solid transparent;transition:all .15s}
+.prop-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ── TOGGLE SWITCH ── */
+.toggle{display:flex;align-items:center;gap:8px;cursor:pointer}
+.toggle input{display:none}
+.toggle-track{width:32px;height:18px;background:var(--border);border-radius:99px;position:relative;transition:background .2s}
+.toggle input:checked + .toggle-track{background:var(--accent)}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:99px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle input:checked + .toggle-track .toggle-thumb{left:16px}
+
+/* ── COLOR SWATCH ── */
+.color-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px}
+.color-swatch{width:22px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
+.color-swatch:hover,.color-swatch.active{border-color:var(--accent);transform:scale(1.15)}
+input[type=color]{width:28px;height:28px;border-radius:5px;border:1px solid var(--border);cursor:pointer;padding:1px;background:var(--bg3)}
+
+/* ── EXPORT MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border-radius:var(--radius-lg);padding:24px;width:min(480px,95vw);max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);transform:scale(.95);transition:transform .2s}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.modal-close{margin-left:auto;width:28px;height:28px;border:none;background:transparent;cursor:pointer;color:var(--text2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.modal-close:hover{background:var(--bg3)}
+
+/* ── QUALITY BUTTONS ── */
+.quality-row{display:flex;gap:8px}
+.quality-btn{flex:1;padding:9px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;text-align:center}
+.quality-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.quality-btn:hover:not(.active){border-color:var(--accent);color:var(--accent)}
+
+/* ── FORMAT CHIPS ── */
+.chip-row{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:5px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
+
+/* ── WELCOME MODAL ── */
+.welcome-step{display:none}
+.welcome-step.active{display:block}
+.feature-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.feature-card{padding:12px;background:var(--bg3);border-radius:10px;display:flex;align-items:flex-start;gap:10px}
+.feature-icon{font-size:22px;flex-shrink:0}
+.feature-text{font-size:12px;color:var(--text2);line-height:1.5}
+.feature-text strong{display:block;color:var(--text);font-size:13px;margin-bottom:2px}
+
+/* ── ADVANCED SECTION ── */
+.adv-section{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:8px}
+.adv-header{padding:9px 12px;background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600;user-select:none}
+.adv-header svg{transition:transform .2s}
+.adv-header.open svg{transform:rotate(180deg)}
+.adv-body{padding:12px;display:none}
+.adv-body.open{display:block}
+
+/* ── GRADIENT EDITOR ── */
+.gradient-stops{display:flex;gap:6px;align-items:center;margin-top:6px}
+
+/* ── TOAST ── */
+#toast-area{position:fixed;top:70px;right:16px;z-index:2000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:10px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;animation:slideIn .25s ease;pointer-events:none;max-width:300px}
+.toast.success{border-color:var(--success);color:var(--success)}
+.toast.error{border-color:var(--danger);color:var(--danger)}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+/* Zoom controls: sticky to bottom-right of the scrollable area */
+#zoom-controls{position:sticky;bottom:16px;right:16px;display:flex;gap:6px;z-index:50;float:right;margin-right:0;pointer-events:all}
+.zoom-btn{width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);color:var(--text);font-weight:700;font-size:16px;transition:all .15s}
+.zoom-btn:hover{border-color:var(--accent);color:var(--accent)}
+#zoom-label{height:32px;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);font-size:12px;font-weight:600;color:var(--text2);display:flex;align-items:center;box-shadow:var(--shadow)}
+
+/* ── UPLOAD ZONE ── */
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);display:flex;flex-direction:column;align-items:center;gap:10px}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--accent-light)}
+.upload-zone svg{opacity:.5;transition:opacity .2s}
+.upload-zone:hover svg{opacity:.8}
+.upload-zone p{font-size:13px;color:var(--text2);line-height:1.5}
+
+/* ── WATERMARK PANEL ── */
+.wm-preview{margin-top:8px;position:relative;background:var(--bg3);border-radius:8px;overflow:hidden;height:80px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text3)}
+
+/* ── CROP OVERLAY ── */
+#crop-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:900;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+#crop-overlay.open{display:flex}
+#crop-canvas-wrap{position:relative;cursor:crosshair;max-width:90vw;max-height:70vh}
+#crop-canvas{display:block;max-width:90vw;max-height:70vh}
+.crop-rect{position:absolute;border:2px solid var(--accent);box-shadow:0 0 0 9999px rgba(0,0,0,.5);pointer-events:none}
+
+/* ── MOBILE BOTTOM NAV ── */
+#bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--bg2);border-top:1px solid var(--border);z-index:200;padding-bottom:env(safe-area-inset-bottom)}
+.bnav-inner{display:flex;height:var(--toolbar-h)}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:10px;font-weight:500;transition:color .15s}
+.bnav-item.active{color:var(--accent)}
+.bnav-item svg{opacity:.7}
+.bnav-item.active svg{opacity:1}
+
+/* ── MOBILE JOYSTICK ── */
+#joystick-overlay{display:none;position:fixed;inset:0;pointer-events:none;z-index:300;bottom:var(--nav-h)}
+#joystick-wrap{position:absolute;bottom:24px;left:20px;pointer-events:all;opacity:.9}
+#joystick-base{width:100px;height:100px;background:rgba(128,128,128,.2);border:2px solid rgba(255,255,255,.3);border-radius:50%;position:relative;touch-action:none;backdrop-filter:blur(4px)}
+#joystick-stick{position:absolute;width:42px;height:42px;background:var(--accent);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 2px 10px rgba(99,102,241,.5);transition:transform .05s}
+#mobile-controls{position:absolute;bottom:24px;right:16px;display:flex;flex-direction:column;gap:8px;pointer-events:all}
+.mob-ctrl{width:42px;height:42px;border-radius:12px;border:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);font-size:16px;color:var(--text2)}
+.mob-ctrl:active{background:var(--accent-light);color:var(--accent)}
+#mobile-size-bar{position:absolute;bottom:140px;right:16px;display:flex;flex-direction:column;gap:6px;pointer-events:all;align-items:center}
+
+/* ── MOBILE PANEL SHEET ── */
+#mobile-sheet{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-radius:16px 16px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.2);z-index:250;transform:translateY(100%);transition:transform .3s cubic-bezier(.25,.46,.45,.94);max-height:80dvh;display:flex;flex-direction:column;display:none}
+#mobile-sheet.open{transform:translateY(0)}
+.sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 4px}
+.sheet-content{overflow-y:auto;padding:8px 16px 24px;flex:1}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  #sidebar{display:none}
+  #right-panel{display:none}
+  #bottom-nav{display:block}
+  #joystick-overlay.mobile-editing{display:block}
+  #canvas-wrap{padding:12px}
+  #mobile-sheet{display:flex}
+  #topbar .tb-btn span{display:none}
+  #topbar .tb-logo{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px}
+  .feature-list{grid-template-columns:1fr}
+  .modal{padding:16px}
+  .modal-title{font-size:15px}
+}
+@media(max-width:480px){
+  #canvas-wrap{padding:8px}
+}
+
+/* ── RANGE INPUT ── */
+input[type=range]{width:100%;accent-color:var(--accent);height:4px;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{width:14px;height:14px}
+
+/* ── SEPARATOR ── */
+hr{border:none;border-top:1px solid var(--border);margin:10px 0}
+
+/* ── SCROLL ── */
+.scroll-fade{background:linear-gradient(to bottom,transparent 85%,var(--bg2))}
+
+/* ── FILE DROP HIGHLIGHT ── */
+#canvas-container.drop-target{outline:3px dashed var(--accent)}
+
+/* ── CROP ASPECT BTNS ── */
+.aspect-btns{display:flex;gap:6px;flex-wrap:wrap}
+.aspect-btn{padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text2);font-size:12px;cursor:pointer;transition:all .15s}
+.aspect-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* ── WORD COUNT ── */
+.wc-card{background:var(--bg3);border-radius:10px;padding:14px 16px;border:1px solid var(--border)}
+.wc-card.wc-total{background:var(--accent-light);border-color:var(--accent)}
+.wc-num{font-size:28px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.wc-total .wc-num{color:var(--accent)}
+.wc-label{font-size:13px;font-weight:600;color:var(--text2);margin-top:2px}
+.wc-note{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* loading spinner */
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Gradient preview */
+.grad-preview{height:28px;border-radius:6px;border:1px solid var(--border);margin-top:4px}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <span class="tb-logo">🏆 奖状生成器</span>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="triggerBgUpload()" title="上传奖状底图">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      <span>底图</span>
+    </button>
+    <button class="tb-btn" onclick="addTextBox()" title="添加文本框">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="M8 12h8M12 8v8"/></svg>
+      <span>文本框</span>
+    </button>
+    <button class="tb-btn" onclick="triggerImgUpload()" title="添加图片/印章">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+      <span>图片</span>
+    </button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="undoAction()" title="撤销 Ctrl+Z">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+      <span>撤销</span>
+    </button>
+    <button class="tb-btn" onclick="redoAction()" title="重做 Ctrl+Shift+Z">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>
+      <span>重做</span>
+    </button>
+    <div class="tb-spacer"></div>
+    <button class="tb-btn primary" onclick="openExportModal()" style="gap:6px">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>导出</span>
+    </button>
+    <div class="tb-sep"></div>
+    <button class="icon-btn" onclick="openWordCount()" title="字数统计">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v4H3zM3 10h18v4H3zM3 17h12v4H3z"/></svg>
+    </button>
+    <button class="icon-btn" id="darkBtn" onclick="toggleDark()" title="切换深色模式">
+      <svg id="darkIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <button class="icon-btn" onclick="openWelcome()" title="帮助">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+    </button>
+  </div>
+
+  <!-- MAIN AREA -->
+  <div id="main-area">
+    <!-- LEFT SIDEBAR -->
+    <div id="sidebar">
+      <div class="panel-tabs">
+        <button class="panel-tab active" onclick="switchTab('layers')" id="tab-layers">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 2 10 6.5v7L12 22 2 15.5v-7L12 2z"/><path d="M12 22v-6.5M22 8.5l-10 7-10-7"/></svg>
+          图层
+        </button>
+        <button class="panel-tab" onclick="switchTab('names')" id="tab-names">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          获奖人
+        </button>
+        <button class="panel-tab" onclick="switchTab('align')" id="tab-align">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+          对齐
+        </button>
+        <button class="panel-tab" onclick="switchTab('group')" id="tab-group">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/></svg>
+          分组
+        </button>
+      </div>
+
+      <!-- LAYERS TAB -->
+      <div id="panel-layers" class="panel-content">
+        <div class="section-label">图层顺序（拖动排序）</div>
+        <div id="layers-list"></div>
+        <div style="margin-top:10px;display:flex;gap:6px">
+          <button class="btn-sm" onclick="addTextBox()">+ 文本框</button>
+          <button class="btn-sm" onclick="triggerImgUpload()">+ 图片</button>
+        </div>
+      </div>
+
+      <!-- NAMES TAB -->
+      <div id="panel-names" class="panel-content" style="display:none">
+        <div class="section-label">获奖人姓名</div>
+        <p style="font-size:12px;color:var(--text3);margin-bottom:8px;line-height:1.6">每行一个姓名，或用逗号、顿号、分号分隔。导出时会自动生成每人专属的奖状。</p>
+        <textarea class="names-area" id="namesInput" placeholder="例如：
+张三
+李四、王五
+赵六,钱七"></textarea>
+        <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:12px;color:var(--text3)" id="namesCount">0 位获奖人</span>
+          <button class="btn-sm" onclick="previewNames()">预览姓名</button>
+        </div>
+        <hr>
+        <div class="section-label">姓名绑定文本框</div>
+        <p style="font-size:12px;color:var(--text3);margin-bottom:8px">选择哪个文本框用于显示获奖人姓名</p>
+        <select class="form-select" id="nameBindSelect" style="width:100%">
+          <option value="">-- 请选择 --</option>
+        </select>
+      </div>
+
+      <!-- ALIGN TAB -->
+      <div id="panel-align" class="panel-content" style="display:none">
+        <div class="section-label">选择参与对齐的元素</div>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.6">
+          勾选2个以上元素后点击对齐方式；也可在画布上按 <kbd style="background:var(--bg3);padding:1px 4px;border-radius:3px;font-size:10px">Ctrl/⌘</kbd> 或 <kbd style="background:var(--bg3);padding:1px 4px;border-radius:3px;font-size:10px">Shift</kbd> 单击多选。
+        </p>
+        <div id="align-el-list" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:6px;margin-bottom:10px"></div>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <button class="btn-sm" onclick="alignSelectAll()" style="flex:1">全选</button>
+          <button class="btn-sm" onclick="alignSelectNone()" style="flex:1">清选</button>
+          <button class="btn-sm" onclick="alignSyncFromCanvas()" style="flex:1">同步画布选中</button>
+        </div>
+
+        <div class="section-label">对齐方式</div>
+        <div class="align-grid">
+          <button class="align-btn" onclick="alignElements('left')" title="左对齐">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="3" x2="3" y2="21"/><rect x="6" y="6" width="8" height="4" rx="1"/><rect x="6" y="13" width="12" height="4" rx="1"/></svg>
+          </button>
+          <button class="align-btn" onclick="alignElements('centerH')" title="水平居中">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="3" x2="12" y2="21"/><rect x="4" y="6" width="8" height="4" rx="1" transform="translate(4,0)"/><rect x="4" y="13" width="12" height="4" rx="1"/></svg>
+          </button>
+          <button class="align-btn" onclick="alignElements('right')" title="右对齐">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="3" x2="21" y2="21"/><rect x="10" y="6" width="8" height="4" rx="1"/><rect x="6" y="13" width="12" height="4" rx="1"/></svg>
+          </button>
+          <button class="align-btn" onclick="alignElements('top')" title="顶部对齐">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="3" x2="21" y2="3"/><rect x="6" y="6" width="4" height="14" rx="1"/><rect x="14" y="6" width="4" height="8" rx="1"/></svg>
+          </button>
+          <button class="align-btn" onclick="alignElements('centerV')" title="垂直居中">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><rect x="6" y="4" width="4" height="8" rx="1"/><rect x="14" y="7" width="4" height="10" rx="1"/></svg>
+          </button>
+          <button class="align-btn" onclick="alignElements('bottom')" title="底部对齐">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="21" x2="21" y2="21"/><rect x="6" y="4" width="4" height="14" rx="1"/><rect x="14" y="10" width="4" height="8" rx="1"/></svg>
+          </button>
+        </div>
+        <hr>
+        <div class="section-label">等距分布</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-sm" onclick="distributeH()" style="flex:1">↔ 水平等距</button>
+          <button class="btn-sm" onclick="distributeV()" style="flex:1">↕ 垂直等距</button>
+        </div>
+        <hr>
+        <div class="section-label">参考系</div>
+        <select class="form-select" id="alignRef" style="width:100%">
+          <option value="canvas">画布边界</option>
+          <option value="selection">选区范围</option>
+        </select>
+      </div>
+
+      <!-- GROUP TAB -->
+      <div id="panel-group" class="panel-content" style="display:none">
+        <div class="section-label">元素组</div>
+        <div id="groups-list"></div>
+        <div style="margin-top:10px;display:flex;gap:6px">
+          <button class="btn-sm" onclick="createGroup()" style="flex:1">+ 新建组</button>
+          <button class="btn-sm danger" onclick="dissolveGroup()" style="flex:1">解散组</button>
+        </div>
+        <hr>
+        <div class="section-label">同步修改（组内所有元素）</div>
+        <div class="form-row">
+          <span class="form-label">字号</span>
+          <input type="number" class="form-input" id="groupFontSize" min="6" max="200" placeholder="同步字号" oninput="syncGroup('fontSize',this.value)">
+        </div>
+        <div class="form-row">
+          <span class="form-label">颜色</span>
+          <input type="color" id="groupColor" oninput="syncGroup('color',this.value)">
+        </div>
+      </div>
+    </div>
+
+    <!-- CANVAS AREA -->
+    <div id="canvas-wrap">
+      <div id="canvas-scene">
+      <!-- Upload prompt shown when no bg -->
+      <div id="upload-prompt" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;pointer-events:none">
+        <div class="upload-zone" style="pointer-events:all;max-width:380px;width:90%" onclick="triggerBgUpload()" id="dropZone">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <p><strong>点击或拖拽上传奖状底图</strong><br>支持 JPG、PNG、BMP、WEBP 等格式</p>
+        </div>
+        <button class="tb-btn" onclick="loadSampleBg()" style="font-size:14px;padding:8px 18px;border:1px solid var(--border);border-radius:8px;background:var(--bg2)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          使用示例底图
+        </button>
+      </div>
+
+      <div id="canvas-container" style="display:none">
+        <img id="canvas-bg" src="" alt="background" draggable="false">
+        <!-- dynamic elements appended here -->
+      </div>
+
+      </div><!-- /canvas-scene -->
+    </div><!-- /canvas-wrap -->
+
+    <!-- ZOOM CONTROLS: fixed inside the 3-panel layout -->
+    <div id="zoom-controls" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:50;display:flex;gap:6px;pointer-events:all">
+        <button class="zoom-btn" onclick="adjustZoom(-0.1)">−</button>
+        <span id="zoom-label">100%</span>
+        <button class="zoom-btn" onclick="adjustZoom(0.1)">+</button>
+        <button class="zoom-btn" onclick="fitZoom()" title="适应窗口" style="font-size:12px;width:auto;padding:0 8px">适应</button>
+      </div><!-- /zoom-controls -->
+
+    <!-- RIGHT PROPERTY PANEL -->
+    <div id="right-panel">
+      <div style="padding:12px;border-bottom:1px solid var(--border);flex-shrink:0">
+        <div style="font-size:13px;font-weight:600;color:var(--text2)" id="prop-title">选中元素属性</div>
+      </div>
+      <div id="prop-tabs">
+        <button class="prop-tab active" onclick="switchPropTab('basic')" id="ptab-basic">基础</button>
+        <button class="prop-tab" onclick="switchPropTab('style')" id="ptab-style">样式</button>
+        <button class="prop-tab" onclick="switchPropTab('adv')" id="ptab-adv">高级</button>
+      </div>
+      <div id="prop-content" style="flex:1;overflow-y:auto;padding:12px">
+        <div id="no-selection" style="text-align:center;padding:32px 0;color:var(--text3);font-size:13px">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.4;margin:0 auto 8px;display:block"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h6"/></svg>
+          点击画布中的元素<br>查看和编辑属性
+        </div>
+        <div id="prop-basic" style="display:none"></div>
+        <div id="prop-style" style="display:none"></div>
+        <div id="prop-adv" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<div id="bottom-nav">
+  <div class="bnav-inner">
+    <button class="bnav-item active" id="bnav-canvas" onclick="mobileNav('canvas')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 9 4-4 4 4 4-4 4 4"/></svg>
+      画布
+    </button>
+    <button class="bnav-item" id="bnav-layers" onclick="mobileNav('layers')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 2 10 6.5v7L12 22 2 15.5v-7L12 2z"/></svg>
+      图层
+    </button>
+    <button class="bnav-item" id="bnav-names" onclick="mobileNav('names')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      获奖人
+    </button>
+    <button class="bnav-item" id="bnav-props" onclick="mobileNav('props')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      属性
+    </button>
+    <button class="bnav-item" id="bnav-export" onclick="openExportModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      导出
+    </button>
+  </div>
+</div>
+
+<!-- MOBILE SHEET -->
+<div id="mobile-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-content" id="mobile-sheet-body"></div>
+</div>
+
+<!-- MOBILE JOYSTICK -->
+<div id="joystick-overlay">
+  <div id="joystick-wrap">
+    <div id="joystick-base" id="jBase">
+      <div id="joystick-stick" id="jStick"></div>
+    </div>
+  </div>
+  <div id="mobile-controls">
+    <button class="mob-ctrl" onclick="mobileAction('lock')" title="锁定">🔒</button>
+    <button class="mob-ctrl" onclick="mobileAction('delete')" title="删除">🗑</button>
+    <button class="mob-ctrl" onclick="mobileAction('props')" title="属性">⚙️</button>
+    <button class="mob-ctrl" onclick="mobileAction('wider')" title="加宽">➡</button>
+    <button class="mob-ctrl" onclick="mobileAction('narrower')" title="减宽">⬅</button>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <div class="modal-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      导出奖状
+      <button class="modal-close" onclick="closeExportModal()">✕</button>
+    </div>
+
+    <div class="section-label">图片格式（可多选）</div>
+    <div class="chip-row" id="imgFmtChips">
+      <div class="chip active" data-fmt="png" onclick="toggleImgFmt(this)">PNG</div>
+      <div class="chip" data-fmt="jpg" onclick="toggleImgFmt(this)">JPG</div>
+      <div class="chip" data-fmt="gif" onclick="toggleImgFmt(this)">GIF 动图</div>
+    </div>
+
+    <div id="gifOptions" style="display:none;margin-top:8px;padding:10px;background:var(--bg3);border-radius:8px">
+      <div class="form-row">
+        <span class="form-label">GIF模式</span>
+        <select class="form-select" id="gifMode">
+          <option value="individual">每人一个 GIF</option>
+          <option value="carousel">所有人合成轮播 GIF</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <span class="form-label">帧间隔</span>
+        <input type="number" class="form-input" id="gifDelay" value="1000" min="200" max="5000"> <span style="font-size:12px;color:var(--text3)">ms</span>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:14px">打包方式（可多选，与图片格式自由组合）</div>
+    <div class="chip-row" id="pkgChips">
+      <div class="chip active" data-pkg="single" onclick="togglePkg(this)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/></svg>
+        单独下载
+      </div>
+      <div class="chip" data-pkg="zip" onclick="togglePkg(this)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        ZIP 打包
+      </div>
+      <div class="chip" data-pkg="pdf" onclick="togglePkg(this)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        PDF 合并
+      </div>
+    </div>
+    <div style="margin-top:8px;font-size:11px;color:var(--text3);line-height:1.6">
+      💡 图片格式和打包方式自由组合：例如同时选 PNG + ZIP，将生成 PNG 图片并打包为 ZIP；选 JPG + PDF 则生成 JPG 合并 PDF。
+    </div>
+
+    <div class="section-label" style="margin-top:12px">导出质量</div>
+    <div class="quality-row">
+      <div class="quality-btn active" data-q="high" onclick="selectQuality(this)">
+        🌟 高质量<br><span style="font-size:11px;opacity:.7">无损，体积大</span>
+      </div>
+      <div class="quality-btn" data-q="medium" onclick="selectQuality(this)">
+        ⚡ 中质量<br><span style="font-size:11px;opacity:.7">均衡推荐</span>
+      </div>
+      <div class="quality-btn" data-q="low" onclick="selectQuality(this)">
+        🪄 低质量<br><span style="font-size:11px;opacity:.7">体积小</span>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:12px">水印设置</div>
+    <div class="form-row">
+      <label class="toggle" onclick="toggleWatermark()">
+        <input type="checkbox" id="wmEnabled">
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+        <span style="font-size:13px">添加水印</span>
+      </label>
+    </div>
+    <div id="wmPanel" style="display:none">
+      <div class="form-row">
+        <span class="form-label">文字</span>
+        <input type="text" class="form-input" id="wmText" value="示例水印" placeholder="水印文字">
+      </div>
+      <div class="form-row">
+        <span class="form-label">透明度</span>
+        <input type="range" id="wmOpacity" min="0.05" max="0.5" step="0.05" value="0.15">
+        <span style="font-size:12px;color:var(--text3);min-width:30px" id="wmOpacityLabel">15%</span>
+      </div>
+      <div class="form-row">
+        <span class="form-label">角度</span>
+        <input type="range" id="wmAngle" min="-45" max="45" step="5" value="-30">
+        <span style="font-size:12px;color:var(--text3);min-width:30px" id="wmAngleLabel">-30°</span>
+      </div>
+    </div>
+
+    <hr>
+    <div id="exportProgress" style="display:none">
+      <div class="progress-bar"><div class="progress-fill" id="exportProgressFill" style="width:0%"></div></div>
+      <p style="font-size:12px;color:var(--text3);margin-top:6px;text-align:center" id="exportProgressText">正在生成...</p>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn-sm" onclick="closeExportModal()">取消</button>
+      <button class="tb-btn primary" onclick="startExport()" id="exportBtn" style="padding:8px 20px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        开始导出
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- WELCOME MODAL -->
+<div class="modal-overlay open" id="welcomeModal">
+  <div class="modal">
+    <div class="modal-title">
+      🏆 欢迎使用奖状生成器
+      <button class="modal-close" onclick="closeWelcome()">✕</button>
+    </div>
+    <div class="feature-list">
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <div class="feature-text"><strong>上传底图</strong>支持 JPG/PNG/BMP/WEBP，也可使用内置示例</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✏️</div>
+        <div class="feature-text"><strong>文本框</strong>拖动位置，调整大小、字体、颜色、渐变等</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">👥</div>
+        <div class="feature-text"><strong>批量填写</strong>一次输入所有获奖人，自动生成每人奖状</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📦</div>
+        <div class="feature-text"><strong>批量导出</strong>PNG/JPG/GIF/PDF/ZIP，支持水印</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <div class="feature-text"><strong>丰富样式</strong>渐变、加粗、倾斜、下划线、边框等</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <div class="feature-text"><strong>移动端</strong>摇杆控制位置，PWA 安装，手机也能用</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;padding:12px;background:var(--gold-light);border-radius:8px;font-size:13px;color:var(--text2)">
+      💡 <strong>快速开始：</strong>先点击「底图」上传奖状背景图，然后选中文本框填写内容，最后点击「导出」批量生成。
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:16px">
+      <button class="tb-btn primary" onclick="closeWelcome()" style="padding:9px 24px;font-size:14px">开始使用 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- CROP OVERLAY -->
+<div id="crop-overlay">
+  <div style="color:#fff;font-size:14px;margin-bottom:8px">拖拽选择裁剪区域</div>
+  <div id="crop-canvas-wrap">
+    <canvas id="crop-canvas"></canvas>
+    <div class="crop-rect" id="cropRect" style="display:none"></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+    <div class="aspect-btns">
+      <button class="aspect-btn active" onclick="setCropAspect(0)">自由</button>
+      <button class="aspect-btn" onclick="setCropAspect(1)">1:1</button>
+      <button class="aspect-btn" onclick="setCropAspect(16/9)">16:9</button>
+      <button class="aspect-btn" onclick="setCropAspect(3/2)">3:2</button>
+      <button class="aspect-btn" onclick="setCropAspect(4/3)">4:3</button>
+    </div>
+    <button class="tb-btn primary" onclick="applyCrop()" style="margin-left:8px">✓ 确认裁剪</button>
+    <button class="btn-sm" onclick="closeCrop()">取消</button>
+  </div>
+</div>
+
+<!-- WORD COUNT MODAL -->
+<div class="modal-overlay" id="wordCountModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v4H3zM3 10h18v4H3zM3 17h12v4H3z"/></svg>
+      字数统计
+      <button class="modal-close" onclick="closeWordCount()">✕</button>
+    </div>
+    <div class="section-label">输入文字</div>
+    <textarea id="wcInput" class="names-area" style="min-height:120px;font-size:14px" placeholder="在此粘贴或输入需要统计的文字…" oninput="runWordCount()"></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="btn-sm" onclick="wcPasteAll()">从文本框导入全部内容</button>
+      <button class="btn-sm" onclick="document.getElementById('wcInput').value='';runWordCount()">清空</button>
+    </div>
+    <hr>
+    <div id="wcResults" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
+      <div class="wc-card" id="wc-hanzi">
+        <div class="wc-num">0</div>
+        <div class="wc-label">汉字</div>
+        <div class="wc-note">不含标点</div>
+      </div>
+      <div class="wc-card" id="wc-cnpunct">
+        <div class="wc-num">0</div>
+        <div class="wc-label">中文标点</div>
+        <div class="wc-note">，。！？…等</div>
+      </div>
+      <div class="wc-card" id="wc-hz_punc">
+        <div class="wc-num">0</div>
+        <div class="wc-label">汉字 + 中文标点</div>
+        <div class="wc-note">以上两项合计</div>
+      </div>
+      <div class="wc-card" id="wc-en">
+        <div class="wc-num">0</div>
+        <div class="wc-label">英文（含数字/符号）</div>
+        <div class="wc-note">ASCII 字符</div>
+      </div>
+      <div class="wc-card" id="wc-digits">
+        <div class="wc-num">0</div>
+        <div class="wc-label">数字</div>
+        <div class="wc-note">0–9</div>
+      </div>
+      <div class="wc-card wc-total" id="wc-total">
+        <div class="wc-num">0</div>
+        <div class="wc-label">字符总数</div>
+        <div class="wc-note">汉字/中标×2，其余×1</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:10px 12px;background:var(--gold-light);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.7">
+      💡 <strong>计算规则：</strong>汉字和中文标点计 <strong>2</strong> 个字符；数字、空格、英文字母、英文标点计 <strong>1</strong> 个字符。字符总数按此规则累计。
+    </div>
+  </div>
+</div>
+
+<!-- HIDDEN FILE INPUTS -->
+<input type="file" id="bgInput" accept="image/*" style="display:none" onchange="loadBg(this)">
+<input type="file" id="imgInput" accept="image/*" multiple style="display:none" onchange="loadImages(this)">
+
+<!-- TOAST AREA -->
+<div id="toast-area"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+const state = {
+  elements: [],       // {id,type,x,y,w,h,locked,groupId,...props}
+  selected: [],       // ids
+  groups: {},         // groupId -> {name,color,ids:[]}
+  bgSrc: null,
+  canvasW: 794,
+  canvasH: 562,
+  zoom: 1,
+  darkMode: false,
+  history: [],
+  historyIdx: -1,
+  exportFormat: 'png',
+  exportQuality: 'high',
+  nameBind: null,
+  cropTarget: null,
+  cropAspect: 0,
+  cropState: null,
+};
+let _nextId = 1;
+const uid = () => 'el_' + (_nextId++);
+const groupColors = ['#6366f1','#ec4899','#22c55e','#f59e0b','#06b6d4','#ef4444'];
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  loadDarkPref();
+  addDefaultElements();
+  setupDropZone();
+  setupKeyboard();
+  setupNamesInput();
+  setupJoystick();
+  setupWmSliders();
+  renderAll();
+  registerSW();
+});
+
+function registerSW(){
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+function addDefaultElements(){
+  // Elements are placed proportionally: will be re-scaled when bg is loaded
+  // These coords assume a 794x562 canvas (A4 landscape-ish)
+  // They will be repositioned by repositionDefaultElements() once real canvas size is known
+  addElement({type:'text',label:'期数',content:'第一期',
+    x:320, y:90, w:200, h:60,
+    fontSize:36, color:'#8B5E2A', fontWeight:'bold', align:'center'});
+  addElement({type:'text',label:'姓名',content:'张三',
+    x:220, y:240, w:340, h:80,
+    fontSize:52, color:'#8B0000', fontWeight:'bold', align:'center', isBound:true});
+  addElement({type:'text',label:'年',content:'2024',
+    x:180, y:430, w:140, h:60,
+    fontSize:36, color:'#5C3317', align:'center'});
+  addElement({type:'text',label:'月',content:'06',
+    x:420, y:430, w:100, h:60,
+    fontSize:36, color:'#5C3317', align:'center'});
+  state.nameBind = state.elements[1].id;
+  saveHistory();
+}
+
+// Called after bg is loaded — repositions default elements proportionally
+function repositionDefaultElements(){
+  const W = state.canvasW, H = state.canvasH;
+  // Only auto-reposition if we still have the original 4 defaults
+  // by checking if they're all still at their initial coords
+  const defs = state.elements;
+  if(defs.length < 4) return;
+  // Proportional layout:
+  // 期数: top-center area
+  defs[0].x = Math.round(W*0.38); defs[0].y = Math.round(H*0.12);
+  defs[0].w = Math.round(W*0.26); defs[0].h = Math.round(H*0.11);
+  defs[0].fontSize = Math.round(H*0.062);
+  // 姓名: center of certificate
+  defs[1].x = Math.round(W*0.25); defs[1].y = Math.round(H*0.42);
+  defs[1].w = Math.round(W*0.44); defs[1].h = Math.round(H*0.14);
+  defs[1].fontSize = Math.round(H*0.09);
+  // 年: bottom area
+  defs[2].x = Math.round(W*0.60); defs[2].y = Math.round(H*0.84);
+  defs[2].w = Math.round(W*0.17); defs[2].h = Math.round(H*0.10);
+  defs[2].fontSize = Math.round(H*0.06);
+  // 月: beside 年
+  defs[3].x = Math.round(W*0.80); defs[3].y = Math.round(H*0.84);
+  defs[3].w = Math.round(W*0.12); defs[3].h = Math.round(H*0.10);
+  defs[3].fontSize = Math.round(H*0.06);
+  saveHistory();
+  renderAll();
+}
+
+// ══════════════════════════════════════════════
+//  ELEMENT MANAGEMENT
+// ══════════════════════════════════════════════
+function addElement(props){
+  const el = {
+    id: uid(),
+    type: 'text',
+    x: 100, y: 100, w: 160, h: 44,
+    content: '',
+    label: '文本框',
+    fontSize: 18,
+    color: '#ffffff',
+    fontFamily: 'Noto Serif SC',
+    fontWeight: 'normal',
+    fontStyle: 'normal',
+    textDecoration: 'none',
+    align: 'center',
+    fillColor: '',
+    borderColor: '',
+    borderWidth: 0,
+    borderStyle: 'solid',
+    gradient: null,
+    opacity: 1,
+    locked: false,
+    groupId: null,
+    isBound: false,
+    zIndex: state.elements.length,
+    ...props
+  };
+  state.elements.push(el);
+  return el;
+}
+
+function addTextBox(){
+  const W = state.canvasW || 794, H = state.canvasH || 562;
+  const el = addElement({
+    type:'text', label:'文本框', content:'文字内容',
+    x: Math.round(W*0.25 + Math.random()*W*0.3),
+    y: Math.round(H*0.3  + Math.random()*H*0.3),
+    w: Math.round(W*0.28),
+    h: Math.round(H*0.09),
+    fontSize: Math.round(H*0.055),
+    color:'#ffffff'
+  });
+  saveHistory();
+  renderAll();
+  selectElement(el.id, false);
+  toast('已添加文本框');
+}
+
+function removeElement(id){
+  state.elements = state.elements.filter(e=>e.id!==id);
+  state.selected = state.selected.filter(s=>s!==id);
+  Object.values(state.groups).forEach(g=>{ g.ids = g.ids.filter(i=>i!==id); });
+  saveHistory();
+  renderAll();
+  updatePropPanel();
+}
+
+function getEl(id){ return state.elements.find(e=>e.id===id); }
+
+// ══════════════════════════════════════════════
+//  SELECTION
+// ══════════════════════════════════════════════
+function selectElement(id, multi=false){
+  if(!multi) state.selected = [];
+  if(id && !state.selected.includes(id)) state.selected.push(id);
+  updateSelectionUI();
+  updatePropPanel();
+  renderLayers();
+}
+
+function updateSelectionUI(){
+  document.querySelectorAll('.canvas-element').forEach(el=>{
+    el.classList.toggle('selected', state.selected.includes(el.dataset.id));
+  });
+}
+
+function deselectAll(){ state.selected=[]; updateSelectionUI(); updatePropPanel(); }
+
+// ══════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════
+function renderAll(){
+  renderCanvas();
+  renderLayers();
+  updateNameBindSelect();
+}
+
+function renderCanvas(){
+  const container = document.getElementById('canvas-container');
+  // Remove old elements
+  container.querySelectorAll('.canvas-element').forEach(e=>e.remove());
+  // Sort by zIndex
+  const sorted = [...state.elements].sort((a,b)=>a.zIndex-b.zIndex);
+  sorted.forEach(el=>{
+    const dom = createElementDOM(el);
+    container.appendChild(dom);
+  });
+  updateSelectionUI();
+}
+
+function createElementDOM(el){
+  const wrap = document.createElement('div');
+  wrap.className = 'canvas-element' + (el.locked?' locked':'') + (state.selected.includes(el.id)?' selected':'');
+  wrap.dataset.id = el.id;
+  wrap.style.cssText = `left:${el.x}px;top:${el.y}px;width:${el.w}px;height:${el.h}px;z-index:${el.zIndex+1}`;
+
+  const inner = document.createElement('div');
+  inner.className = 'el-inner';
+
+  if(el.type==='text'){
+    const span = document.createElement('div');
+    span.className = 'text-el';
+    applyTextStyle(span, el);
+    span.textContent = el.content || '';
+    inner.appendChild(span);
+  } else if(el.type==='image'){
+    const img = document.createElement('img');
+    img.className='img-el';
+    img.src = el.src;
+    img.draggable=false;
+    inner.appendChild(img);
+    wrap.addEventListener('contextmenu', e=>{ e.preventDefault(); openCrop(el); });
+  }
+
+  // 8 resize handles (Office-style)
+  if(!el.locked){
+    const handles = ['nw','n','ne','w','e','sw','s','se'];
+    handles.forEach(dir=>{
+      const rh = document.createElement('div');
+      rh.className = `rh rh-${dir}`;
+      rh.dataset.dir = dir;
+      wrap.appendChild(rh);
+      setupResizeHandle8(rh, el, dir, wrap);
+    });
+  }
+
+  wrap.appendChild(inner);
+  if(!el.locked) setupDrag(wrap, el);
+  wrap.addEventListener('pointerdown', e=>{
+    if(!el.locked && !e.target.classList.contains('rh')){
+      e.stopPropagation();
+      selectElement(el.id, e.ctrlKey||e.metaKey||e.shiftKey);
+    }
+  });
+  return wrap;
+}
+
+function applyTextStyle(el, data){
+  const fw = data.fontWeight||'normal';
+  const fi = data.fontStyle||'normal';
+  const td = data.textDecoration||'none';
+  let bg = data.fillColor||'transparent';
+  let border = data.borderWidth ? `${data.borderWidth}px ${data.borderStyle||'solid'} ${data.borderColor||'#000'}` : 'none';
+
+  let gradientCSS = '';
+  if(data.gradient && data.gradient.enabled){
+    const {start, end, dir} = data.gradient;
+    const dirMap = {'to right':'to right','to bottom':'to bottom','135deg':'135deg','45deg':'45deg'};
+    gradientCSS = `linear-gradient(${dirMap[dir]||'to right'},${start},${end})`;
+  }
+
+  el.style.cssText = `
+    width:100%;height:100%;
+    font-size:${data.fontSize}px;
+    font-family:${data.fontFamily||'Noto Serif SC'},serif;
+    font-weight:${fw};
+    font-style:${fi};
+    text-decoration:${td};
+    text-align:${data.align||'center'};
+    background:${gradientCSS||bg};
+    border:${border};
+    opacity:${data.opacity||1};
+    display:flex;align-items:center;justify-content:${data.align==='left'?'flex-start':data.align==='right'?'flex-end':'center'};
+    overflow:hidden;
+    ${gradientCSS?`-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:transparent;`:`color:${data.color};`}
+    padding:0 6px;
+    white-space:nowrap;
+    box-sizing:border-box;
+    line-height:1;
+  `;
+}
+
+// ══════════════════════════════════════════════
+//  DRAG
+// ══════════════════════════════════════════════
+function setupDrag(wrap, el){
+  let startX, startY, origX, origY, dragging=false;
+  wrap.addEventListener('pointerdown', e=>{
+    if(e.target.classList.contains('resize-handle')) return;
+    startX = e.clientX; startY = e.clientY;
+    origX = el.x; origY = el.y;
+    dragging = true;
+    wrap.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  wrap.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const dx = (e.clientX-startX)/state.zoom;
+    const dy = (e.clientY-startY)/state.zoom;
+    el.x = Math.max(0, origX+dx);
+    el.y = Math.max(0, origY+dy);
+    wrap.style.left = el.x+'px';
+    wrap.style.top = el.y+'px';
+  });
+  wrap.addEventListener('pointerup', ()=>{ if(dragging){ dragging=false; saveHistory(); updatePropPanel(); }});
+}
+
+function setupResizeHandle8(rh, el, dir, wrap){
+  let startX, startY, origX, origY, origW, origH, dragging=false;
+  const isProportional = () => el.type==='image'; // images default proportional; text can free-resize
+
+  rh.addEventListener('pointerdown', e=>{
+    startX=e.clientX; startY=e.clientY;
+    origX=el.x; origY=el.y; origW=el.w; origH=el.h;
+    dragging=true;
+    rh.setPointerCapture(e.pointerId);
+    e.stopPropagation(); e.preventDefault();
+  });
+  rh.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    let dx=(e.clientX-startX)/state.zoom;
+    let dy=(e.clientY-startY)/state.zoom;
+    const prop = isProportional() || e.shiftKey; // Shift for proportional on text
+    const ratio = origH/origW;
+    let newX=origX, newY=origY, newW=origW, newH=origH;
+
+    if(dir.includes('e'))  newW = Math.max(20, origW+dx);
+    if(dir.includes('s'))  newH = Math.max(10, origH+dy);
+    if(dir.includes('w')){ newW = Math.max(20, origW-dx); newX = origX+dx; }
+    if(dir.includes('n')){ newH = Math.max(10, origH-dy); newY = origY+dy; }
+
+    if(prop){
+      if(dir==='e'||dir==='w'){ newH=newW*ratio; if(dir==='n') newY=origY+origH-newH; }
+      else if(dir==='n'||dir==='s'){ newW=newH/ratio; if(dir==='w') newX=origX+origW-newW; }
+      else {
+        // corner: use whichever dimension changed more
+        const dw = Math.abs(newW-origW), dh = Math.abs(newH-origH);
+        if(dw>dh){ newH=newW*ratio; } else { newW=newH/ratio; }
+        if(dir.includes('w')) newX = origX+origW-newW;
+        if(dir.includes('n')) newY = origY+origH-newH;
+      }
+    }
+
+    el.x=newX; el.y=newY; el.w=newW; el.h=newH;
+    wrap.style.left=newX+'px'; wrap.style.top=newY+'px';
+    wrap.style.width=newW+'px'; wrap.style.height=newH+'px';
+    // Live update text style
+    const textEl = wrap.querySelector('.text-el');
+    if(textEl) applyTextStyle(textEl, el);
+  });
+  rh.addEventListener('pointerup',()=>{
+    if(dragging){ dragging=false; saveHistory(); updatePropPanel(); }
+  });
+}
+
+// ══════════════════════════════════════════════
+//  LAYERS
+// ══════════════════════════════════════════════
+function renderLayers(){
+  const list = document.getElementById('layers-list');
+  list.innerHTML='';
+  const sorted = [...state.elements].sort((a,b)=>b.zIndex-a.zIndex);
+  sorted.forEach(el=>{
+    const item = document.createElement('div');
+    item.className = 'layer-item' + (state.selected.includes(el.id)?' selected':'');
+    item.dataset.id = el.id;
+    const typeLabel = el.type==='image'?'图片':'文字';
+    const lockIcon = el.locked ? '🔒 ' : '';
+    const groupBadge = el.groupId ? `<span class="group-badge" style="background:${getGroupColor(el.groupId)}">${state.groups[el.groupId]?.name||'组'}</span>` : '';
+    item.innerHTML = `
+      <span style="font-size:14px">${el.type==='image'?'🖼':'📝'}</span>
+      <span class="layer-name">${lockIcon}${el.label||el.content||'元素'}</span>
+      ${groupBadge}
+      <span class="layer-type">${typeLabel}</span>
+      <div class="layer-actions">
+        <button class="layer-act-btn" onclick="toggleLock('${el.id}')" title="${el.locked?'解锁':'锁定'}">${el.locked?'🔓':'🔒'}</button>
+        <button class="layer-act-btn" onclick="moveLayer('${el.id}',-1)" title="上移">↑</button>
+        <button class="layer-act-btn" onclick="moveLayer('${el.id}',1)" title="下移">↓</button>
+        <button class="layer-act-btn" onclick="removeElement('${el.id}')" title="删除" style="color:var(--danger)">×</button>
+      </div>
+    `;
+    item.addEventListener('click', e=>{ if(!e.target.closest('.layer-act-btn')){ selectElement(el.id, e.ctrlKey||e.shiftKey); renderCanvas(); }});
+    list.appendChild(item);
+  });
+  renderGroups();
+}
+
+function moveLayer(id, dir){
+  const el = getEl(id);
+  if(!el) return;
+  el.zIndex += dir;
+  state.elements.forEach(e=>{ if(e.id!==id && Math.abs(e.zIndex-el.zIndex)<0.1) e.zIndex -= dir; });
+  saveHistory(); renderAll();
+}
+
+function toggleLock(id){
+  const el=getEl(id); if(!el) return;
+  el.locked=!el.locked;
+  saveHistory(); renderAll();
+}
+
+// ══════════════════════════════════════════════
+//  GROUPS
+// ══════════════════════════════════════════════
+function createGroup(){
+  if(state.selected.length<1){ toast('请先选中至少1个元素','error'); return; }
+  const gid = 'g_'+(_nextId++);
+  const name = '组 ' + Object.keys(state.groups).length;
+  state.groups[gid] = { name, color: groupColors[Object.keys(state.groups).length % groupColors.length], ids:[...state.selected] };
+  state.selected.forEach(id=>{ const el=getEl(id); if(el) el.groupId=gid; });
+  saveHistory(); renderAll(); toast('已创建 '+name);
+}
+
+function dissolveGroup(){
+  const ids = state.selected;
+  if(!ids.length) return;
+  const gids = new Set(ids.map(id=>getEl(id)?.groupId).filter(Boolean));
+  gids.forEach(gid=>{
+    if(state.groups[gid]) state.groups[gid].ids.forEach(id=>{ const el=getEl(id); if(el) el.groupId=null; });
+    delete state.groups[gid];
+  });
+  saveHistory(); renderAll(); toast('已解散组');
+}
+
+function renderGroups(){
+  const list = document.getElementById('groups-list');
+  list.innerHTML = '';
+  Object.entries(state.groups).forEach(([gid, g])=>{
+    const div = document.createElement('div');
+    div.style.cssText='display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;background:var(--bg3);margin-bottom:4px;cursor:pointer';
+    div.innerHTML = `<span class="group-badge" style="background:${g.color}">${g.name}</span><span style="font-size:12px;color:var(--text2)">${g.ids.length}个元素</span>`;
+    div.onclick = ()=>{ state.selected=g.ids.filter(id=>getEl(id)); updateSelectionUI(); renderLayers(); updatePropPanel(); };
+    list.appendChild(div);
+  });
+}
+
+function getGroupColor(gid){ return state.groups[gid]?.color||'#6366f1'; }
+
+function syncGroup(prop, value){
+  state.selected.forEach(id=>{
+    const el=getEl(id); if(!el||el.type!=='text') return;
+    if(prop==='fontSize') el.fontSize = parseInt(value)||el.fontSize;
+    if(prop==='color') el.color = value;
+  });
+  renderCanvas(); renderPropPanel();
+}
+
+// ══════════════════════════════════════════════
+//  BACKGROUND
+// ══════════════════════════════════════════════
+function triggerBgUpload(){ document.getElementById('bgInput').click(); }
+function loadBg(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload=e=>{ setBg(e.target.result); input.value=''; };
+  reader.readAsDataURL(file);
+}
+function setBg(src){
+  state.bgSrc = src;
+  const img = new Image();
+  img.onload = ()=>{
+    state.canvasW = img.naturalWidth;
+    state.canvasH = img.naturalHeight;
+    const bgEl = document.getElementById('canvas-bg');
+    bgEl.src = src;
+    bgEl.style.cssText = `position:absolute;inset:0;width:${state.canvasW}px;height:${state.canvasH}px;pointer-events:none;user-select:none`;
+    const cc = document.getElementById('canvas-container');
+    cc.style.width = state.canvasW + 'px';
+    cc.style.height = state.canvasH + 'px';
+    cc.style.display = 'block';
+    cc.style.position = 'relative';
+    document.getElementById('upload-prompt').style.display='none';
+    // Use a small delay to let layout settle before fitting
+    setTimeout(()=>{ fitZoom(); repositionDefaultElements(); }, 50);
+    toast('底图已加载 '+state.canvasW+'×'+state.canvasH);
+  };
+  img.src=src;
+}
+
+function loadSampleBg(){
+  // Draw a sample award certificate
+  const c=document.createElement('canvas');
+  c.width=794; c.height=562;
+  const ctx=c.getContext('2d');
+  // Background gradient
+  const grad=ctx.createLinearGradient(0,0,794,562);
+  grad.addColorStop(0,'#fdf6e3'); grad.addColorStop(1,'#f5e6c0');
+  ctx.fillStyle=grad; ctx.fillRect(0,0,794,562);
+  // Border
+  ctx.strokeStyle='#C9A227'; ctx.lineWidth=8;
+  ctx.strokeRect(16,16,762,530);
+  ctx.strokeStyle='#E8C547'; ctx.lineWidth=3;
+  ctx.strokeRect(24,24,746,514);
+  // Title
+  ctx.fillStyle='#8B4513';
+  ctx.font='bold 48px "Noto Serif SC",serif';
+  ctx.textAlign='center';
+  ctx.fillText('荣誉证书',397,100);
+  // Subtitle line
+  ctx.fillStyle='#A0522D';
+  ctx.font='18px "Noto Serif SC",serif';
+  ctx.fillText('CERTIFICATE OF HONOR',397,135);
+  // Body text
+  ctx.fillStyle='#5C3317';
+  ctx.font='20px "Noto Serif SC",serif';
+  ctx.fillText('兹证明',397,210);
+  ctx.fillText('同志',397,290);
+  ctx.fillText('在',397,360);
+  ctx.fillText('年',397,380);
+  ctx.fillText('月荣获本次荣誉，特颁此证',397,410);
+  // Decorative corners
+  ['10,10','784,10','10,552','784,552'].forEach((pos,i)=>{
+    const [px,py]=pos.split(',').map(Number);
+    ctx.save();
+    ctx.translate(px,py);
+    ctx.fillStyle='#C9A227';
+    ctx.font='28px serif';
+    ctx.fillText('❋',0,0);
+    ctx.restore();
+  });
+  // Seal placeholder
+  ctx.beginPath();
+  ctx.arc(660,430,55,0,Math.PI*2);
+  ctx.strokeStyle='#C00000'; ctx.lineWidth=3; ctx.stroke();
+  ctx.fillStyle='rgba(192,0,0,.08)'; ctx.fill();
+  ctx.fillStyle='#C00000'; ctx.font='14px "Noto Serif SC",serif';
+  ctx.textAlign='center';
+  ctx.fillText('主办单位',660,425);
+  ctx.fillText('公章',660,445);
+  setBg(c.toDataURL('image/png'));
+}
+
+// ══════════════════════════════════════════════
+//  IMAGE ELEMENTS
+// ══════════════════════════════════════════════
+function triggerImgUpload(){ document.getElementById('imgInput').click(); }
+function loadImages(input){
+  Array.from(input.files).forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const src = e.target.result;
+      // Load image to get natural size and scale proportionally
+      const tmpImg = new Image();
+      tmpImg.onload = ()=>{
+        const W = state.canvasW || 794, H = state.canvasH || 562;
+        // Scale image so its longest side is ~25% of canvas shorter side
+        const baseSize = Math.min(W,H)*0.25;
+        const ratio = tmpImg.naturalWidth/tmpImg.naturalHeight;
+        const imgW = ratio>=1 ? Math.round(baseSize*ratio) : Math.round(baseSize);
+        const imgH = ratio>=1 ? Math.round(baseSize) : Math.round(baseSize/ratio);
+        const el = addElement({
+          type:'image',
+          label: file.name.replace(/\.[^.]+$/, '') || '图片',
+          src,
+          w: imgW, h: imgH,
+          x: Math.round(W*0.3 + Math.random()*W*0.2),
+          y: Math.round(H*0.3 + Math.random()*H*0.2)
+        });
+        saveHistory(); renderAll(); selectElement(el.id, false);
+      };
+      tmpImg.src = src;
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+}
+
+// ══════════════════════════════════════════════
+//  DROP ZONE
+// ══════════════════════════════════════════════
+function setupDropZone(){
+  const dz = document.getElementById('dropZone');
+  const cc = document.getElementById('canvas-wrap');
+  ['dragover','dragenter'].forEach(ev=>{ dz.addEventListener(ev,e=>{ e.preventDefault(); dz.classList.add('drag'); }); });
+  dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+  dz.addEventListener('drop',e=>{ e.preventDefault(); dz.classList.remove('drag'); if(e.dataTransfer.files[0]) loadBgFile(e.dataTransfer.files[0]); });
+  cc.addEventListener('dragover',e=>e.preventDefault());
+  cc.addEventListener('drop',e=>{ e.preventDefault(); Array.from(e.dataTransfer.files).forEach(f=>{ if(f.type.startsWith('image/')) loadBgFile(f); }); });
+}
+function loadBgFile(file){
+  const r=new FileReader(); r.onload=e=>setBg(e.target.result); r.readAsDataURL(file);
+}
+
+// ══════════════════════════════════════════════
+//  ZOOM
+// ══════════════════════════════════════════════
+function adjustZoom(delta){
+  state.zoom = Math.min(4, Math.max(0.05, state.zoom+delta));
+  applyZoom();
+}
+function fitZoom(){
+  const wrap = document.getElementById('canvas-wrap');
+  const pw = wrap.clientWidth - 80;
+  const ph = wrap.clientHeight - 80;
+  state.zoom = Math.min(pw/state.canvasW, ph/state.canvasH, 1);
+  applyZoom();
+}
+function applyZoom(){
+  const cc = document.getElementById('canvas-container');
+  const scene = document.getElementById('canvas-scene');
+  const scaledW = state.canvasW * state.zoom;
+  const scaledH = state.canvasH * state.zoom;
+  // Keep canvas at natural pixel size; scale the container via transform
+  // Use a wrapper div approach: canvas-container stays at natural size,
+  // we put it in a scaled wrapper so the scene can properly center it
+  cc.style.width = state.canvasW + 'px';
+  cc.style.height = state.canvasH + 'px';
+  cc.style.transform = `scale(${state.zoom})`;
+  cc.style.transformOrigin = 'top left';
+  // Add spacer so the scene flexbox sees the scaled size
+  cc.style.marginRight = (scaledW - state.canvasW) + 'px';
+  cc.style.marginBottom = (scaledH - state.canvasH) + 'px';
+  document.getElementById('zoom-label').textContent = Math.round(state.zoom*100)+'%';
+}
+
+// ══════════════════════════════════════════════
+//  PROPERTY PANEL
+// ══════════════════════════════════════════════
+let currentPropTab = 'basic';
+function switchPropTab(tab){
+  currentPropTab = tab;
+  ['basic','style','adv'].forEach(t=>{
+    document.getElementById('ptab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('prop-'+t).style.display = t===tab?'block':'none';
+  });
+  renderPropPanel();
+}
+
+function updatePropPanel(){
+  const noSel = document.getElementById('no-selection');
+  const propTabs = document.getElementById('prop-tabs');
+  if(!state.selected.length){
+    noSel.style.display=''; propTabs.style.display='none';
+    ['basic','style','adv'].forEach(t=>document.getElementById('prop-'+t).style.display='none');
+    document.getElementById('prop-title').textContent='选中元素属性';
+    return;
+  }
+  noSel.style.display='none'; propTabs.style.display='flex';
+  const el = getEl(state.selected[0]);
+  document.getElementById('prop-title').textContent = (el?.label||'元素') + (state.selected.length>1?` 等${state.selected.length}个`:'');
+  ['basic','style','adv'].forEach(t=>document.getElementById('prop-'+t).style.display = t===currentPropTab?'block':'none');
+  renderPropPanel();
+}
+
+function renderPropPanel(){
+  if(!state.selected.length) return;
+  const el = getEl(state.selected[0]);
+  if(!el) return;
+  if(currentPropTab==='basic') renderBasicProps(el);
+  else if(currentPropTab==='style') renderStyleProps(el);
+  else if(currentPropTab==='adv') renderAdvProps(el);
+}
+
+function renderBasicProps(el){
+  const c = document.getElementById('prop-basic');
+  const maxW = Math.max(state.canvasW, 2000);
+  const maxH = Math.max(state.canvasH, 2000);
+  c.innerHTML = `
+    <div class="section-label">内容</div>
+    <div class="form-row">
+      <span class="form-label">标签</span>
+      <input class="form-input" value="${esc(el.label)}"
+        oninput="updateElPropNoHistory('${el.id}','label',this.value)"
+        onblur="saveHistory()">
+    </div>
+    ${el.type==='text'?`
+    <div class="form-row">
+      <span class="form-label">文字</span>
+      <input class="form-input" id="content_${el.id}" value="${esc(el.content)}"
+        oninput="updateElPropNoHistory('${el.id}','content',this.value)"
+        onblur="saveHistory()">
+    </div>
+    `:''}
+
+    <div class="section-label" style="margin-top:12px">文本框尺寸（与字号无关）</div>
+    <div style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:12px;color:var(--text2);font-weight:500">宽度</span>
+        <span style="font-size:12px;color:var(--accent);font-weight:700;min-width:56px;text-align:right" id="wLabel_${el.id}">${Math.round(el.w)} px</span>
+      </div>
+      <input type="range" min="20" max="${maxW}" value="${Math.round(el.w)}"
+        style="width:100%" id="wSlider_${el.id}"
+        oninput="document.getElementById('wLabel_${el.id}').textContent=Math.round(this.value)+' px';updateElPropLive('${el.id}','w',+this.value)"
+        onchange="saveHistory()">
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:12px;color:var(--text2);font-weight:500">高度</span>
+        <span style="font-size:12px;color:var(--accent);font-weight:700;min-width:56px;text-align:right" id="hLabel_${el.id}">${Math.round(el.h)} px</span>
+      </div>
+      <input type="range" min="10" max="${maxH}" value="${Math.round(el.h)}"
+        style="width:100%" id="hSlider_${el.id}"
+        oninput="document.getElementById('hLabel_${el.id}').textContent=Math.round(this.value)+' px';updateElPropLive('${el.id}','h',+this.value)"
+        onchange="saveHistory()">
+    </div>
+
+    <div class="section-label">位置</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
+      <div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:3px">X</div>
+        <input type="number" class="form-input" style="text-align:center" value="${Math.round(el.x)}"
+          oninput="updateElPropLive('${el.id}','x',+this.value)"
+          onblur="saveHistory()">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:3px">Y</div>
+        <input type="number" class="form-input" style="text-align:center" value="${Math.round(el.y)}"
+          oninput="updateElPropLive('${el.id}','y',+this.value)"
+          onblur="saveHistory()">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="toggle">
+        <input type="checkbox" ${el.locked?'checked':''} onchange="updateElProp('${el.id}','locked',this.checked)">
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+        <span style="font-size:12px">锁定元素</span>
+      </label>
+    </div>
+    ${el.type==='image'?`
+    <hr>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px">💡 拖动边框角点调整，Shift拖角等比缩放</div>
+    <button class="btn-sm" onclick="openCrop(getEl('${el.id}'))" style="width:100%">✂ 裁剪图片</button>
+    `:`
+    <hr>
+    <div style="font-size:11px;color:var(--text3)">💡 滑块调整框尺寸；画布上拖动角点/边框也可直接调整</div>
+    `}
+  `;
+}
+
+function renderStyleProps(el){
+  const c = document.getElementById('prop-style');
+  if(el.type!=='text'){ c.innerHTML='<p style="color:var(--text3);font-size:13px;padding:16px 0">图片元素的样式设置请右键图片选择"裁剪"</p>'; return; }
+  const mainColors = ['#000000','#ffffff'];
+  const extraColors = ['#8B0000','#8B5E2A','#333333','#1a1a6e','#006400','#c9a227','#FF4444','#4444FF','#44AA44','#AA44AA'];
+  const mainSwatches = mainColors.map(col=>
+    `<div class="color-swatch ${el.color===col?'active':''}" style="background:${col};${col==='#ffffff'?'border:1px solid var(--border)':''}" title="${col}" onclick="updateElProp('${el.id}','color','${col}')"></div>`
+  ).join('');
+  const extraSwatches = extraColors.map(col=>
+    `<div class="color-swatch ${el.color===col?'active':''}" style="background:${col}" title="${col}" onclick="updateElProp('${el.id}','color','${col}')"></div>`
+  ).join('');
+  c.innerHTML = `
+    <div class="section-label">字号（长按加速）</div>
+    <div class="form-row">
+      <div style="display:flex;align-items:center;gap:4px;flex:1">
+        <button class="btn-sm lp-btn" style="padding:5px 11px;font-size:16px;flex-shrink:0"
+          data-id="${el.id}" data-prop="fontSize" data-delta="-1">−</button>
+        <input type="number" class="form-input" id="fs_${el.id}" value="${el.fontSize}" min="6" max="999"
+          style="text-align:center;flex:1"
+          oninput="updateElPropLive('${el.id}','fontSize',Math.max(6,+this.value||6))"
+          onchange="updateElPropLive('${el.id}','fontSize',Math.max(6,+this.value||6))">
+        <button class="btn-sm lp-btn" style="padding:5px 11px;font-size:16px;flex-shrink:0"
+          data-id="${el.id}" data-prop="fontSize" data-delta="1">+</button>
+        <span style="font-size:11px;color:var(--text3);flex-shrink:0">px</span>
+      </div>
+    </div>
+    <div class="form-row">
+      <span class="form-label">字体</span>
+      <select class="form-select" onchange="updateElProp('${el.id}','fontFamily',this.value)">
+        <option value="Noto Serif SC" ${el.fontFamily==='Noto Serif SC'?'selected':''}>宋体（Noto Serif SC）</option>
+        <option value="serif" ${el.fontFamily==='serif'?'selected':''}>衬线体</option>
+        <option value="sans-serif" ${el.fontFamily==='sans-serif'?'selected':''}>黑体</option>
+        <option value="cursive" ${el.fontFamily==='cursive'?'selected':''}>草书</option>
+        <option value="monospace" ${el.fontFamily==='monospace'?'selected':''}>等宽</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <span class="form-label">对齐</span>
+      <div style="display:flex;gap:4px">
+        ${['left','center','right'].map(a=>`<button class="btn-sm ${el.align===a?'active':''}" onclick="updateElProp('${el.id}','align','${a}')">${a==='left'?'左':a==='center'?'中':'右'}</button>`).join('')}
+      </div>
+    </div>
+    <div class="section-label">字体样式</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn-sm ${el.fontWeight==='bold'?'active':''}" onclick="toggleProp('${el.id}','fontWeight','bold','normal')"><b>B</b></button>
+      <button class="btn-sm ${el.fontStyle==='italic'?'active':''}" onclick="toggleProp('${el.id}','fontStyle','italic','normal')"><i>I</i></button>
+      <button class="btn-sm ${el.textDecoration==='underline'?'active':''}" onclick="toggleProp('${el.id}','textDecoration','underline','none')"><u>U</u></button>
+      <button class="btn-sm ${el.textDecoration==='line-through'?'active':''}" onclick="toggleProp('${el.id}','textDecoration','line-through','none')"><s>S</s></button>
+    </div>
+    <div class="section-label">颜色</div>
+    <div class="color-row">
+      ${mainSwatches}
+      <input type="color" value="${el.color||'#ffffff'}" title="自定义颜色" oninput="updateElProp('${el.id}','color',this.value)">
+    </div>
+    <div style="margin-top:6px">
+      <button class="btn-sm" style="width:100%;font-size:11px" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none';this.textContent=this.nextElementSibling.style.display==='none'?'▶ 更多颜色':'▼ 收起'">▶ 更多颜色</button>
+      <div class="color-row" style="display:none;margin-top:6px;flex-wrap:wrap">
+        ${extraSwatches}
+      </div>
+    </div>
+    <div class="section-label">透明度</div>
+    <div class="form-row">
+      <input type="range" min="0.1" max="1" step="0.05" value="${el.opacity||1}" oninput="updateElProp('${el.id}','opacity',+this.value)" style="flex:1">
+      <span style="font-size:12px;color:var(--text3);min-width:32px">${Math.round((el.opacity||1)*100)}%</span>
+    </div>
+  `;
+  // Bind long-press to font size buttons
+  c.querySelectorAll('.lp-btn').forEach(btn => setupLongPress(btn));
+}
+
+function renderAdvProps(el){
+  const c = document.getElementById('prop-adv');
+  if(el.type!=='text'){ c.innerHTML='<p style="color:var(--text3);font-size:13px">高级样式仅文本框可用</p>'; return; }
+  const gr = el.gradient||{enabled:false,start:'#ff6b6b',end:'#4ecdc4',dir:'to right'};
+  c.innerHTML = `
+    <div class="adv-section">
+      <div class="adv-header ${gr.enabled?'open':''}" onclick="toggleAdv(this)">
+        ✨ 文字渐变
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div class="adv-body ${gr.enabled?'open':''}">
+        <div class="form-row">
+          <label class="toggle">
+            <input type="checkbox" ${gr.enabled?'checked':''} onchange="updateGradient('${el.id}','enabled',this.checked)">
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+            <span style="font-size:12px">启用渐变</span>
+          </label>
+        </div>
+        <div class="form-row">
+          <span class="form-label">起始色</span>
+          <input type="color" value="${gr.start}" oninput="updateGradient('${el.id}','start',this.value)">
+          <span class="form-label" style="min-width:36px">结束色</span>
+          <input type="color" value="${gr.end}" oninput="updateGradient('${el.id}','end',this.value)">
+        </div>
+        <div class="form-row">
+          <span class="form-label">方向</span>
+          <select class="form-select" onchange="updateGradient('${el.id}','dir',this.value)">
+            <option value="to right" ${gr.dir==='to right'?'selected':''}>→ 向右</option>
+            <option value="to bottom" ${gr.dir==='to bottom'?'selected':''}>↓ 向下</option>
+            <option value="135deg" ${gr.dir==='135deg'?'selected':''}>↘ 斜向下</option>
+            <option value="45deg" ${gr.dir==='45deg'?'selected':''}>↗ 斜向上</option>
+          </select>
+        </div>
+        <div class="grad-preview" id="gradPrev_${el.id}" style="background:linear-gradient(${gr.dir},${gr.start},${gr.end})"></div>
+      </div>
+    </div>
+
+    <div class="adv-section" style="margin-top:8px">
+      <div class="adv-header" onclick="toggleAdv(this)">
+        🖼 背景与边框
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div class="adv-body">
+        <div class="form-row">
+          <span class="form-label">填充色</span>
+          <input type="color" value="${el.fillColor||'#ffffff'}" oninput="updateElProp('${el.id}','fillColor',this.value)">
+          <button class="btn-sm" onclick="updateElProp('${el.id}','fillColor','')" style="margin-left:4px">清除</button>
+        </div>
+        <div class="form-row">
+          <span class="form-label">边框色</span>
+          <input type="color" value="${el.borderColor||'#000000'}" oninput="updateElProp('${el.id}','borderColor',this.value)">
+        </div>
+        <div class="form-row">
+          <span class="form-label">边框宽</span>
+          <input type="number" class="form-input" value="${el.borderWidth||0}" min="0" max="10" oninput="updateElProp('${el.id}','borderWidth',+this.value)">
+        </div>
+        <div class="form-row">
+          <span class="form-label">边框样式</span>
+          <select class="form-select" onchange="updateElProp('${el.id}','borderStyle',this.value)">
+            ${['solid','dashed','dotted','double'].map(s=>`<option value="${s}" ${el.borderStyle===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleAdv(header){
+  header.classList.toggle('open');
+  header.nextElementSibling.classList.toggle('open');
+}
+
+function updateElProp(id, prop, value){
+  const el = getEl(id); if(!el||el.locked) return;
+  el[prop] = value;
+  // Re-render just this canvas element
+  const dom = document.querySelector(`.canvas-element[data-id="${id}"]`);
+  if(dom){
+    const newDom = createElementDOM(el);
+    dom.replaceWith(newDom);
+    if(state.selected.includes(id)) newDom.classList.add('selected');
+  }
+  renderLayers();
+  // DO NOT call renderPropPanel() here — it destroys focus on inputs!
+  // Only update specific display values without replacing DOM
+  _syncPropDisplayValues(id, prop, value);
+  saveHistory();
+}
+
+// Update prop without saving history (for continuous typing)
+function updateElPropNoHistory(id, prop, value){
+  const el = getEl(id); if(!el||el.locked) return;
+  el[prop] = value;
+  const dom = document.querySelector(`.canvas-element[data-id="${id}"]`);
+  if(dom){
+    if(prop==='content'){
+      const t = dom.querySelector('.text-el'); if(t) t.textContent = value;
+    } else {
+      const newDom = createElementDOM(el);
+      dom.replaceWith(newDom);
+      if(state.selected.includes(id)) newDom.classList.add('selected');
+    }
+  }
+  if(prop==='label') renderLayers();
+}
+
+function toggleProp(id, prop, onVal, offVal){
+  const el = getEl(id); if(!el) return;
+  el[prop] = el[prop]===onVal ? offVal : onVal;
+  updateElProp(id, prop, el[prop]);
+}
+
+function updateGradient(id, key, value){
+  const el = getEl(id); if(!el) return;
+  if(!el.gradient) el.gradient = {enabled:false,start:'#ff6b6b',end:'#4ecdc4',dir:'to right'};
+  el.gradient[key] = value;
+  updateElProp(id, 'gradient', el.gradient);
+  const prev = document.getElementById('gradPrev_'+id);
+  if(prev) prev.style.background = `linear-gradient(${el.gradient.dir},${el.gradient.start},${el.gradient.end})`;
+}
+
+// ══════════════════════════════════════════════
+//  ALIGN
+// ══════════════════════════════════════════════
+function alignElements(type){
+  const ids = state.selected.length >= 1 ? state.selected : state.elements.map(e=>e.id);
+  const els = ids.map(id=>getEl(id)).filter(Boolean);
+  if(els.length < 2){ toast('请在上方勾选至少2个元素进行对齐','error'); return; }
+  const ref = document.getElementById('alignRef')?.value || 'selection';
+  let refL, refT, refR, refB;
+  if(ref==='canvas'){ refL=0; refT=0; refR=state.canvasW; refB=state.canvasH; }
+  else { refL=Math.min(...els.map(e=>e.x)); refT=Math.min(...els.map(e=>e.y)); refR=Math.max(...els.map(e=>e.x+e.w)); refB=Math.max(...els.map(e=>e.y+e.h)); }
+  els.forEach(el=>{
+    if(el.locked) return;
+    if(type==='left') el.x=refL;
+    else if(type==='right') el.x=refR-el.w;
+    else if(type==='centerH') el.x=(refL+refR)/2-el.w/2;
+    else if(type==='top') el.y=refT;
+    else if(type==='bottom') el.y=refB-el.h;
+    else if(type==='centerV') el.y=(refT+refB)/2-el.h/2;
+  });
+  saveHistory(); renderAll();
+}
+function distributeH(){
+  const els = state.selected.map(id=>getEl(id)).filter(Boolean).sort((a,b)=>a.x-b.x);
+  if(els.length<3){ toast('请选择3个或以上元素','error'); return; }
+  const totalW = els[els.length-1].x+els[els.length-1].w - els[0].x;
+  const elW = els.reduce((s,e)=>s+e.w,0);
+  const gap = (totalW-elW)/(els.length-1);
+  let cx = els[0].x+els[0].w;
+  for(let i=1;i<els.length-1;i++){ els[i].x=cx+gap; cx=els[i].x+els[i].w; }
+  saveHistory(); renderAll();
+}
+function distributeV(){
+  const els = state.selected.map(id=>getEl(id)).filter(Boolean).sort((a,b)=>a.y-b.y);
+  if(els.length<3){ toast('请选择3个或以上元素','error'); return; }
+  const totalH = els[els.length-1].y+els[els.length-1].h - els[0].y;
+  const elH = els.reduce((s,e)=>s+e.h,0);
+  const gap = (totalH-elH)/(els.length-1);
+  let cy = els[0].y+els[0].h;
+  for(let i=1;i<els.length-1;i++){ els[i].y=cy+gap; cy=els[i].y+els[i].h; }
+  saveHistory(); renderAll();
+}
+
+// ══════════════════════════════════════════════
+//  NAMES
+// ══════════════════════════════════════════════
+function setupNamesInput(){
+  const ta = document.getElementById('namesInput');
+  ta.addEventListener('input', updateNamesCount);
+}
+function updateNamesCount(){
+  const names = parseNames();
+  document.getElementById('namesCount').textContent = names.length + ' 位获奖人';
+}
+function parseNames(){
+  const raw = document.getElementById('namesInput').value;
+  if(!raw.trim()) return [];
+  return raw.split(/[\n,，、；;]+/).map(s=>s.trim()).filter(Boolean);
+}
+function previewNames(){
+  const names = parseNames();
+  if(!names.length){ toast('请先输入获奖人姓名','error'); return; }
+  // Preview first name in bound element
+  const bindId = document.getElementById('nameBindSelect').value || state.nameBind;
+  if(bindId){
+    const el = getEl(bindId);
+    if(el){ el.content = names[0]; renderCanvas(); }
+  }
+  toast(`预览第1位：${names[0]}，共${names.length}位`);
+}
+function updateNameBindSelect(){
+  const sel = document.getElementById('nameBindSelect');
+  if(!sel) return;
+  const cur = sel.value || state.nameBind;
+  sel.innerHTML = '<option value="">-- 请选择 --</option>';
+  state.elements.filter(e=>e.type==='text').forEach(e=>{
+    const opt = document.createElement('option');
+    opt.value = e.id; opt.textContent = e.label||e.content;
+    if(e.id===cur) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.onchange = ()=>{ state.nameBind = sel.value; };
+}
+
+// ══════════════════════════════════════════════
+//  HISTORY (UNDO/REDO)
+// ══════════════════════════════════════════════
+function saveHistory(){
+  const snap = JSON.stringify({elements:state.elements, groups:state.groups});
+  state.history = state.history.slice(0, state.historyIdx+1);
+  state.history.push(snap);
+  if(state.history.length>50) state.history.shift();
+  state.historyIdx = state.history.length-1;
+}
+function undoAction(){
+  if(state.historyIdx<=0){ toast('没有更多操作可撤销','error'); return; }
+  state.historyIdx--;
+  restoreHistory();
+}
+function redoAction(){
+  if(state.historyIdx>=state.history.length-1){ toast('没有更多操作可重做','error'); return; }
+  state.historyIdx++;
+  restoreHistory();
+}
+function restoreHistory(){
+  const snap = JSON.parse(state.history[state.historyIdx]);
+  state.elements = snap.elements; state.groups = snap.groups;
+  _nextId = Math.max(...state.elements.map(e=>parseInt(e.id.split('_')[1]||0)))+1;
+  state.selected = [];
+  renderAll(); updatePropPanel();
+}
+function setupKeyboard(){
+  document.addEventListener('keydown', e=>{
+    if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+    if(e.ctrlKey||e.metaKey){
+      if(e.key==='z'){ e.preventDefault(); e.shiftKey?redoAction():undoAction(); }
+      if(e.key==='a'){ e.preventDefault(); state.selected=state.elements.map(e=>e.id); updateSelectionUI(); }
+    }
+    if(e.key==='Delete'||e.key==='Backspace'){ if(state.selected.length){ state.selected.forEach(id=>removeElement(id)); } }
+    if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
+      const step = e.shiftKey?10:1;
+      state.selected.forEach(id=>{
+        const el=getEl(id); if(!el||el.locked) return;
+        if(e.key==='ArrowLeft') el.x-=step;
+        if(e.key==='ArrowRight') el.x+=step;
+        if(e.key==='ArrowUp') el.y-=step;
+        if(e.key==='ArrowDown') el.y+=step;
+      });
+      renderCanvas(); updatePropPanel(); e.preventDefault();
+    }
+  });
+  document.getElementById('canvas-wrap').addEventListener('pointerdown', e=>{
+    if(e.target.id==='canvas-wrap'||e.target.id==='canvas-container') deselectAll();
+  });
+}
+
+// ══════════════════════════════════════════════
+//  EXPORT
+// ══════════════════════════════════════════════
+function openExportModal(){ document.getElementById('exportModal').classList.add('open'); }
+function closeExportModal(){ document.getElementById('exportModal').classList.remove('open'); }
+
+// Multi-select image formats
+function toggleImgFmt(chip){
+  chip.classList.toggle('active');
+  const hasGif = document.querySelector('#imgFmtChips .chip[data-fmt="gif"]')?.classList.contains('active');
+  document.getElementById('gifOptions').style.display = hasGif ? 'block' : 'none';
+}
+// Multi-select packages
+function togglePkg(chip){
+  chip.classList.toggle('active');
+}
+function getSelectedImgFmts(){
+  return [...document.querySelectorAll('#imgFmtChips .chip.active')].map(c=>c.dataset.fmt);
+}
+function getSelectedPkgs(){
+  return [...document.querySelectorAll('#pkgChips .chip.active')].map(c=>c.dataset.pkg);
+}
+
+function selectQuality(btn){
+  document.querySelectorAll('.quality-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  state.exportQuality = btn.dataset.q;
+}
+function toggleWatermark(){
+  const cb = document.getElementById('wmEnabled');
+  document.getElementById('wmPanel').style.display = cb.checked?'block':'none';
+}
+function setupWmSliders(){
+  document.getElementById('wmOpacity').addEventListener('input', function(){ document.getElementById('wmOpacityLabel').textContent = Math.round(this.value*100)+'%'; });
+  document.getElementById('wmAngle').addEventListener('input', function(){ document.getElementById('wmAngleLabel').textContent = this.value+'°'; });
+}
+
+async function startExport(){
+  if(!state.bgSrc){ toast('请先上传底图','error'); return; }
+  const names = parseNames();
+  const allNames = names.length ? names : ['默认'];
+  const imgFmts = getSelectedImgFmts();
+  const pkgs = getSelectedPkgs();
+  if(!imgFmts.length){ toast('请至少选择一种图片格式','error'); return; }
+  if(!pkgs.length){ toast('请至少选择一种打包方式','error'); return; }
+
+  const btn = document.getElementById('exportBtn');
+  btn.disabled=true;
+  document.getElementById('exportProgress').style.display='block';
+  const fill = document.getElementById('exportProgressFill');
+  const text = document.getElementById('exportProgressText');
+
+  try {
+    // Build all combinations: imgFmt × pkg
+    const tasks = [];
+    for(const fmt of imgFmts){
+      for(const pkg of pkgs){
+        tasks.push({fmt, pkg});
+      }
+    }
+    for(let t=0; t<tasks.length; t++){
+      const {fmt, pkg} = tasks[t];
+      text.textContent = `任务 ${t+1}/${tasks.length}：${fmt.toUpperCase()} × ${pkg}…`;
+      fill.style.width = (t/tasks.length*100)+'%';
+      await runExportTask(allNames, fmt, pkg, fill, text);
+      await sleep(120);
+    }
+    fill.style.width='100%';
+    toast(`导出完成 ✓ (${tasks.length}个任务)`, 'success');
+  } catch(err){
+    toast('导出失败：'+err.message,'error');
+    console.error(err);
+  }
+  btn.disabled=false;
+  document.getElementById('exportProgress').style.display='none';
+  fill.style.width='0%';
+}
+
+async function runExportTask(names, fmt, pkg, fill, text){
+  const q = state.exportQuality==='high'?1:state.exportQuality==='medium'?0.85:0.6;
+  const mimeType = fmt==='jpg'?'image/jpeg':'image/png';
+  const ext = fmt==='jpg'?'jpg':fmt==='gif'?'png':fmt; // gif exports as png per-frame
+
+  if(pkg==='pdf'){
+    await exportPDF(names, fill, text, mimeType, q);
+  } else if(pkg==='zip'){
+    await exportZIP(names, fill, text, mimeType, q, ext);
+  } else {
+    // single download
+    await exportImages(names, fmt, fill, text);
+  }
+}
+
+async function renderFrame(name){
+  const canvas = document.createElement('canvas');
+  canvas.width = state.canvasW;
+  canvas.height = state.canvasH;
+  const ctx = canvas.getContext('2d');
+  // Draw bg
+  if(state.bgSrc){
+    const bgImg = await loadImg(state.bgSrc);
+    ctx.drawImage(bgImg, 0, 0, state.canvasW, state.canvasH);
+  }
+  // Draw elements sorted by zIndex
+  const sorted = [...state.elements].sort((a,b)=>a.zIndex-b.zIndex);
+  for(const el of sorted){
+    const resolvedContent = (el.id===state.nameBind && name!=='默认') ? name : el.content;
+    await drawElement(ctx, el, resolvedContent);
+  }
+  // Watermark
+  if(document.getElementById('wmEnabled')?.checked){
+    applyWatermark(ctx, canvas.width, canvas.height);
+  }
+  return canvas;
+}
+
+async function drawElement(ctx, el, content){
+  ctx.save();
+  ctx.globalAlpha = el.opacity || 1;
+  if(el.type==='image'&&el.src){
+    try{
+      const img = await loadImg(el.src);
+      ctx.drawImage(img, el.x, el.y, el.w, el.h);
+    }catch(e){}
+  } else if(el.type==='text'){
+    // Background fill
+    if(el.fillColor){
+      ctx.fillStyle = el.fillColor;
+      ctx.fillRect(el.x, el.y, el.w, el.h);
+    }
+    // Border
+    if(el.borderWidth && el.borderWidth>0){
+      ctx.strokeStyle = el.borderColor||'#000';
+      ctx.lineWidth = el.borderWidth;
+      if(el.borderStyle==='dashed') ctx.setLineDash([6,3]);
+      else if(el.borderStyle==='dotted') ctx.setLineDash([2,2]);
+      else ctx.setLineDash([]);
+      ctx.strokeRect(el.x, el.y, el.w, el.h);
+    }
+    // Text
+    const fw = el.fontWeight==='bold'?'bold':'normal';
+    const fi = el.fontStyle==='italic'?'italic':'';
+    ctx.font = `${fi} ${fw} ${el.fontSize}px "${el.fontFamily||'Noto Serif SC'}",serif`;
+    ctx.textBaseline = 'middle';
+    // Gradient or solid
+    if(el.gradient && el.gradient.enabled){
+      let grd;
+      if(el.gradient.dir==='to right') grd=ctx.createLinearGradient(el.x,0,el.x+el.w,0);
+      else if(el.gradient.dir==='to bottom') grd=ctx.createLinearGradient(0,el.y,0,el.y+el.h);
+      else if(el.gradient.dir==='135deg') grd=ctx.createLinearGradient(el.x,el.y,el.x+el.w,el.y+el.h);
+      else grd=ctx.createLinearGradient(el.x,el.y+el.h,el.x+el.w,el.y);
+      grd.addColorStop(0,el.gradient.start);
+      grd.addColorStop(1,el.gradient.end);
+      ctx.fillStyle=grd;
+    } else {
+      ctx.fillStyle = el.color||'#333';
+    }
+    // Clip to element bounds and scale font if too wide
+    ctx.save();
+    ctx.rect(el.x, el.y, el.w, el.h);
+    ctx.clip();
+    let textX;
+    if(el.align==='left') textX = el.x+6;
+    else if(el.align==='right') textX = el.x+el.w-6;
+    else textX = el.x+el.w/2;
+    // Measure and scale down if needed
+    let finalSize = el.fontSize;
+    let measured = ctx.measureText(content||'');
+    while(measured.width > el.w-12 && finalSize > 6){
+      finalSize--;
+      ctx.font = `${fi} ${fw} ${finalSize}px "${el.fontFamily||'Noto Serif SC'}",serif`;
+      measured = ctx.measureText(content||'');
+    }
+    ctx.textAlign = el.align||'center';
+    ctx.fillText(content||'', textX, el.y+el.h/2);
+    // Underline / strikethrough
+    if(el.textDecoration==='underline'||el.textDecoration==='line-through'){
+      const tw = ctx.measureText(content||'').width;
+      const ly = el.textDecoration==='underline' ? el.y+el.h/2+finalSize*0.6 : el.y+el.h/2;
+      let lx = textX - (el.align==='center'?tw/2:el.align==='right'?tw:0);
+      ctx.strokeStyle = el.color||'#333';
+      ctx.lineWidth = Math.max(1, finalSize*0.07);
+      ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(lx+tw,ly); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+function applyWatermark(ctx, w, h){
+  const text = document.getElementById('wmText').value||'水印';
+  const opacity = parseFloat(document.getElementById('wmOpacity').value)||0.15;
+  const angle = (parseFloat(document.getElementById('wmAngle').value)||(-30)) * Math.PI/180;
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  ctx.fillStyle = '#555';
+  ctx.font = `bold ${Math.max(20,w/20)}px sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  const step = w/3;
+  for(let x=0;x<w+step;x+=step){
+    for(let y=0;y<h+step;y+=step){
+      ctx.save();
+      ctx.translate(x,y);
+      ctx.rotate(angle);
+      ctx.fillText(text,0,0);
+      ctx.restore();
+    }
+  }
+  ctx.restore();
+}
+
+async function exportImages(names, fmt, fill, text){
+  const q = state.exportQuality==='high'?1:state.exportQuality==='medium'?0.85:0.6;
+  const mimeType = fmt==='jpg'?'image/jpeg':'image/png';
+  const ext = fmt==='jpg'?'jpg':'png';
+  for(let i=0;i<names.length;i++){
+    fill.style.width = ((i+1)/names.length*100)+'%';
+    text.textContent = `生成 ${names[i]}（${i+1}/${names.length}）`;
+    const canvas = await renderFrame(names[i]);
+    const dataUrl = canvas.toDataURL(mimeType, q);
+    download(dataUrl, `奖状_${names[i]}.${ext}`);
+    await sleep(100);
+  }
+}
+
+async function exportZIP(names, fill, text, mimeType='image/png', q=1, ext='png'){
+  const zip = new JSZip();
+  for(let i=0;i<names.length;i++){
+    fill.style.width = ((i+1)/names.length*100)+'%';
+    text.textContent = `打包 ${names[i]}（${i+1}/${names.length}）`;
+    const canvas = await renderFrame(names[i]);
+    const blob = await canvasToBlob(canvas, mimeType, q);
+    zip.file(`奖状_${names[i]}.${ext}`, blob);
+    await sleep(50);
+  }
+  text.textContent = '压缩打包中…';
+  const blob = await zip.generateAsync({type:'blob'});
+  download(URL.createObjectURL(blob), `奖状批量_${ext.toUpperCase()}.zip`);
+}
+
+async function exportPDF(names, fill, text, mimeType='image/jpeg', q=0.92){
+  const {jsPDF} = window.jspdf;
+  const orientation = state.canvasW > state.canvasH ? 'l':'p';
+  const pdf = new jsPDF({ orientation, unit:'px', format:[state.canvasW, state.canvasH] });
+  for(let i=0;i<names.length;i++){
+    fill.style.width = ((i+1)/names.length*100)+'%';
+    text.textContent = `PDF渲染 ${names[i]}（${i+1}/${names.length}）`;
+    const canvas = await renderFrame(names[i]);
+    const imgData = canvas.toDataURL(mimeType, q);
+    const imgType = mimeType==='image/jpeg'?'JPEG':'PNG';
+    if(i>0) pdf.addPage([state.canvasW, state.canvasH], orientation);
+    pdf.addImage(imgData, imgType, 0, 0, state.canvasW, state.canvasH);
+    await sleep(50);
+  }
+  pdf.save('奖状合并.pdf');
+}
+
+async function exportGIF(names, fill, text){
+  toast('GIF格式将导出为PNG单张图片','success');
+  await exportImages(names, 'png', fill, text);
+}
+
+function canvasToBlob(canvas, type, quality){
+  return new Promise(res=>canvas.toBlob(res, type, quality));
+}
+function loadImg(src){
+  return new Promise((res,rej)=>{ const i=new Image(); i.crossOrigin='anonymous'; i.onload=()=>res(i); i.onerror=rej; i.src=src; });
+}
+function download(url, name){ const a=document.createElement('a'); a.href=url; a.download=name; a.click(); }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// ══════════════════════════════════════════════
+//  CROP
+// ══════════════════════════════════════════════
+let cropEl=null, cropOrig=null, cropDrag=null;
+function openCrop(el){
+  if(!el||el.type!=='image') return;
+  cropEl = el;
+  const overlay = document.getElementById('crop-overlay');
+  overlay.classList.add('open');
+  const canvas = document.getElementById('crop-canvas');
+  const img = new Image(); img.onload=()=>{
+    const maxW = window.innerWidth*0.85, maxH = window.innerHeight*0.65;
+    const scale = Math.min(maxW/img.naturalWidth, maxH/img.naturalHeight, 1);
+    canvas.width = img.naturalWidth*scale; canvas.height = img.naturalHeight*scale;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    cropOrig = {scale, imgW:img.naturalWidth, imgH:img.naturalHeight, canvas};
+    state.cropState = null;
+    document.getElementById('cropRect').style.display='none';
+    setupCropDrag(canvas);
+  };
+  img.src = el.src;
+}
+function setupCropDrag(canvas){
+  let startX,startY,dragging=false;
+  canvas.onpointerdown=e=>{ const r=canvas.getBoundingClientRect(); startX=e.clientX-r.left; startY=e.clientY-r.top; dragging=true; canvas.setPointerCapture(e.pointerId); };
+  canvas.onpointermove=e=>{
+    if(!dragging) return;
+    const r=canvas.getBoundingClientRect();
+    let ex=e.clientX-r.left, ey=e.clientY-r.top;
+    let x=Math.min(startX,ex), y=Math.min(startY,ey), w=Math.abs(ex-startX), h=Math.abs(ey-startY);
+    if(state.cropAspect>0){ h=w/state.cropAspect; }
+    const rect=document.getElementById('cropRect');
+    rect.style.cssText=`display:block;left:${x}px;top:${y}px;width:${w}px;height:${h}px`;
+    state.cropState={x,y,w,h};
+  };
+  canvas.onpointerup=()=>dragging=false;
+}
+function setCropAspect(ratio){
+  state.cropAspect=ratio;
+  document.querySelectorAll('.aspect-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+function applyCrop(){
+  if(!cropEl||!state.cropState||!cropOrig) return;
+  const {x,y,w,h}=state.cropState;
+  const s=cropOrig.scale;
+  const sx=x/s, sy=y/s, sw=w/s, sh=h/s;
+  if(sw<10||sh<10){ toast('裁剪区域太小','error'); return; }
+  const tmpCanvas=document.createElement('canvas');
+  tmpCanvas.width=sw; tmpCanvas.height=sh;
+  const ctx=tmpCanvas.getContext('2d');
+  const img=new Image(); img.onload=()=>{
+    ctx.drawImage(img,sx,sy,sw,sh,0,0,sw,sh);
+    cropEl.src=tmpCanvas.toDataURL('image/png');
+    cropEl.w=sw; cropEl.h=sh;
+    saveHistory(); renderAll(); closeCrop(); toast('裁剪完成 ✓','success');
+  };
+  img.src=cropEl.src;
+}
+function closeCrop(){ document.getElementById('crop-overlay').classList.remove('open'); }
+
+// ══════════════════════════════════════════════
+//  SIDEBAR TABS
+// ══════════════════════════════════════════════
+function switchTab(tab){
+  ['layers','names','align','group'].forEach(t=>{
+    document.getElementById('panel-'+t).style.display = t===tab?'block':'none';
+    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
+  });
+  if(tab==='align') renderAlignList();
+}
+
+function renderAlignList(){
+  const list = document.getElementById('align-el-list');
+  if(!list) return;
+  list.innerHTML = '';
+  if(!state.elements.length){
+    list.innerHTML='<div style="font-size:12px;color:var(--text3);padding:4px">暂无元素</div>';
+    return;
+  }
+  const sorted = [...state.elements].sort((a,b)=>b.zIndex-a.zIndex);
+  sorted.forEach(el=>{
+    const row = document.createElement('label');
+    row.style.cssText='display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;transition:background .15s';
+    row.onmouseover=()=>row.style.background='var(--bg3)';
+    row.onmouseout=()=>row.style.background='';
+    const cb = document.createElement('input');
+    cb.type='checkbox'; cb.dataset.id=el.id;
+    cb.style.accentColor='var(--accent)'; cb.style.width='14px'; cb.style.height='14px';
+    cb.checked = state.selected.includes(el.id);
+    cb.onchange=()=>{
+      if(cb.checked){ if(!state.selected.includes(el.id)) state.selected.push(el.id); }
+      else { state.selected=state.selected.filter(s=>s!==el.id); }
+      updateSelectionUI();
+    };
+    const icon = document.createElement('span');
+    icon.textContent = el.type==='image'?'🖼':'📝'; icon.style.fontSize='13px';
+    const name = document.createElement('span');
+    name.textContent = el.label||el.content||'元素';
+    name.style.cssText='font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+    const type = document.createElement('span');
+    type.textContent = el.type==='image'?'图':'文';
+    type.style.cssText='font-size:10px;color:var(--text3);background:var(--bg3);padding:1px 4px;border-radius:3px;flex-shrink:0';
+    row.append(cb, icon, name, type);
+    list.appendChild(row);
+  });
+}
+function alignSelectAll(){ state.selected=state.elements.map(e=>e.id); renderAlignList(); updateSelectionUI(); }
+function alignSelectNone(){ state.selected=[]; renderAlignList(); updateSelectionUI(); }
+function alignSyncFromCanvas(){ renderAlignList(); }
+
+// ══════════════════════════════════════════════
+//  DARK MODE
+// ══════════════════════════════════════════════
+function toggleDark(){
+  state.darkMode=!state.darkMode;
+  document.documentElement.toggleAttribute('data-dark', state.darkMode);
+  document.getElementById('themeColor').content = state.darkMode?'#0f1117':'#6366f1';
+  localStorage.setItem('darkMode',state.darkMode);
+}
+function loadDarkPref(){
+  const pref = localStorage.getItem('darkMode');
+  if(pref==='true') toggleDark();
+}
+
+// ══════════════════════════════════════════════
+//  WELCOME
+// ══════════════════════════════════════════════
+function openWelcome(){ document.getElementById('welcomeModal').classList.add('open'); }
+function closeWelcome(){ document.getElementById('welcomeModal').classList.remove('open'); }
+
+// ══════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════
+function toast(msg, type='success'){
+  const area = document.getElementById('toast-area');
+  const t = document.createElement('div');
+  t.className = 'toast '+type;
+  t.innerHTML = (type==='success'?'✓ ':type==='error'?'✕ ':'')+msg;
+  area.appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+
+// ══════════════════════════════════════════════
+//  MOBILE
+// ══════════════════════════════════════════════
+function mobileNav(tab){
+  ['canvas','layers','names','props'].forEach(t=>{
+    document.getElementById('bnav-'+t)?.classList.toggle('active',t===tab);
+  });
+  const sheet = document.getElementById('mobile-sheet');
+  const body = document.getElementById('mobile-sheet-body');
+  if(tab==='canvas'){
+    sheet.classList.remove('open');
+    document.getElementById('joystick-overlay').classList.toggle('mobile-editing', state.selected.length>0);
+    return;
+  }
+  sheet.classList.add('open');
+  if(tab==='layers'){
+    // Clone layers panel
+    body.innerHTML = document.getElementById('panel-layers').innerHTML;
+  } else if(tab==='names'){
+    body.innerHTML = document.getElementById('panel-names').innerHTML;
+  } else if(tab==='props'){
+    body.innerHTML = `<div style="font-size:13px;font-weight:600;margin-bottom:10px">元素属性</div>` + document.getElementById('prop-content').innerHTML;
+  }
+}
+
+function mobileAction(act){
+  const id = state.selected[0];
+  const el = id ? getEl(id) : null;
+  if(!el && act!=='props') return;
+  if(act==='lock'){ if(el){ el.locked=!el.locked; saveHistory(); renderAll(); toast(el.locked?'已锁定':'已解锁'); } }
+  else if(act==='delete'){ if(el && !el.locked){ removeElement(id); } }
+  else if(act==='props'){ mobileNav('props'); }
+  else if(act==='wider'){ if(el&&!el.locked){ el.w+=10; renderCanvas(); } }
+  else if(act==='narrower'){ if(el&&!el.locked){ el.w=Math.max(40,el.w-10); renderCanvas(); } }
+}
+
+// ══════════════════════════════════════════════
+//  JOYSTICK
+// ══════════════════════════════════════════════
+function setupJoystick(){
+  const base = document.getElementById('joystick-base');
+  const stick = document.getElementById('joystick-stick');
+  if(!base||!stick) return;
+  let active=false, cx=0, cy=0, raf=null;
+  let vx=0,vy=0;
+  const R=35; // max radius
+  base.addEventListener('pointerdown', e=>{
+    active=true; base.setPointerCapture(e.pointerId);
+    const r=base.getBoundingClientRect();
+    cx=r.left+r.width/2; cy=r.top+r.height/2;
+    e.preventDefault();
+    startMove();
+  });
+  base.addEventListener('pointermove', e=>{
+    if(!active) return;
+    const dx=e.clientX-cx, dy=e.clientY-cy;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    const clamped=Math.min(dist,R);
+    const angle=Math.atan2(dy,dx);
+    const sx=Math.cos(angle)*clamped, sy=Math.sin(angle)*clamped;
+    stick.style.transform=`translate(calc(-50% + ${sx}px), calc(-50% + ${sy}px))`;
+    vx = (sx/R)*4; vy = (sy/R)*4;
+  });
+  base.addEventListener('pointerup', ()=>{
+    active=false; stick.style.transform='translate(-50%,-50%)';
+    vx=0; vy=0; cancelAnimationFrame(raf);
+  });
+  function startMove(){
+    function loop(){
+      if(!active) return;
+      if(vx||vy){
+        state.selected.forEach(id=>{
+          const el=getEl(id); if(!el||el.locked) return;
+          el.x = Math.max(0,Math.min(state.canvasW-el.w, el.x+vx));
+          el.y = Math.max(0,Math.min(state.canvasH-el.h, el.y+vy));
+          const dom = document.querySelector(`.canvas-element[data-id="${id}"]`);
+          if(dom){ dom.style.left=el.x+'px'; dom.style.top=el.y+'px'; }
+        });
+      }
+      raf=requestAnimationFrame(loop);
+    }
+    loop();
+  }
+  // Close sheet on tap outside
+  document.getElementById('mobile-sheet').addEventListener('click',e=>{
+    if(e.target===document.getElementById('mobile-sheet')) document.getElementById('mobile-sheet').classList.remove('open');
+  });
+}
+
+// ══════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════
+function esc(s){ return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+// Swipe to close sheet
+(()=>{
+  let startY=0;
+  const sheet = document.getElementById('mobile-sheet');
+  if(!sheet) return;
+  sheet.addEventListener('touchstart',e=>startY=e.touches[0].clientY,{passive:true});
+  sheet.addEventListener('touchmove',e=>{
+    const dy=e.touches[0].clientY-startY;
+    if(dy>60) sheet.classList.remove('open');
+  },{passive:true});
+})();
+
+function stepFontSize(id, delta){
+  const el = getEl(id); if(!el) return;
+  const step = el.fontSize >= 60 ? 2 : 1;
+  el.fontSize = Math.max(6, el.fontSize + delta * step);
+  const inp = document.getElementById('fs_'+id);
+  if(inp) inp.value = el.fontSize;
+  updateElProp(id, 'fontSize', el.fontSize);
+}
+
+// Live update without re-rendering prop panel (preserves focus)
+function updateElPropLive(id, prop, value){
+  const el = getEl(id); if(!el||el.locked) return;
+  el[prop] = value;
+  const dom = document.querySelector(`.canvas-element[data-id="${id}"]`);
+  if(dom){
+    if(prop==='x') dom.style.left = value+'px';
+    else if(prop==='y') dom.style.top = value+'px';
+    else if(prop==='w'){ dom.style.width = value+'px'; const t=dom.querySelector('.text-el'); if(t) applyTextStyle(t,el); }
+    else if(prop==='h'){ dom.style.height = value+'px'; const t=dom.querySelector('.text-el'); if(t) applyTextStyle(t,el); }
+    else if(prop==='fontSize'){ const t=dom.querySelector('.text-el'); if(t) applyTextStyle(t,el); }
+    else { const newDom=createElementDOM(el); dom.replaceWith(newDom); if(state.selected.includes(id)) newDom.classList.add('selected'); }
+  }
+  // Debounce history save only, never touch prop panel DOM
+  clearTimeout(updateElPropLive._timer);
+  updateElPropLive._timer = setTimeout(()=>{ saveHistory(); }, 600);
+}
+
+// Long-press button: reads data-id, data-prop, data-delta
+function setupLongPress(btn){
+  let raf, count = 0;
+  const fire = ()=>{
+    const id = btn.dataset.id;
+    const prop = btn.dataset.prop;
+    const delta = parseFloat(btn.dataset.delta);
+    const el = getEl(id); if(!el||el.locked) return;
+    // Accelerate: after 20 ticks go faster
+    const step = count > 30 ? Math.abs(delta)*5 : count > 10 ? Math.abs(delta)*2 : Math.abs(delta);
+    const newVal = Math.max(prop==='fontSize'?6:prop==='w'?20:prop==='h'?10:-9999,
+                            el[prop] + (delta>0 ? step : -step));
+    // For fontSize snap to integer
+    el[prop] = prop==='fontSize' ? Math.round(newVal) : newVal;
+    // Update input display
+    const inp = document.getElementById(`fs_${id}`) || btn.parentElement.querySelector('input[type=number]');
+    if(inp) inp.value = Math.round(el[prop]);
+    updateElPropLive(id, prop, el[prop]);
+    count++;
+  };
+  const start = e=>{
+    e.preventDefault();
+    count=0; fire();
+    let delay = 400;
+    const loop = ()=>{ fire(); delay=Math.max(30, delay*0.85); raf=setTimeout(loop, delay); };
+    raf = setTimeout(loop, delay);
+  };
+  const stop = ()=>{ clearTimeout(raf); saveHistory(); };
+  btn.addEventListener('pointerdown', start);
+  btn.addEventListener('pointerup', stop);
+  btn.addEventListener('pointerleave', stop);
+  btn.addEventListener('contextmenu', e=>e.preventDefault());
+}
+
+// ══════════════════════════════════════════════
+//  WORD COUNT
+// ══════════════════════════════════════════════
+function openWordCount(){
+  document.getElementById('wordCountModal').classList.add('open');
+  runWordCount();
+}
+function closeWordCount(){ document.getElementById('wordCountModal').classList.remove('open'); }
+
+function wcPasteAll(){
+  // Gather all text element contents
+  const allText = state.elements.filter(e=>e.type==='text').map(e=>e.content||'').join('\n');
+  document.getElementById('wcInput').value = allText;
+  runWordCount();
+}
+
+function runWordCount(){
+  const text = document.getElementById('wcInput').value || '';
+
+  // Hanzi: CJK Unified Ideographs (not punctuation)
+  const hanziRe = /[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\u2E80-\u2EFF\u31C0-\u31EF]/g;
+  // Chinese punctuation: fullwidth punct, CJK symbols, various CN punct
+  const cnPunctRe = /[\u3000-\u303F\uFF00-\uFFEF\u2018\u2019\u201C\u201D\u2026\u2014\u2013\u00B7\uFE10-\uFE1F\uFE30-\uFE4F]/g;
+  // Pure ASCII digits
+  const digitsRe = /[0-9]/g;
+  // English: ASCII letters + digits + ASCII symbols/punct/space
+  const enRe = /[\x20-\x7E]/g;
+
+  const hanziCount = (text.match(hanziRe)||[]).length;
+  const cnPunctCount = (text.match(cnPunctRe)||[]).length;
+  const digitsCount = (text.match(digitsRe)||[]).length;
+  const enCount = (text.match(enRe)||[]).length;
+  const hzPuncTotal = hanziCount + cnPunctCount;
+
+  // Total weighted: hanzi×2, cnPunct×2, everything else×1
+  // "everything else" = total chars - hanzi - cnPunct
+  const otherCount = text.length - hanziCount - cnPunctCount;
+  const totalWeighted = hanziCount * 2 + cnPunctCount * 2 + otherCount;
+
+  setWcCard('wc-hanzi', hanziCount);
+  setWcCard('wc-cnpunct', cnPunctCount);
+  setWcCard('wc-hz_punc', hzPuncTotal);
+  setWcCard('wc-en', enCount);
+  setWcCard('wc-digits', digitsCount);
+  setWcCard('wc-total', totalWeighted);
+}
+
+function setWcCard(id, num){
+  const card = document.getElementById(id);
+  if(card) card.querySelector('.wc-num').textContent = num.toLocaleString('zh-CN');
+}
+
+document.getElementById('canvas-container')?.addEventListener('pointerdown',e=>{
+  if(e.target.id==='canvas-container'||e.target.id==='canvas-bg') deselectAll();
+});
+</script>
+</body>
+</html>
