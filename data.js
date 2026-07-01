@@ -241,6 +241,17 @@ const projects = [
         versions: [
             { name: '进入软件', url: 'https://projects.wangcy.site/cert/' }
         ]
+    },
+    {
+        id: 23,
+        category: 'office',
+        name: '论文阅读',
+        description: '现代化论文阅读工具',
+        icon: '📄',
+        tags: ['Claude'],
+        versions: [
+            { name: '进入软件', url: 'https://projects.wangcy.site/page-reader' }
+        ]
     }
 ];
 
