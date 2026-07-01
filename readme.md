@@ -31,7 +31,7 @@
 - [Sub工具](https://projects.wangcy.site/Sub/indexC)
 - [WebOS](https://projects.wangcy.site/WebOS/webos)
 - [法条美化](https://projects.wangcy.site/law/legal-reader)
-- [论文阅读](https://projects.wangcy.site/law/page-reader)
+- [论文阅读](https://projects.wangcy.site/page-reader)
 
 > ChatGPT
 - [起始页生成](https://projects.wangcy.site/Auto-search)
