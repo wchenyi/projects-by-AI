@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a1f2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="#" id="manifest-link">
+<title>PDF Scholar</title>
+<script>
+// Inline manifest for PWA
+const manifest = {
+  name: "PDF Scholar",
+  short_name: "PDFScholar",
+  description: "Academic PDF Reader",
+  start_url: ".",
+  display: "standalone",
+  background_color: "#1a1f2e",
+  theme_color: "#1a1f2e",
+  icons: [{ src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232d5be3'/><text y='.9em' font-size='80' x='10'>📄</text></svg>", sizes: "any", type: "image/svg+xml" }]
+};
+const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+document.getElementById('manifest-link').href = URL.createObjectURL(blob);
+</script>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --bg2: #ffffff;
+    --bg3: #eef0f4;
+    --sidebar-bg: #1e2433;
+    --sidebar-text: #c8ccd8;
+    --sidebar-hover: #2a3147;
+    --sidebar-active: #2d5be3;
+    --text: #1a1f2e;
+    --text2: #5a6178;
+    --text3: #8892a4;
+    --border: #dde0e8;
+    --accent: #2d5be3;
+    --accent2: #4c78ff;
+    --accent-dim: rgba(45,91,227,0.12);
+    --danger: #e05252;
+    --warn: #e08c20;
+    --success: #27ae7a;
+    --toolbar: #2a2f42;
+    --toolbar-text: #c8ccd8;
+    --toolbar-btn: #363d55;
+    --toolbar-btn-hover: #4c5578;
+    --shadow: 0 2px 12px rgba(0,0,0,0.10);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+    --radius: 6px;
+    --font-ui: 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    --transition: 0.18s ease;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151f;
+      --bg2: #1a1f2e;
+      --bg3: #222840;
+      --text: #e4e8f0;
+      --text2: #9aa3b8;
+      --text3: #6b7490;
+      --border: #2e3450;
+      --shadow: 0 2px 12px rgba(0,0,0,0.36);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.44);
+    }
+  }
+  [data-theme="dark"] {
+    --bg: #12151f; --bg2: #1a1f2e; --bg3: #222840;
+    --text: #e4e8f0; --text2: #9aa3b8; --text3: #6b7490;
+    --border: #2e3450; --shadow: 0 2px 12px rgba(0,0,0,0.36);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.44);
+  }
+  [data-theme="light"] {
+    --bg: #f4f5f7; --bg2: #ffffff; --bg3: #eef0f4;
+    --text: #1a1f2e; --text2: #5a6178; --text3: #8892a4;
+    --border: #dde0e8; --shadow: 0 2px 12px rgba(0,0,0,0.10);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; font-family: var(--font-ui); background: var(--bg); color: var(--text); }
+
+  /* ── LAYOUT ── */
+  #app { display: flex; height: 100vh; overflow: hidden; }
+  #sidebar {
+    width: 240px; min-width: 180px; max-width: 360px;
+    background: var(--sidebar-bg); display: flex; flex-direction: column;
+    border-right: 1px solid rgba(255,255,255,0.06); overflow: hidden;
+    transition: width var(--transition); position: relative; flex-shrink: 0;
+    user-select: none;
+  }
+  #sidebar.collapsed { width: 0; }
+  #sidebar-resizer {
+    width: 4px; cursor: col-resize; background: transparent; position: absolute;
+    right: 0; top: 0; bottom: 0; z-index: 10; transition: background 0.15s;
+  }
+  #sidebar-resizer:hover { background: var(--accent); }
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+  #toolbar {
+    height: 46px; background: var(--toolbar); display: flex; align-items: center;
+    padding: 0 8px; gap: 2px; border-bottom: 1px solid rgba(255,255,255,0.07);
+    flex-shrink: 0; overflow-x: auto; overflow-y: hidden;
+  }
+  #toolbar::-webkit-scrollbar { height: 0; }
+  #viewer-area { flex: 1; display: flex; overflow: hidden; position: relative; }
+
+  /* ── SIDEBAR ── */
+  #sidebar-header {
+    padding: 14px 12px 10px; display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  #sidebar-header .logo { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 0.3px; flex: 1; }
+  .sidebar-icon-btn {
+    width: 28px; height: 28px; border: none; background: transparent; color: var(--sidebar-text);
+    border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; transition: background var(--transition), color var(--transition);
+  }
+  .sidebar-icon-btn:hover { background: var(--sidebar-hover); color: #fff; }
+
+  #drop-zone {
+    margin: 10px 10px 0; border: 1.5px dashed rgba(255,255,255,0.18); border-radius: 8px;
+    padding: 14px 10px; text-align: center; cursor: pointer; transition: all var(--transition);
+    color: var(--sidebar-text); font-size: 12px;
+  }
+  #drop-zone:hover, #drop-zone.drag-over {
+    border-color: var(--accent2); background: rgba(45,91,227,0.10); color: #fff;
+  }
+  #drop-zone .dz-icon { font-size: 20px; margin-bottom: 4px; }
+  #drop-zone .dz-hint { font-size: 10px; opacity: 0.6; margin-top: 2px; }
+
+  #file-tree { flex: 1; overflow-y: auto; padding: 6px 0 60px; }
+  #file-tree::-webkit-scrollbar { width: 4px; }
+  #file-tree::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+  .folder-group { margin-bottom: 2px; }
+  .folder-header {
+    display: flex; align-items: center; gap: 6px; padding: 7px 10px 7px 8px;
+    cursor: pointer; color: rgba(255,255,255,0.55); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.8px; text-transform: uppercase; transition: color var(--transition);
+    border-left: 2px solid transparent;
+  }
+  .folder-header:hover { color: rgba(255,255,255,0.85); }
+  .folder-header .folder-arrow { font-size: 9px; transition: transform 0.2s; }
+  .folder-header.open .folder-arrow { transform: rotate(90deg); }
+  .folder-header .folder-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .folder-header .folder-count { font-size: 10px; background: rgba(255,255,255,0.1); padding: 1px 5px; border-radius: 8px; }
+
+  .file-list { overflow: hidden; }
+  .file-item {
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 20px;
+    cursor: pointer; color: var(--sidebar-text); font-size: 12.5px;
+    transition: background var(--transition); border-left: 2px solid transparent;
+    position: relative;
+  }
+  .file-item:hover { background: var(--sidebar-hover); color: #fff; }
+  .file-item.active { background: rgba(45,91,227,0.18); color: #fff; border-left-color: var(--accent); }
+  .file-item.active::before { content:''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--accent); }
+  .file-item .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-item .file-size { font-size: 10px; color: var(--sidebar-text); opacity: 0.6; flex-shrink: 0; }
+  .file-item .dup-badge {
+    font-size: 9px; background: var(--warn); color: #fff; padding: 1px 4px; border-radius: 3px;
+    flex-shrink: 0; font-weight: 600;
+  }
+  .file-item .open-in-split { opacity: 0; font-size: 11px; padding: 2px 5px; background: var(--accent); color: #fff;
+    border-radius: 3px; cursor: pointer; transition: opacity 0.15s; flex-shrink: 0; }
+  .file-item:hover .open-in-split { opacity: 1; }
+
+  /* ── TOOLBAR ── */
+  .tb-btn {
+    height: 30px; min-width: 30px; border: none; background: transparent; color: var(--toolbar-text);
+    border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; justify-content: center;
+    gap: 5px; padding: 0 7px; font-size: 13px; font-family: var(--font-ui);
+    transition: background var(--transition), color var(--transition); white-space: nowrap; flex-shrink: 0;
+  }
+  .tb-btn:hover { background: var(--toolbar-btn-hover); color: #fff; }
+  .tb-btn.active { background: var(--accent); color: #fff; }
+  .tb-btn .icon { font-size: 14px; }
+  .tb-sep { width: 1px; height: 22px; background: rgba(255,255,255,0.12); margin: 0 3px; flex-shrink: 0; }
+  .tb-label { font-size: 11px; color: rgba(255,255,255,0.45); padding: 0 4px; white-space: nowrap; flex-shrink: 0; }
+  #zoom-input {
+    width: 54px; height: 26px; background: var(--toolbar-btn); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--toolbar-text); border-radius: var(--radius); text-align: center; font-size: 12px;
+    font-family: var(--font-ui); outline: none;
+  }
+  #zoom-input:focus { border-color: var(--accent); }
+  #page-input {
+    width: 44px; height: 26px; background: var(--toolbar-btn); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--toolbar-text); border-radius: var(--radius); text-align: center; font-size: 12px;
+    font-family: var(--font-ui); outline: none;
+  }
+  #page-info { font-size: 11px; color: rgba(255,255,255,0.45); }
+  .toolbar-spacer { flex: 1; }
+
+  /* ── VIEWER ── */
+  #viewer-area { background: var(--bg); }
+  .pane-container { flex: 1; display: flex; overflow: hidden; }
+  .pane-container.split-h { flex-direction: row; }
+  .pane-container.split-v { flex-direction: column; }
+
+  .viewer-pane {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; min-width: 0; min-height: 0;
+  }
+  .pane-tab-bar {
+    height: 36px; display: flex; align-items: center; background: var(--bg3); border-bottom: 1px solid var(--border);
+    overflow-x: auto; flex-shrink: 0;
+  }
+  .pane-tab-bar::-webkit-scrollbar { height: 0; }
+  .pane-tab {
+    height: 36px; padding: 0 12px; display: flex; align-items: center; gap: 6px; font-size: 12px;
+    color: var(--text2); cursor: pointer; white-space: nowrap; border-right: 1px solid var(--border);
+    transition: background var(--transition), color var(--transition); flex-shrink: 0;
+  }
+  .pane-tab:hover { background: var(--bg2); color: var(--text); }
+  .pane-tab.active { background: var(--bg2); color: var(--text); border-bottom: 2px solid var(--accent); }
+  .pane-tab .tab-close { opacity: 0; font-size: 12px; margin-left: 2px; padding: 1px 3px; border-radius: 3px; }
+  .pane-tab:hover .tab-close, .pane-tab.active .tab-close { opacity: 1; }
+  .pane-tab .tab-close:hover { background: var(--danger); color: #fff; }
+
+  .pane-scroll { flex: 1; overflow-y: auto; overflow-x: auto; background: var(--bg); padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .pane-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+  .pane-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .pdf-page-wrapper { position: relative; display: inline-block; box-shadow: var(--shadow); margin: 0 auto; }
+  .pdf-page-wrapper canvas { display: block; }
+  .pdf-page-wrapper .annotation-layer { position: absolute; top: 0; left: 0; pointer-events: none; }
+
+  .pane-resizer { width: 4px; background: var(--border); cursor: col-resize; flex-shrink: 0; transition: background 0.15s; }
+  .pane-resizer:hover, .pane-resizer.dragging { background: var(--accent); }
+  .pane-resizer.h { height: 4px; width: 100%; cursor: row-resize; }
+
+  .empty-pane {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--text3); gap: 10px;
+  }
+  .empty-pane .big-icon { font-size: 48px; opacity: 0.4; }
+  .empty-pane p { font-size: 13px; }
+
+  /* ── ANNOTATIONS ── */
+  .highlight-mark {
+    position: absolute; pointer-events: auto; cursor: pointer; opacity: 0.35; mix-blend-mode: multiply; border-radius: 1px;
+  }
+  [data-theme="dark"] .highlight-mark { mix-blend-mode: screen; opacity: 0.5; }
+  .underline-mark { position: absolute; pointer-events: auto; cursor: pointer; border-bottom: 2px solid; opacity: 0.8; }
+  .note-pin {
+    position: absolute; width: 18px; height: 18px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 11px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3); z-index: 10;
+  }
+  .note-pin:hover .note-tooltip { display: block; }
+  .note-tooltip {
+    display: none; position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%);
+    background: var(--bg2); color: var(--text); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 10px; width: 200px; font-size: 12px; z-index: 100; box-shadow: var(--shadow-lg);
+    pointer-events: none; white-space: pre-wrap;
+  }
+
+  /* ── SELECTION TOOLBAR ── */
+  #sel-toolbar {
+    display: none; position: fixed; z-index: 200; background: var(--toolbar); color: var(--toolbar-text);
+    border-radius: 8px; padding: 4px 6px; gap: 3px; box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  #sel-toolbar.show { display: flex; }
+  .sel-btn { width: 28px; height: 28px; border: none; background: transparent; color: var(--toolbar-text);
+    border-radius: 4px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+  .sel-btn:hover { background: var(--toolbar-btn-hover); color: #fff; }
+
+  /* ── BOOKMARKS PANEL ── */
+  #bookmarks-panel {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 260px; background: var(--bg2);
+    border-left: 1px solid var(--border); z-index: 50; display: none; flex-direction: column;
+    box-shadow: var(--shadow-lg);
+  }
+  #bookmarks-panel.show { display: flex; }
+  .panel-header { padding: 12px 14px; font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; }
+  .panel-header .panel-close { cursor: pointer; opacity: 0.6; font-size: 16px; }
+  .panel-header .panel-close:hover { opacity: 1; }
+  .bookmark-item { padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer;
+    transition: background var(--transition); }
+  .bookmark-item:hover { background: var(--bg3); }
+  .bookmark-item .bm-title { font-size: 12px; color: var(--text); }
+  .bookmark-item .bm-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .bookmark-item .bm-del { float: right; color: var(--danger); font-size: 11px; opacity: 0; cursor: pointer; }
+  .bookmark-item:hover .bm-del { opacity: 1; }
+
+  /* ── MD NOTES ── */
+  #notes-panel {
+    position: fixed; bottom: 0; left: 240px; right: 0; height: 45vh; background: var(--bg2);
+    border-top: 2px solid var(--accent); z-index: 100; display: none; flex-direction: column;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.15); transition: height 0.2s;
+  }
+  #notes-panel.show { display: flex; }
+  #notes-toolbar {
+    height: 40px; background: var(--bg3); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 8px; gap: 4px; flex-shrink: 0;
+  }
+  .notes-tb-btn {
+    height: 26px; min-width: 26px; border: none; background: transparent; color: var(--text2);
+    border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    padding: 0 6px; font-size: 12px; font-family: var(--font-mono); transition: background var(--transition);
+    gap: 4px;
+  }
+  .notes-tb-btn:hover { background: var(--accent-dim); color: var(--accent); }
+  .notes-tb-btn.active { background: var(--accent-dim); color: var(--accent); }
+  .notes-sep { width: 1px; height: 18px; background: var(--border); margin: 0 2px; flex-shrink: 0; }
+  .notes-spacer { flex: 1; }
+  .color-swatch {
+    width: 16px; height: 16px; border-radius: 50%; border: 2px solid transparent; cursor: pointer;
+    transition: border-color 0.15s; flex-shrink: 0;
+  }
+  .color-swatch.active { border-color: var(--text); }
+  #notes-body { flex: 1; display: flex; overflow: hidden; }
+  #notes-editor {
+    flex: 1; border: none; outline: none; resize: none; padding: 14px 16px;
+    background: var(--bg2); color: var(--text); font-family: var(--font-mono); font-size: 13px;
+    line-height: 1.7; overflow-y: auto;
+  }
+  #notes-preview {
+    flex: 1; padding: 14px 16px; overflow-y: auto; font-size: 13.5px; line-height: 1.75;
+    display: none; color: var(--text);
+  }
+  #notes-preview.show { display: block; }
+  #notes-preview h1,h2,h3,h4 { color: var(--text); margin: 1em 0 0.4em; }
+  #notes-preview code { font-family: var(--font-mono); background: var(--bg3); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  #notes-preview pre { background: var(--bg3); padding: 10px; border-radius: 6px; overflow-x: auto; margin: 0.5em 0; }
+  #notes-preview pre code { background: none; padding: 0; }
+  #notes-preview blockquote { border-left: 3px solid var(--accent); margin: 0; padding-left: 12px; color: var(--text2); }
+  #notes-preview table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
+  #notes-preview th, #notes-preview td { border: 1px solid var(--border); padding: 6px 10px; font-size: 12.5px; }
+  #notes-preview th { background: var(--bg3); }
+  #notes-resize-handle {
+    height: 4px; background: transparent; cursor: row-resize; flex-shrink: 0; transition: background 0.15s;
+  }
+  #notes-resize-handle:hover { background: var(--accent); }
+
+  /* ── LOADING OVERLAY ── */
+  .loading-overlay {
+    position: absolute; inset: 0; background: var(--bg2); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; z-index: 30; gap: 12px;
+  }
+  .spinner {
+    width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: var(--text2); }
+
+  /* ── MODAL / TOAST ── */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--toolbar); color: #fff; padding: 9px 18px; border-radius: 8px; font-size: 13px;
+    z-index: 999; opacity: 0; transition: all 0.25s; pointer-events: none; box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255,255,255,0.1); white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  #note-dialog {
+    display: none; position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.5);
+    align-items: center; justify-content: center;
+  }
+  #note-dialog.show { display: flex; }
+  .dialog-box {
+    background: var(--bg2); border-radius: 10px; padding: 20px; width: 400px; max-width: 90vw;
+    box-shadow: var(--shadow-lg); border: 1px solid var(--border);
+  }
+  .dialog-box h3 { font-size: 15px; margin-bottom: 12px; color: var(--text); }
+  .dialog-box textarea {
+    width: 100%; height: 100px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg3); color: var(--text); padding: 9px 11px; font-size: 13px;
+    font-family: var(--font-ui); outline: none; resize: vertical;
+  }
+  .dialog-box textarea:focus { border-color: var(--accent); }
+  .dialog-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+  .dialog-btn {
+    padding: 7px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px;
+    font-family: var(--font-ui); transition: background var(--transition);
+  }
+  .dialog-btn.primary { background: var(--accent); color: #fff; }
+  .dialog-btn.primary:hover { background: var(--accent2); }
+  .dialog-btn.cancel { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
+  .dialog-btn.cancel:hover { background: var(--border); }
+
+  /* ── OUTLINE PANEL ── */
+  #outline-panel {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 220px; background: var(--bg2);
+    border-right: 1px solid var(--border); z-index: 50; display: none; flex-direction: column;
+    box-shadow: var(--shadow-lg); overflow: hidden;
+  }
+  #outline-panel.show { display: flex; }
+  #outline-list { flex: 1; overflow-y: auto; padding: 6px 0; }
+  .outline-item {
+    padding: 6px 14px; font-size: 12px; cursor: pointer; color: var(--text2);
+    transition: background var(--transition); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .outline-item:hover { background: var(--bg3); color: var(--text); }
+  .outline-item.level-1 { padding-left: 14px; font-weight: 600; }
+  .outline-item.level-2 { padding-left: 26px; }
+  .outline-item.level-3 { padding-left: 38px; }
+
+  /* scrollbar for main panes */
+  .pane-scroll::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* PDF page number overlay */
+  .page-number-badge {
+    position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,0.45); color: #fff;
+    font-size: 10px; padding: 2px 6px; border-radius: 8px; pointer-events: none; font-family: var(--font-mono);
+  }
+  /* Search highlight */
+  .search-highlight { background: rgba(255,220,0,0.5); }
+
+  /* Mini search bar */
+  #search-bar {
+    display: none; position: absolute; top: 8px; right: 12px; z-index: 40;
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 10px; display: none; align-items: center; gap: 6px; box-shadow: var(--shadow);
+  }
+  #search-bar.show { display: flex; }
+  #search-input { border: none; outline: none; background: transparent; color: var(--text); font-size: 13px; width: 180px; }
+  #search-count { font-size: 11px; color: var(--text3); white-space: nowrap; }
+
+  /* Color picker row in notes */
+  .color-row { display: flex; gap: 6px; align-items: center; padding: 0 4px; }
+
+  /* Annotation color swatches in toolbar */
+  .anno-color { width: 14px; height: 14px; border-radius: 50%; display: inline-block; cursor: pointer; border: 2px solid transparent; }
+  .anno-color.sel { border-color: #fff; }
+
+  /* Split divider icon */
+  .split-divider { width: 3px; background: var(--border); cursor: col-resize; transition: background 0.15s; position: relative; }
+  .split-divider:hover { background: var(--accent); }
+  .split-divider::after { content: '⠿'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    color: var(--text3); font-size: 10px; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    #sidebar { width: 0; }
+    #sidebar.mobile-open { width: 240px; position: absolute; z-index: 200; height: 100%; }
+    #notes-panel { left: 0; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <span class="logo">📚 PDF Scholar</span>
+      <button class="sidebar-icon-btn" title="全部折叠" onclick="collapseAll()">⊟</button>
+      <button class="sidebar-icon-btn" title="清空列表" onclick="clearAll()">🗑</button>
+    </div>
+    <div id="drop-zone" onclick="triggerFileInput()">
+      <div class="dz-icon">📂</div>
+      <div>拖入 PDF 或文件夹</div>
+      <div class="dz-hint">支持多个文件夹 · 拖拽或点击</div>
+    </div>
+    <input type="file" id="file-input" multiple accept=".pdf" style="display:none" onchange="handleFileInput(this)">
+    <div id="file-tree"></div>
+    <div id="sidebar-resizer"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="toolbar">
+      <button class="tb-btn" title="切换侧栏 [B]" onclick="toggleSidebar()"><span class="icon">☰</span></button>
+      <div class="tb-sep"></div>
+      <!-- Page nav -->
+      <button class="tb-btn" title="上一页 [←]" onclick="changePage(-1)"><span class="icon">‹</span></button>
+      <input type="number" id="page-input" min="1" value="1" onchange="goToPage(this.value)" title="跳转页码">
+      <span id="page-info">/ 1</span>
+      <button class="tb-btn" title="下一页 [→]" onclick="changePage(1)"><span class="icon">›</span></button>
+      <div class="tb-sep"></div>
+      <!-- Zoom -->
+      <button class="tb-btn" title="缩小 [-]" onclick="changeZoom(-0.15)">－</button>
+      <input type="text" id="zoom-input" value="100%" onchange="applyZoom(this.value)" title="缩放">
+      <button class="tb-btn" title="放大 [+]" onclick="changeZoom(0.15)">＋</button>
+      <button class="tb-btn" id="zoom-fit-btn" title="适宽" onclick="zoomFit()">⊡</button>
+      <div class="tb-sep"></div>
+      <!-- Annotation tools -->
+      <span class="tb-label">标注</span>
+      <button class="tb-btn" id="tool-select" title="选择/文字选择" onclick="setTool('select')" class="active">🖱</button>
+      <button class="tb-btn" id="tool-highlight" title="高亮" onclick="setTool('highlight')">🖊</button>
+      <button class="tb-btn" id="tool-underline" title="下划线" onclick="setTool('underline')">U̲</button>
+      <button class="tb-btn" id="tool-note" title="添加批注" onclick="setTool('note')">📌</button>
+      <!-- Anno color swatches -->
+      <span id="anno-colors" style="display:flex;gap:4px;align-items:center;">
+        <span class="anno-color sel" style="background:#f6d155" data-color="#f6d155" onclick="setAnnoColor(this)" title="黄"></span>
+        <span class="anno-color" style="background:#7ee8a2" data-color="#7ee8a2" onclick="setAnnoColor(this)" title="绿"></span>
+        <span class="anno-color" style="background:#6db8ff" data-color="#6db8ff" onclick="setAnnoColor(this)" title="蓝"></span>
+        <span class="anno-color" style="background:#ff8a8a" data-color="#ff8a8a" onclick="setAnnoColor(this)" title="红"></span>
+        <span class="anno-color" style="background:#d4a4ff" data-color="#d4a4ff" onclick="setAnnoColor(this)" title="紫"></span>
+      </span>
+      <div class="tb-sep"></div>
+      <!-- View / split -->
+      <span class="tb-label">分屏</span>
+      <button class="tb-btn" id="split-off-btn" title="单屏" onclick="setSplitMode('none')">□</button>
+      <button class="tb-btn" id="split-h-btn" title="左右分屏" onclick="setSplitMode('h')">◫</button>
+      <button class="tb-btn" id="split-v-btn" title="上下分屏" onclick="setSplitMode('v')">⬒</button>
+      <div class="tb-sep"></div>
+      <!-- Extra panels -->
+      <button class="tb-btn" id="outline-btn" title="目录" onclick="toggleOutline()">≡</button>
+      <button class="tb-btn" id="bookmarks-btn" title="书签" onclick="toggleBookmarks()">🔖</button>
+      <button class="tb-btn" title="添加书签" onclick="addBookmark()">＋🔖</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" id="search-btn" title="搜索 [Ctrl+F]" onclick="toggleSearch()">🔍</button>
+      <div class="toolbar-spacer"></div>
+      <button class="tb-btn" id="notes-btn" title="笔记 [Ctrl+N]" onclick="toggleNotes()">📝 笔记</button>
+      <button class="tb-btn" title="导出带标注PDF" onclick="exportPDF()">⬇ 导出</button>
+      <button class="tb-btn" id="theme-btn" title="切换深色/浅色" onclick="toggleTheme()">🌙</button>
+    </div>
+
+    <!-- VIEWER AREA -->
+    <div id="viewer-area">
+      <div id="pane-container" class="pane-container">
+        <!-- panes rendered by JS -->
+      </div>
+      <!-- Search bar -->
+      <div id="search-bar">
+        <input id="search-input" type="text" placeholder="搜索文本…" oninput="doSearch(this.value)" onkeydown="searchNav(event)">
+        <span id="search-count"></span>
+        <button onclick="searchNav({key:'ArrowUp'})" style="background:none;border:none;cursor:pointer;color:var(--text2)">↑</button>
+        <button onclick="searchNav({key:'ArrowDown'})" style="background:none;border:none;cursor:pointer;color:var(--text2)">↓</button>
+        <button onclick="closeSearch()" style="background:none;border:none;cursor:pointer;color:var(--text2)">✕</button>
+      </div>
+      <!-- Outline panel -->
+      <div id="outline-panel">
+        <div class="panel-header">目录 <span class="panel-close" onclick="toggleOutline()">×</span></div>
+        <div id="outline-list"></div>
+      </div>
+      <!-- Bookmarks panel -->
+      <div id="bookmarks-panel">
+        <div class="panel-header">书签 <span class="panel-close" onclick="toggleBookmarks()">×</span></div>
+        <div id="bookmarks-list" style="flex:1;overflow-y:auto;"></div>
+      </div>
+    </div>
+
+    <!-- NOTES PANEL -->
+    <div id="notes-panel">
+      <div id="notes-resize-handle"></div>
+      <div id="notes-toolbar">
+        <span style="font-size:12px;font-weight:600;color:var(--text2);margin-right:4px;">📝 笔记</span>
+        <div class="notes-sep"></div>
+        <button class="notes-tb-btn" title="粗体 B" onclick="insertMd('**','**')"><b>B</b></button>
+        <button class="notes-tb-btn" title="斜体 I" onclick="insertMd('*','*')"><i>I</i></button>
+        <button class="notes-tb-btn" title="删除线" onclick="insertMd('~~','~~')"><s>S</s></button>
+        <button class="notes-tb-btn" title="标题1" onclick="insertMdLine('# ')">H1</button>
+        <button class="notes-tb-btn" title="标题2" onclick="insertMdLine('## ')">H2</button>
+        <button class="notes-tb-btn" title="标题3" onclick="insertMdLine('### ')">H3</button>
+        <button class="notes-tb-btn" title="无序列表" onclick="insertMdLine('- ')">•—</button>
+        <button class="notes-tb-btn" title="有序列表" onclick="insertMdLine('1. ')">1.</button>
+        <button class="notes-tb-btn" title="引用" onclick="insertMdLine('> ')">❝</button>
+        <button class="notes-tb-btn" title="代码" onclick="insertMd('`','`')">⌨</button>
+        <button class="notes-tb-btn" title="代码块" onclick="insertMd('\n```\n','\n```\n')">{ }</button>
+        <button class="notes-tb-btn" title="分割线" onclick="insertMdLine('---')">───</button>
+        <button class="notes-tb-btn" title="表格" onclick="insertTable()">⊞</button>
+        <div class="notes-sep"></div>
+        <!-- Custom colors -->
+        <span style="font-size:11px;color:var(--text3);">颜色</span>
+        <div class="color-row">
+          <span class="color-swatch active" style="background:#e74c3c" title="红" onclick="setNoteColor('#e74c3c',this)"></span>
+          <span class="color-swatch" style="background:#e08c20" title="橙" onclick="setNoteColor('#e08c20',this)"></span>
+          <span class="color-swatch" style="background:#27ae7a" title="绿" onclick="setNoteColor('#27ae7a',this)"></span>
+          <span class="color-swatch" style="background:#2d5be3" title="蓝" onclick="setNoteColor('#2d5be3',this)"></span>
+          <span class="color-swatch" style="background:#9b59b6" title="紫" onclick="setNoteColor('#9b59b6',this)"></span>
+          <span class="color-swatch" style="background:var(--text)" title="默认" onclick="setNoteColor('var(--text)',this)"></span>
+        </div>
+        <div class="notes-sep"></div>
+        <button class="notes-tb-btn active" id="notes-edit-btn" onclick="setNotesMode('edit')">编辑</button>
+        <button class="notes-tb-btn" id="notes-preview-btn" onclick="setNotesMode('preview')">预览</button>
+        <button class="notes-tb-btn" id="notes-split-btn" onclick="setNotesMode('split')">分栏</button>
+        <div class="notes-spacer"></div>
+        <button class="notes-tb-btn" onclick="exportNotes('md')">导出 .md</button>
+        <button class="notes-tb-btn" onclick="exportNotes('html')">导出 .html</button>
+        <button class="notes-tb-btn" onclick="clearNotes()" style="color:var(--danger)">清空</button>
+        <button class="notes-tb-btn" onclick="toggleNotes()" style="margin-left:4px;">✕</button>
+      </div>
+      <div id="notes-body">
+        <textarea id="notes-editor" placeholder="# 论文笔记&#10;&#10;在此输入 Markdown 格式笔记…&#10;&#10;支持：**粗体**、*斜体*、`代码`、> 引用、表格…"></textarea>
+        <div id="notes-preview"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Selection toolbar -->
+<div id="sel-toolbar">
+  <button class="sel-btn" title="高亮" onclick="selHighlight()">🖊</button>
+  <button class="sel-btn" title="下划线" onclick="selUnderline()">U̲</button>
+  <button class="sel-btn" title="添加批注" onclick="selNote()">📌</button>
+  <button class="sel-btn" title="复制" onclick="selCopy()">⎘</button>
+</div>
+
+<!-- Note dialog -->
+<div id="note-dialog">
+  <div class="dialog-box">
+    <h3>📌 添加批注</h3>
+    <textarea id="note-text" placeholder="输入批注内容…"></textarea>
+    <div class="dialog-actions">
+      <button class="dialog-btn cancel" onclick="closeNoteDialog()">取消</button>
+      <button class="dialog-btn primary" onclick="saveNote()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script>
+'use strict';
+// ───────────────────────── State ─────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const state = {
+  folders: {},       // { folderName: [{name, size, file, id, dupOf}] }
+  rootFiles: [],     // top-level PDFs
+  openDocs: {},      // { docId: { name, file, pdfDoc, pages, annotations, bookmarks } }
+  panes: [           // up to 2 panes
+    { docId: null, page: 1, zoom: 1.0, tabs: [], activeTab: null, scrollEl: null }
+  ],
+  activePaneIdx: 0,
+  splitMode: 'none', // 'none' | 'h' | 'v'
+  currentTool: 'select',
+  annoColor: '#f6d155',
+  pendingAnno: null,
+  searchMatches: [],
+  searchIdx: -1,
+  noteTarget: null,  // {paneIdx, docId, page, x, y}
+  notesColor: '#e74c3c',
+  notesMode: 'edit',
+  theme: 'auto',
+};
+let docIdCounter = 0;
+const makeId = () => 'doc_' + (++docIdCounter);
+
+// ───────────────────────── Theme ─────────────────────────
+function initTheme() {
+  const saved = localStorage.getItem('pdfscholar_theme') || 'auto';
+  state.theme = saved;
+  applyTheme();
+}
+function applyTheme() {
+  const t = state.theme;
+  if (t === 'auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', t);
+}
+function toggleTheme() {
+  const cycle = { auto: 'light', light: 'dark', dark: 'auto' };
+  state.theme = cycle[state.theme];
+  localStorage.setItem('pdfscholar_theme', state.theme);
+  applyTheme();
+  const icons = { auto: '🌙', light: '🌙', dark: '☀️' };
+  showToast(`主题: ${state.theme === 'auto' ? '跟随系统' : state.theme === 'dark' ? '深色' : '浅色'}`);
+}
+
+// ───────────────────────── File handling ─────────────────────────
+function triggerFileInput() {
+  document.getElementById('file-input').click();
+}
+function handleFileInput(input) {
+  const files = Array.from(input.files).filter(f => f.name.toLowerCase().endsWith('.pdf'));
+  files.forEach(f => addFile(f, null));
+  renderFileTree();
+  input.value = '';
+}
+
+const dropZone = document.getElementById('drop-zone');
+const dropArea = document.getElementById('app');
+dropArea.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropArea.addEventListener('dragleave', e => { if (!dropArea.contains(e.relatedTarget)) dropZone.classList.remove('drag-over'); });
+dropArea.addEventListener('drop', async e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  const items = Array.from(e.dataTransfer.items);
+  for (const item of items) {
+    const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
+    if (entry && entry.isDirectory) {
+      await readDirectory(entry, entry.name);
+    } else {
+      const file = item.getAsFile();
+      if (file && file.name.toLowerCase().endsWith('.pdf')) addFile(file, null);
+    }
+  }
+  renderFileTree();
+});
+
+function readDirectory(dirEntry, folderName) {
+  return new Promise(resolve => {
+    const reader = dirEntry.createReader();
+    const readEntries = () => reader.readEntries(entries => {
+      if (!entries.length) { resolve(); return; }
+      const proms = entries.map(entry => {
+        if (entry.isDirectory) return readDirectory(entry, folderName + '/' + entry.name);
+        if (entry.isFile && entry.name.toLowerCase().endsWith('.pdf')) {
+          return new Promise(r => entry.file(f => { addFile(f, folderName); r(); }));
+        }
+        return Promise.resolve();
+      });
+      Promise.all(proms).then(() => readEntries());
+    });
+    readEntries();
+  });
+}
+
+function addFile(file, folder) {
+  const key = folder || '__root__';
+  if (!state.folders[key]) state.folders[key] = [];
+  const existing = state.folders[key].find(f => f.name === file.name);
+  const id = makeId();
+  const entry = { name: file.name, size: file.size, file, id };
+  if (existing) entry.dupOf = existing.id;
+  state.folders[key].push(entry);
+}
+
+function clearAll() {
+  if (!confirm('清空所有文件？')) return;
+  state.folders = {};
+  state.openDocs = {};
+  state.panes.forEach(p => { p.docId = null; p.tabs = []; p.activeTab = null; });
+  renderFileTree(); renderPanes();
+}
+function collapseAll() {
+  document.querySelectorAll('.folder-header').forEach(h => h.classList.remove('open'));
+  document.querySelectorAll('.file-list').forEach(l => l.style.display = 'none');
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + 'B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(0) + 'KB';
+  return (bytes/1024/1024).toFixed(1) + 'MB';
+}
+
+function renderFileTree() {
+  const tree = document.getElementById('file-tree');
+  tree.innerHTML = '';
+  Object.keys(state.folders).forEach(folder => {
+    const files = state.folders[folder];
+    const label = folder === '__root__' ? '未分组文件' : folder;
+    const grp = document.createElement('div');
+    grp.className = 'folder-group';
+    const header = document.createElement('div');
+    header.className = 'folder-header open';
+    header.innerHTML = `<span class="folder-arrow">▶</span><span class="folder-name" title="${label}">📁 ${label}</span><span class="folder-count">${files.length}</span>`;
+    const list = document.createElement('div');
+    list.className = 'file-list';
+    header.onclick = () => {
+      header.classList.toggle('open');
+      list.style.display = header.classList.contains('open') ? '' : 'none';
+    };
+    files.forEach((f, idx) => {
+      const item = document.createElement('div');
+      item.className = 'file-item';
+      item.dataset.id = f.id;
+      // check if active in any pane
+      if (state.panes.some(p => p.docId === f.id || p.tabs.includes(f.id))) item.classList.add('active');
+      let html = `<span class="file-name" title="${f.name}">${idx+1}. ${f.name.replace(/\.pdf$/i,'')}</span>`;
+      html += `<span class="file-size">${formatSize(f.size)}</span>`;
+      if (f.dupOf) html += `<span class="dup-badge" title="同名但大小不同">重复</span>`;
+      html += `<span class="open-in-split" title="在分栏中打开" onclick="event.stopPropagation();openInSplit('${f.id}')">⊞</span>`;
+      item.innerHTML = html;
+      item.onclick = () => openDoc(f.id, f);
+      list.appendChild(item);
+    });
+    grp.appendChild(header); grp.appendChild(list); tree.appendChild(grp);
+  });
+}
+
+// ───────────────────────── Open / switch doc ─────────────────────────
+async function openDoc(id, fileEntry, paneIdx) {
+  paneIdx = paneIdx !== undefined ? paneIdx : state.activePaneIdx;
+  const pane = state.panes[paneIdx];
+  // if already open just switch
+  if (state.openDocs[id]) {
+    pane.docId = id;
+    if (!pane.tabs.includes(id)) pane.tabs.push(id);
+    pane.activeTab = id;
+    pane.page = 1; pane.zoom = 1.0;
+    renderPanes(); updateToolbar(); updateFileTreeActive();
+    return;
+  }
+  // load
+  const fe = fileEntry || findFileEntry(id);
+  if (!fe) return;
+  showToast('正在加载 ' + fe.name + '…');
+  const buf = await fe.file.arrayBuffer();
+  const pdfDoc = await pdfjsLib.getDocument({data: buf}).promise;
+  state.openDocs[id] = {
+    name: fe.name, file: fe.file, buf,
+    pdfDoc, pageCount: pdfDoc.numPages,
+    annotations: {}, bookmarks: []
+  };
+  pane.docId = id;
+  if (!pane.tabs.includes(id)) pane.tabs.push(id);
+  pane.activeTab = id;
+  pane.page = 1; pane.zoom = 1.0;
+  renderPanes(); updateToolbar(); updateFileTreeActive();
+  loadOutline(id);
+}
+
+function openInSplit(id) {
+  const fe = findFileEntry(id);
+  if (!fe) return;
+  if (state.splitMode === 'none') setSplitMode('h');
+  const paneIdx = state.panes.length > 1 ? 1 : 0;
+  openDoc(id, fe, paneIdx);
+}
+
+function findFileEntry(id) {
+  for (const key of Object.keys(state.folders)) {
+    const f = state.folders[key].find(f => f.id === id);
+    if (f) return f;
+  }
+  return null;
+}
+
+function updateFileTreeActive() {
+  document.querySelectorAll('.file-item').forEach(item => {
+    const id = item.dataset.id;
+    const active = state.panes.some(p => p.tabs.includes(id));
+    item.classList.toggle('active', !!active);
+  });
+}
+
+// ───────────────────────── Render panes ─────────────────────────
+function renderPanes() {
+  const container = document.getElementById('pane-container');
+  container.innerHTML = '';
+  container.className = 'pane-container' + (state.splitMode === 'h' ? ' split-h' : state.splitMode === 'v' ? ' split-v' : '');
+
+  const count = state.splitMode === 'none' ? 1 : 2;
+  // ensure panes array has enough
+  while (state.panes.length < count) state.panes.push({ docId: null, page: 1, zoom: 1.0, tabs: [], activeTab: null });
+
+  for (let i = 0; i < count; i++) {
+    if (i > 0) {
+      const div = document.createElement('div');
+      div.className = 'split-divider' + (state.splitMode === 'v' ? ' h' : '');
+      div.addEventListener('mousedown', startPaneResize);
+      container.appendChild(div);
+    }
+    const paneEl = buildPaneEl(i);
+    container.appendChild(paneEl);
+  }
+  // render PDF into each pane
+  for (let i = 0; i < count; i++) renderPaneDoc(i);
+}
+
+function buildPaneEl(idx) {
+  const pane = state.panes[idx];
+  const el = document.createElement('div');
+  el.className = 'viewer-pane';
+  el.dataset.pane = idx;
+  el.addEventListener('mousedown', () => { state.activePaneIdx = idx; updateToolbar(); });
+
+  // Tab bar
+  const tabBar = document.createElement('div');
+  tabBar.className = 'pane-tab-bar';
+  pane.tabs.forEach(docId => {
+    const doc = state.openDocs[docId];
+    if (!doc) return;
+    const tab = document.createElement('div');
+    tab.className = 'pane-tab' + (docId === pane.docId ? ' active' : '');
+    const name = doc.name.replace(/\.pdf$/i,'');
+    tab.innerHTML = `<span style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${doc.name}">${name}</span><span class="tab-close" onclick="event.stopPropagation();closeTab(${idx},'${docId}')">×</span>`;
+    tab.onclick = () => switchTab(idx, docId);
+    tabBar.appendChild(tab);
+  });
+  el.appendChild(tabBar);
+
+  // Scroll area
+  const scroll = document.createElement('div');
+  scroll.className = 'pane-scroll';
+  scroll.id = 'pane-scroll-' + idx;
+  pane.scrollEl = scroll;
+  el.appendChild(scroll);
+  return el;
+}
+
+function switchTab(paneIdx, docId) {
+  const pane = state.panes[paneIdx];
+  pane.docId = docId;
+  pane.activeTab = docId;
+  pane.page = 1;
+  state.activePaneIdx = paneIdx;
+  renderPanes(); updateToolbar(); updateFileTreeActive();
+}
+function closeTab(paneIdx, docId) {
+  const pane = state.panes[paneIdx];
+  pane.tabs = pane.tabs.filter(id => id !== docId);
+  if (pane.docId === docId) {
+    pane.docId = pane.tabs[pane.tabs.length - 1] || null;
+    pane.activeTab = pane.docId;
+    pane.page = 1;
+  }
+  renderPanes(); updateToolbar(); updateFileTreeActive();
+}
+
+async function renderPaneDoc(idx) {
+  const pane = state.panes[idx];
+  const scroll = document.getElementById('pane-scroll-' + idx);
+  if (!scroll) return;
+  scroll.innerHTML = '';
+  if (!pane.docId || !state.openDocs[pane.docId]) {
+    scroll.innerHTML = '<div class="empty-pane"><div class="big-icon">📄</div><p>拖入 PDF 或从左栏选择论文</p></div>';
+    return;
+  }
+  const docObj = state.openDocs[pane.docId];
+  // show loading
+  const loading = document.createElement('div');
+  loading.className = 'loading-overlay';
+  loading.innerHTML = '<div class="spinner"></div><div class="loading-text">渲染中…</div>';
+  scroll.appendChild(loading);
+
+  try {
+    const total = docObj.pageCount;
+    for (let pageNum = 1; pageNum <= total; pageNum++) {
+      const page = await docObj.pdfDoc.getPage(pageNum);
+      const wrapper = await renderPage(page, pageNum, pane, idx, docObj);
+      scroll.appendChild(wrapper);
+    }
+  } finally {
+    loading.remove();
+  }
+}
+
+async function renderPage(page, pageNum, pane, paneIdx, docObj) {
+  const viewport = page.getViewport({ scale: pane.zoom });
+  const wrapper = document.createElement('div');
+  wrapper.className = 'pdf-page-wrapper';
+  wrapper.dataset.page = pageNum;
+  wrapper.dataset.pane = paneIdx;
+  wrapper.style.width = viewport.width + 'px';
+  wrapper.style.height = viewport.height + 'px';
+
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width; canvas.height = viewport.height;
+  canvas.style.width = viewport.width + 'px'; canvas.style.height = viewport.height + 'px';
+
+  const ctx = canvas.getContext('2d');
+  await page.render({ canvasContext: ctx, viewport }).promise;
+
+  // badge
+  const badge = document.createElement('div');
+  badge.className = 'page-number-badge';
+  badge.textContent = pageNum;
+
+  wrapper.appendChild(canvas);
+  wrapper.appendChild(badge);
+
+  // Render existing annotations for this page
+  renderAnnotations(wrapper, docObj, pageNum, viewport, paneIdx);
+
+  // Mouse events for annotations
+  wrapper.addEventListener('mouseup', (e) => onPageMouseUp(e, pageNum, paneIdx, docObj, viewport));
+  wrapper.addEventListener('click', (e) => onPageClick(e, pageNum, paneIdx, docObj, viewport));
+
+  return wrapper;
+}
+
+function renderAnnotations(wrapper, docObj, pageNum, viewport, paneIdx) {
+  const annos = docObj.annotations[pageNum] || [];
+  annos.forEach((anno, annoIdx) => {
+    if (anno.type === 'highlight' || anno.type === 'underline') {
+      anno.rects.forEach(r => {
+        const mark = document.createElement('div');
+        mark.className = anno.type === 'highlight' ? 'highlight-mark' : 'underline-mark';
+        const scaleX = viewport.width / anno.origW;
+        const scaleY = viewport.height / anno.origH;
+        mark.style.cssText = `left:${r.x*scaleX}px;top:${r.y*scaleY}px;width:${r.w*scaleX}px;height:${r.h*scaleY}px;background:${anno.type==='highlight'?anno.color:'transparent'};border-bottom-color:${anno.color}`;
+        mark.title = 'Alt+click 删除';
+        mark.addEventListener('click', ev => {
+          if (ev.altKey) { docObj.annotations[pageNum].splice(annoIdx, 1); renderPanes(); }
+        });
+        wrapper.appendChild(mark);
+      });
+    } else if (anno.type === 'note') {
+      const pin = document.createElement('div');
+      pin.className = 'note-pin';
+      const scaleX = viewport.width / anno.origW;
+      const scaleY = viewport.height / anno.origH;
+      pin.style.cssText = `left:${anno.x*scaleX-9}px;top:${anno.y*scaleY-9}px;background:${anno.color}`;
+      pin.innerHTML = `📌<div class="note-tooltip">${anno.text}</div>`;
+      pin.addEventListener('click', ev => {
+        if (ev.altKey) { docObj.annotations[pageNum].splice(annoIdx, 1); renderPanes(); }
+      });
+      wrapper.appendChild(pin);
+    }
+  });
+}
+
+// ───────────────────────── Annotation events ─────────────────────────
+let selToolbarTimeout;
+function onPageMouseUp(e, pageNum, paneIdx, docObj, viewport) {
+  if (state.currentTool !== 'select') return;
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) { hideSelToolbar(); return; }
+  const tb = document.getElementById('sel-toolbar');
+  tb.style.left = (e.clientX - 30) + 'px';
+  tb.style.top = (e.clientY - 44) + 'px';
+  tb.classList.add('show');
+  state.pendingAnno = { pageNum, paneIdx, docObj, viewport };
+  clearTimeout(selToolbarTimeout);
+}
+function hideSelToolbar() {
+  document.getElementById('sel-toolbar').classList.remove('show');
+  state.pendingAnno = null;
+}
+document.addEventListener('mousedown', e => {
+  if (!e.target.closest('#sel-toolbar')) hideSelToolbar();
+});
+
+function getSelRects(viewport, docObj) {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) return [];
+  const range = sel.getRangeAt(0);
+  const rects = Array.from(range.getClientRects());
+  const wrapper = range.startContainer.parentElement?.closest('.pdf-page-wrapper');
+  if (!wrapper) return [];
+  const wr = wrapper.getBoundingClientRect();
+  return rects.map(r => ({
+    x: r.left - wr.left, y: r.top - wr.top, w: r.width, h: r.height
+  }));
+}
+
+function selHighlight() {
+  if (!state.pendingAnno) return;
+  const { pageNum, docObj, viewport } = state.pendingAnno;
+  const rects = getSelRects(viewport, docObj);
+  if (!rects.length) return;
+  if (!docObj.annotations[pageNum]) docObj.annotations[pageNum] = [];
+  docObj.annotations[pageNum].push({ type:'highlight', color: state.annoColor, rects, origW: viewport.width, origH: viewport.height });
+  window.getSelection()?.removeAllRanges();
+  hideSelToolbar(); renderPanes();
+}
+function selUnderline() {
+  if (!state.pendingAnno) return;
+  const { pageNum, docObj, viewport } = state.pendingAnno;
+  const rects = getSelRects(viewport, docObj);
+  if (!rects.length) return;
+  if (!docObj.annotations[pageNum]) docObj.annotations[pageNum] = [];
+  docObj.annotations[pageNum].push({ type:'underline', color: state.annoColor, rects, origW: viewport.width, origH: viewport.height });
+  window.getSelection()?.removeAllRanges();
+  hideSelToolbar(); renderPanes();
+}
+function selNote() {
+  if (!state.pendingAnno) return;
+  const { pageNum, paneIdx, docObj, viewport } = state.pendingAnno;
+  const sel = window.getSelection();
+  const range = sel?.rangeCount ? sel.getRangeAt(0) : null;
+  const rect = range ? range.getBoundingClientRect() : null;
+  const wr = range?.startContainer.parentElement?.closest('.pdf-page-wrapper')?.getBoundingClientRect();
+  const x = rect && wr ? rect.left - wr.left + rect.width/2 : 10;
+  const y = rect && wr ? rect.top - wr.top : 10;
+  state.noteTarget = { pageNum, paneIdx, docObj, viewport, x, y };
+  openNoteDialog(); hideSelToolbar();
+}
+function selCopy() {
+  const text = window.getSelection()?.toString();
+  if (text) { navigator.clipboard.writeText(text); showToast('已复制'); hideSelToolbar(); }
+}
+
+function onPageClick(e, pageNum, paneIdx, docObj, viewport) {
+  if (state.currentTool !== 'note') return;
+  const wr = e.currentTarget.getBoundingClientRect();
+  const x = e.clientX - wr.left;
+  const y = e.clientY - wr.top;
+  state.noteTarget = { pageNum, paneIdx, docObj, viewport, x, y };
+  openNoteDialog();
+}
+
+function openNoteDialog() {
+  document.getElementById('note-text').value = '';
+  document.getElementById('note-dialog').classList.add('show');
+  setTimeout(() => document.getElementById('note-text').focus(), 50);
+}
+function closeNoteDialog() { document.getElementById('note-dialog').classList.remove('show'); state.noteTarget = null; }
+function saveNote() {
+  const text = document.getElementById('note-text').value.trim();
+  if (!text || !state.noteTarget) { closeNoteDialog(); return; }
+  const { pageNum, docObj, viewport, x, y } = state.noteTarget;
+  if (!docObj.annotations[pageNum]) docObj.annotations[pageNum] = [];
+  docObj.annotations[pageNum].push({ type:'note', text, color: state.annoColor, x, y, origW: viewport.width, origH: viewport.height });
+  closeNoteDialog(); renderPanes();
+}
+
+// ───────────────────────── Tools ─────────────────────────
+function setTool(t) {
+  state.currentTool = t;
+  ['select','highlight','underline','note'].forEach(n => {
+    const btn = document.getElementById('tool-'+n);
+    if (btn) btn.classList.toggle('active', n === t);
+  });
+  // canvas cursor
+  document.querySelectorAll('.pane-scroll').forEach(s => {
+    s.style.cursor = t === 'note' ? 'crosshair' : t === 'highlight' ? 'text' : '';
+  });
+}
+function setAnnoColor(el) {
+  state.annoColor = el.dataset.color;
+  document.querySelectorAll('.anno-color').forEach(e => e.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// ───────────────────────── Zoom & Page ─────────────────────────
+function updateToolbar() {
+  const pane = state.panes[state.activePaneIdx];
+  document.getElementById('zoom-input').value = Math.round(pane.zoom * 100) + '%';
+  const doc = pane.docId ? state.openDocs[pane.docId] : null;
+  document.getElementById('page-input').value = pane.page;
+  document.getElementById('page-info').textContent = '/ ' + (doc ? doc.pageCount : 1);
+}
+function changeZoom(delta) {
+  const pane = state.panes[state.activePaneIdx];
+  pane.zoom = Math.max(0.3, Math.min(4.0, pane.zoom + delta));
+  renderPaneDoc(state.activePaneIdx);
+  updateToolbar();
+}
+function applyZoom(val) {
+  const pct = parseFloat(val) || 100;
+  const pane = state.panes[state.activePaneIdx];
+  pane.zoom = Math.max(0.3, Math.min(4.0, pct / 100));
+  renderPaneDoc(state.activePaneIdx);
+  updateToolbar();
+}
+function zoomFit() {
+  const pane = state.panes[state.activePaneIdx];
+  const scroll = document.getElementById('pane-scroll-' + state.activePaneIdx);
+  if (!scroll || !pane.docId) return;
+  pane.pdfDoc?.getPage(1).then(pg => {
+    const vp = pg.getViewport({scale:1});
+    pane.zoom = (scroll.clientWidth - 40) / vp.width;
+    renderPaneDoc(state.activePaneIdx);
+    updateToolbar();
+  });
+  const doc = pane.docId ? state.openDocs[pane.docId] : null;
+  if (!doc) return;
+  doc.pdfDoc.getPage(1).then(pg => {
+    const vp = pg.getViewport({scale:1});
+    pane.zoom = Math.max(0.3, (scroll.clientWidth - 40) / vp.width);
+    renderPaneDoc(state.activePaneIdx); updateToolbar();
+  });
+}
+function changePage(delta) {
+  const pane = state.panes[state.activePaneIdx];
+  const doc = pane.docId ? state.openDocs[pane.docId] : null;
+  if (!doc) return;
+  pane.page = Math.max(1, Math.min(doc.pageCount, pane.page + delta));
+  scrollToPage(state.activePaneIdx, pane.page);
+  updateToolbar();
+}
+function goToPage(val) {
+  const pane = state.panes[state.activePaneIdx];
+  const doc = pane.docId ? state.openDocs[pane.docId] : null;
+  if (!doc) return;
+  pane.page = Math.max(1, Math.min(doc.pageCount, parseInt(val)||1));
+  scrollToPage(state.activePaneIdx, pane.page);
+  updateToolbar();
+}
+function scrollToPage(paneIdx, pageNum) {
+  const scroll = document.getElementById('pane-scroll-' + paneIdx);
+  if (!scroll) return;
+  const wrapper = scroll.querySelector(`[data-page="${pageNum}"]`);
+  if (wrapper) wrapper.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ───────────────────────── Split ─────────────────────────
+function setSplitMode(mode) {
+  state.splitMode = mode;
+  if (mode !== 'none' && state.panes.length < 2) {
+    state.panes.push({ docId: null, page: 1, zoom: 1.0, tabs: [], activeTab: null });
+  }
+  ['split-off-btn','split-h-btn','split-v-btn'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+  const map = { none:'split-off-btn', h:'split-h-btn', v:'split-v-btn' };
+  document.getElementById(map[mode])?.classList.add('active');
+  renderPanes();
+}
+
+function startPaneResize(e) {
+  e.preventDefault();
+  const divider = e.currentTarget;
+  divider.classList.add('dragging');
+  const isH = state.splitMode === 'h';
+  const container = document.getElementById('pane-container');
+  const panes = container.querySelectorAll('.viewer-pane');
+  if (panes.length < 2) return;
+  const onMove = ev => {
+    const rect = container.getBoundingClientRect();
+    let ratio;
+    if (isH) ratio = (ev.clientX - rect.left) / rect.width;
+    else ratio = (ev.clientY - rect.top) / rect.height;
+    ratio = Math.max(0.2, Math.min(0.8, ratio));
+    panes[0].style.flex = `0 0 ${ratio*100}%`;
+    panes[1].style.flex = `0 0 ${(1-ratio)*100}%`;
+  };
+  const onUp = () => { divider.classList.remove('dragging'); window.removeEventListener('mousemove',onMove); window.removeEventListener('mouseup',onUp); };
+  window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp);
+}
+
+// ───────────────────────── Sidebar resize ─────────────────────────
+const sidebarResizer = document.getElementById('sidebar-resizer');
+sidebarResizer.addEventListener('mousedown', e => {
+  e.preventDefault();
+  const sidebar = document.getElementById('sidebar');
+  const onMove = ev => {
+    const w = Math.max(0, Math.min(400, ev.clientX));
+    sidebar.style.width = w + 'px';
+  };
+  const onUp = () => { window.removeEventListener('mousemove',onMove); window.removeEventListener('mouseup',onUp); };
+  window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp);
+});
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  sb.classList.toggle('collapsed');
+}
+
+// ───────────────────────── Outline ─────────────────────────
+async function loadOutline(docId) {
+  const doc = state.openDocs[docId];
+  if (!doc) return;
+  try {
+    const outline = await doc.pdfDoc.getOutline();
+    const list = document.getElementById('outline-list');
+    list.innerHTML = '';
+    if (!outline || !outline.length) {
+      list.innerHTML = '<div style="padding:12px;font-size:12px;color:var(--text3)">暂无目录</div>';
+      return;
+    }
+    const renderItems = (items, level) => {
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = `outline-item level-${Math.min(level,3)}`;
+        div.textContent = item.title;
+        div.onclick = () => goToOutlineItem(docId, item);
+        list.appendChild(div);
+        if (item.items?.length) renderItems(item.items, level+1);
+      });
+    };
+    renderItems(outline, 1);
+  } catch(e) {}
+}
+async function goToOutlineItem(docId, item) {
+  const pane = state.panes[state.activePaneIdx];
+  if (pane.docId !== docId) return;
+  const doc = state.openDocs[docId];
+  try {
+    const dest = typeof item.dest === 'string' ? await doc.pdfDoc.getDestination(item.dest) : item.dest;
+    if (!dest) return;
+    const ref = dest[0];
+    const pageIdx = await doc.pdfDoc.getPageIndex(ref);
+    pane.page = pageIdx + 1;
+    scrollToPage(state.activePaneIdx, pane.page);
+    updateToolbar();
+  } catch(e) {}
+}
+function toggleOutline() {
+  const panel = document.getElementById('outline-panel');
+  panel.classList.toggle('show');
+  document.getElementById('outline-btn')?.classList.toggle('active', panel.classList.contains('show'));
+}
+
+// ───────────────────────── Bookmarks ─────────────────────────
+function toggleBookmarks() {
+  document.getElementById('bookmarks-panel').classList.toggle('show');
+  document.getElementById('bookmarks-btn')?.classList.toggle('active');
+  renderBookmarkList();
+}
+function addBookmark() {
+  const pane = state.panes[state.activePaneIdx];
+  const doc = pane.docId ? state.openDocs[pane.docId] : null;
+  if (!doc) return;
+  doc.bookmarks.push({ page: pane.page, label: `第 ${pane.page} 页`, docName: doc.name });
+  showToast('书签已添加：第 ' + pane.page + ' 页');
+  renderBookmarkList();
+}
+function renderBookmarkList() {
+  const list = document.getElementById('bookmarks-list');
+  list.innerHTML = '';
+  let hasAny = false;
+  Object.values(state.openDocs).forEach(doc => {
+    doc.bookmarks.forEach((bm, idx) => {
+      hasAny = true;
+      const item = document.createElement('div');
+      item.className = 'bookmark-item';
+      item.innerHTML = `<span class="bm-del" onclick="event.stopPropagation();delBookmark('${doc.name}',${idx})">删除</span><div class="bm-title">${bm.label}</div><div class="bm-meta">${bm.docName.replace(/\.pdf$/i,'')}</div>`;
+      item.onclick = () => {
+        const pane = state.panes[state.activePaneIdx];
+        const docId = Object.keys(state.openDocs).find(k => state.openDocs[k].name === doc.name);
+        if (docId) { pane.docId = docId; pane.page = bm.page; renderPanes(); scrollToPage(state.activePaneIdx, bm.page); }
+      };
+      list.appendChild(item);
+    });
+  });
+  if (!hasAny) list.innerHTML = '<div style="padding:12px;font-size:12px;color:var(--text3)">暂无书签</div>';
+}
+function delBookmark(docName, idx) {
+  const doc = Object.values(state.openDocs).find(d => d.name === docName);
+  if (doc) { doc.bookmarks.splice(idx, 1); renderBookmarkList(); }
+}
+
+// ───────────────────────── Search ─────────────────────────
+function toggleSearch() {
+  const bar = document.getElementById('search-bar');
+  bar.classList.toggle('show');
+  if (bar.classList.contains('show')) document.getElementById('search-input').focus();
+  else closeSearch();
+}
+function closeSearch() {
+  document.getElementById('search-bar').classList.remove('show');
+  document.getElementById('search-input').value = '';
+  document.querySelectorAll('.search-highlight').forEach(el => el.classList.remove('search-highlight'));
+  state.searchMatches = []; state.searchIdx = -1;
+  document.getElementById('search-count').textContent = '';
+}
+async function doSearch(text) {
+  document.querySelectorAll('.search-highlight').forEach(el => el.classList.remove('search-highlight'));
+  state.searchMatches = []; state.searchIdx = -1;
+  if (!text.trim()) { document.getElementById('search-count').textContent = ''; return; }
+  // basic: highlight matching text nodes in canvas (PDF.js text layer not enabled here for simplicity)
+  // We'll search in rendered text by extracting from PDF
+  const pane = state.panes[state.activePaneIdx];
+  const doc = pane.docId ? state.openDocs[pane.docId] : null;
+  if (!doc) return;
+  let count = 0;
+  for (let i = 1; i <= doc.pageCount; i++) {
+    const page = await doc.pdfDoc.getPage(i);
+    const content = await page.getTextContent();
+    const fullText = content.items.map(item => item.str).join(' ');
+    if (fullText.toLowerCase().includes(text.toLowerCase())) {
+      count++;
+      state.searchMatches.push(i);
+    }
+  }
+  document.getElementById('search-count').textContent = count ? `${count} 页匹配` : '无匹配';
+  if (state.searchMatches.length) { state.searchIdx = 0; scrollToPage(state.activePaneIdx, state.searchMatches[0]); }
+}
+function searchNav(e) {
+  if (!state.searchMatches.length) return;
+  if (e.key === 'ArrowDown' || e.key === 'Enter') { state.searchIdx = (state.searchIdx+1) % state.searchMatches.length; }
+  else if (e.key === 'ArrowUp') { state.searchIdx = (state.searchIdx-1+state.searchMatches.length) % state.searchMatches.length; }
+  else return;
+  scrollToPage(state.activePaneIdx, state.searchMatches[state.searchIdx]);
+}
+
+// ───────────────────────── Export PDF ─────────────────────────
+async function exportPDF() {
+  const pane = state.panes[state.activePaneIdx];
+  const docObj = pane.docId ? state.openDocs[pane.docId] : null;
+  if (!docObj) { showToast('请先打开 PDF'); return; }
+  showToast('正在生成带标注的 PDF…');
+  try {
+    const { PDFDocument, rgb, StandardFonts } = PDFLib;
+    const pdfDoc = await PDFDocument.load(docObj.buf);
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const pages = pdfDoc.getPages();
+
+    Object.keys(docObj.annotations).forEach(pageStr => {
+      const pageNum = parseInt(pageStr);
+      const pdfPage = pages[pageNum - 1];
+      if (!pdfPage) return;
+      const { width: pw, height: ph } = pdfPage.getSize();
+      (docObj.annotations[pageStr] || []).forEach(anno => {
+        const scaleX = pw / anno.origW;
+        const scaleY = ph / anno.origH;
+        if (anno.type === 'highlight' && anno.rects) {
+          anno.rects.forEach(r => {
+            const hexColor = anno.color || '#f6d155';
+            const [rr, gg, bb] = hexToRgb(hexColor);
+            pdfPage.drawRectangle({ x: r.x*scaleX, y: ph - (r.y + r.h)*scaleY, width: r.w*scaleX, height: r.h*scaleY,
+              color: rgb(rr, gg, bb), opacity: 0.4 });
+          });
+        } else if (anno.type === 'underline' && anno.rects) {
+          anno.rects.forEach(r => {
+            const [rr, gg, bb] = hexToRgb(anno.color || '#2d5be3');
+            pdfPage.drawLine({ start: {x: r.x*scaleX, y: ph - (r.y+r.h)*scaleY}, end: {x: (r.x+r.w)*scaleX, y: ph-(r.y+r.h)*scaleY},
+              thickness: 1.5, color: rgb(rr, gg, bb) });
+          });
+        } else if (anno.type === 'note') {
+          const [rr, gg, bb] = hexToRgb(anno.color || '#f6d155');
+          pdfPage.drawCircle({ x: anno.x*scaleX, y: ph - anno.y*scaleY, size: 6, color: rgb(rr, gg, bb) });
+          pdfPage.drawText('📌 ' + anno.text.substring(0, 60), {
+            x: Math.min(anno.x*scaleX + 8, pw - 150), y: ph - anno.y*scaleY + 4,
+            size: 8, font, color: rgb(0.2,0.2,0.2), maxWidth: 150
+          });
+        }
+      });
+    });
+
+    const bytes = await pdfDoc.save();
+    const blob = new Blob([bytes], {type:'application/pdf'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = docObj.name.replace(/\.pdf$/i, '_annotated.pdf');
+    a.click();
+    showToast('PDF 已导出');
+  } catch(err) {
+    console.error(err); showToast('导出失败: ' + err.message);
+  }
+}
+function hexToRgb(hex) {
+  hex = hex.replace('#','');
+  if (hex.length === 3) hex = hex.split('').map(c=>c+c).join('');
+  const n = parseInt(hex, 16);
+  return [(n>>16&255)/255, (n>>8&255)/255, (n&255)/255];
+}
+
+// ───────────────────────── Notes ─────────────────────────
+let notesNeedSave = false;
+function toggleNotes() {
+  document.getElementById('notes-panel').classList.toggle('show');
+  document.getElementById('notes-btn')?.classList.toggle('active');
+}
+function setNotesMode(mode) {
+  state.notesMode = mode;
+  const editor = document.getElementById('notes-editor');
+  const preview = document.getElementById('notes-preview');
+  ['notes-edit-btn','notes-preview-btn','notes-split-btn'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+  document.getElementById('notes-' + mode + '-btn')?.classList.add('active');
+  if (mode === 'edit') { editor.style.display='block'; preview.classList.remove('show'); preview.style.display='none'; }
+  else if (mode === 'preview') {
+    editor.style.display='none'; preview.style.display='block'; preview.classList.add('show');
+    renderNotes();
+  } else { // split
+    editor.style.display='block'; preview.style.display='block'; preview.classList.add('show');
+    renderNotes();
+  }
+}
+function renderNotes() {
+  const raw = document.getElementById('notes-editor').value;
+  const preview = document.getElementById('notes-preview');
+  preview.innerHTML = marked.parse(raw);
+  // apply color if set
+  preview.style.color = state.notesColor !== 'var(--text)' ? '' : '';
+}
+
+document.getElementById('notes-editor').addEventListener('input', () => {
+  if (state.notesMode !== 'edit') renderNotes();
+  saveNotesToLocal();
+});
+
+function saveNotesToLocal() {
+  localStorage.setItem('pdfscholar_notes', document.getElementById('notes-editor').value);
+}
+function loadNotesFromLocal() {
+  const saved = localStorage.getItem('pdfscholar_notes');
+  if (saved) document.getElementById('notes-editor').value = saved;
+}
+
+function insertMd(before, after) {
+  const ta = document.getElementById('notes-editor');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const sel = ta.value.substring(start, end);
+  const replacement = before + sel + after;
+  ta.setRangeText(replacement, start, end, 'end');
+  ta.focus();
+  if (!sel) { ta.selectionStart = ta.selectionEnd = start + before.length; }
+  renderNotes(); saveNotesToLocal();
+}
+function insertMdLine(prefix) {
+  const ta = document.getElementById('notes-editor');
+  const start = ta.selectionStart;
+  const lineStart = ta.value.lastIndexOf('\n', start-1) + 1;
+  ta.setRangeText(prefix, lineStart, lineStart, 'end');
+  ta.focus(); renderNotes(); saveNotesToLocal();
+}
+function insertTable() {
+  insertMd('\n| 列1 | 列2 | 列3 |\n|---|---|---|\n| 内容 | 内容 | 内容 |\n','');
+}
+function setNoteColor(color, el) {
+  state.notesColor = color;
+  document.querySelectorAll('.color-swatch').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('notes-editor').style.color = color;
+  document.getElementById('notes-preview').style.color = color;
+}
+function exportNotes(format) {
+  const raw = document.getElementById('notes-editor').value;
+  if (!raw.trim()) { showToast('笔记为空'); return; }
+  if (format === 'md') {
+    download(raw, 'notes.md', 'text/markdown');
+  } else {
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:sans-serif;max-width:800px;margin:2em auto;padding:0 1em;line-height:1.7;}code{background:#eee;padding:2px 5px;border-radius:3px;}pre{background:#eee;padding:12px;border-radius:6px;overflow:auto;}blockquote{border-left:3px solid #2d5be3;margin:0;padding-left:12px;color:#666;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ddd;padding:6px 10px;}</style></head><body>${marked.parse(raw)}</body></html>`;
+    download(html, 'notes.html', 'text/html');
+  }
+  showToast('笔记已导出');
+}
+function clearNotes() {
+  if (!confirm('清空全部笔记？')) return;
+  document.getElementById('notes-editor').value = '';
+  renderNotes(); saveNotesToLocal();
+}
+function download(content, filename, type) {
+  const blob = new Blob([content], {type});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename; a.click();
+}
+
+// Notes panel resize
+const notesResizeHandle = document.getElementById('notes-resize-handle');
+notesResizeHandle.addEventListener('mousedown', e => {
+  e.preventDefault();
+  const panel = document.getElementById('notes-panel');
+  const onMove = ev => {
+    const h = window.innerHeight - ev.clientY;
+    panel.style.height = Math.max(100, Math.min(window.innerHeight * 0.8, h)) + 'px';
+  };
+  const onUp = () => { window.removeEventListener('mousemove',onMove); window.removeEventListener('mouseup',onUp); };
+  window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp);
+});
+
+// ───────────────────────── Toast ─────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ───────────────────────── Keyboard shortcuts ─────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 'f' || e.key === 'F') { e.preventDefault(); toggleSearch(); return; }
+    if (e.key === 'n' || e.key === 'N') { e.preventDefault(); toggleNotes(); return; }
+    if (e.key === '=' || e.key === '+') { e.preventDefault(); changeZoom(0.15); return; }
+    if (e.key === '-') { e.preventDefault(); changeZoom(-0.15); return; }
+    if (e.key === '0') { e.preventDefault(); zoomFit(); return; }
+  }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') changePage(-1);
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changePage(1);
+  if (e.key === 'b' || e.key === 'B') toggleSidebar();
+});
+
+// scroll-based page tracking
+document.getElementById('viewer-area').addEventListener('scroll', updatePageFromScroll, true);
+function updatePageFromScroll(e) {
+  const scroll = e.target;
+  const paneEl = scroll.closest?.('.viewer-pane');
+  if (!scroll.classList?.contains('pane-scroll')) return;
+  const paneIdx = parseInt(paneEl?.dataset.pane ?? '0');
+  const wrappers = scroll.querySelectorAll('.pdf-page-wrapper');
+  let bestPage = 1;
+  wrappers.forEach(w => {
+    const rect = w.getBoundingClientRect();
+    const scrollRect = scroll.getBoundingClientRect();
+    if (rect.top <= scrollRect.top + scrollRect.height * 0.5) bestPage = parseInt(w.dataset.page);
+  });
+  state.panes[paneIdx].page = bestPage;
+  if (paneIdx === state.activePaneIdx) updateToolbar();
+}
+
+// ───────────────────────── Service Worker (PWA) ─────────────────────────
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'pdf-scholar-v1';
+    const URLS = [location.pathname];
+    self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(URLS))));
+    self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+  `;
+  const swBlob = new Blob([swCode], {type:'application/javascript'});
+  const swUrl = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+
+// ───────────────────────── Init ─────────────────────────
+initTheme();
+loadNotesFromLocal();
+renderPanes();
+// init toolbar button states
+setTool('select');
+setSplitMode('none');
+document.getElementById('split-off-btn').classList.add('active');
+
+// Handle manifest
+(function() {
+  const manifest = { name:"PDF Scholar", short_name:"PDFScholar", start_url:".", display:"standalone",
+    background_color:"#1a1f2e", theme_color:"#1a1f2e",
+    icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232d5be3'/><text y='.85em' font-size='75' x='12'>📄</text></svg>",sizes:"any",type:"image/svg+xml"}]
+  };
+  const blob = new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
+  document.getElementById('manifest-link').href = URL.createObjectURL(blob);
+})();
+
+console.log('📚 PDF Scholar ready. Shortcuts: Ctrl+F search, Ctrl+N notes, ←→ pages, +/- zoom, B toggle sidebar');
+</script>
+</body>
+</html>

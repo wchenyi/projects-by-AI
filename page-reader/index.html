@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#1a1f2e">
+<title>PDF Scholar</title>
+<style>
+:root{
+  --bg:#f0f2f5;--bg2:#ffffff;--bg3:#e8eaee;--bg4:#d8dce6;
+  --sidebar:#1e2433;--sidebar2:#252c3d;--sidebar-txt:#b8bece;--sidebar-act:#2d5be3;
+  --text:#1a1f2e;--text2:#5a6178;--text3:#9aa3b8;
+  --border:#dde0e8;--accent:#2d5be3;--accent2:#4c78ff;--accent-bg:rgba(45,91,227,.12);
+  --danger:#e05252;--warn:#e08c20;--ok:#27ae7a;
+  --tb:#252c3d;--tb-txt:#b8bece;--tb-btn:#2e3650;--tb-hover:#3d4870;
+  --shadow:0 2px 12px rgba(0,0,0,.10);--shadow-lg:0 8px 32px rgba(0,0,0,.16);
+  --r:6px;--transition:.16s ease;
+  --font:'Inter','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+  --mono:'JetBrains Mono','Fira Code',monospace;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#12151f;--bg2:#1a1f2e;--bg3:#222840;--bg4:#2a3050;
+  --text:#e2e6f0;--text2:#9aa3b8;--text3:#6b7490;
+  --border:#2a3150;--shadow:0 2px 12px rgba(0,0,0,.36);--shadow-lg:0 8px 32px rgba(0,0,0,.48);
+}}
+[data-theme=dark]{--bg:#12151f;--bg2:#1a1f2e;--bg3:#222840;--bg4:#2a3050;--text:#e2e6f0;--text2:#9aa3b8;--text3:#6b7490;--border:#2a3150;--shadow:0 2px 12px rgba(0,0,0,.36);--shadow-lg:0 8px 32px rgba(0,0,0,.48);}
+[data-theme=light]{--bg:#f0f2f5;--bg2:#ffffff;--bg3:#e8eaee;--bg4:#d8dce6;--text:#1a1f2e;--text2:#5a6178;--text3:#9aa3b8;--border:#dde0e8;}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:var(--font);background:var(--bg);color:var(--text)}
+
+/* ─── APP LAYOUT ─── */
+#app{display:flex;height:100vh;overflow:hidden}
+
+/* ─── SIDEBAR ─── */
+#sidebar{
+  width:240px;background:var(--sidebar);display:flex;flex-direction:column;
+  flex-shrink:0;overflow:hidden;transition:width .22s cubic-bezier(.4,0,.2,1);
+  border-right:1px solid rgba(255,255,255,.05);position:relative;
+}
+#sidebar.hidden{width:0}
+#sb-resizer{position:absolute;right:0;top:0;bottom:0;width:4px;cursor:col-resize;z-index:5;background:transparent;transition:background .15s}
+#sb-resizer:hover{background:var(--accent)}
+#sb-header{padding:12px 10px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0}
+#sb-header .logo{font-size:14px;font-weight:700;color:#fff;flex:1;white-space:nowrap;overflow:hidden}
+.sb-btn{width:26px;height:26px;border:none;background:transparent;color:var(--sidebar-txt);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background var(--transition)}
+.sb-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+
+/* drop zone */
+#drop-zone{
+  margin:10px 8px 0;border:1.5px dashed rgba(255,255,255,.18);border-radius:8px;
+  padding:12px 8px;text-align:center;cursor:pointer;color:var(--sidebar-txt);font-size:12px;
+  transition:all var(--transition);flex-shrink:0
+}
+#drop-zone:hover,#drop-zone.over{border-color:var(--accent2);background:rgba(45,91,227,.12);color:#fff}
+#drop-zone .dz-row{display:flex;gap:8px;justify-content:center;margin-bottom:4px}
+.dz-pick{padding:5px 10px;border-radius:5px;background:rgba(255,255,255,.1);font-size:11px;cursor:pointer;color:#fff;border:none;transition:background .15s}
+.dz-pick:hover{background:rgba(255,255,255,.2)}
+#drop-zone .dz-hint{font-size:10px;opacity:.5;margin-top:3px}
+input[type=file]{display:none}
+
+/* file tree */
+#file-tree{flex:1;overflow-y:auto;padding:4px 0 60px}
+#file-tree::-webkit-scrollbar{width:4px}
+#file-tree::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
+.folder-group{margin-bottom:1px}
+.folder-hdr{
+  display:flex;align-items:center;gap:5px;padding:7px 8px 7px 8px;
+  cursor:pointer;color:rgba(255,255,255,.45);font-size:10.5px;font-weight:700;
+  letter-spacing:.7px;text-transform:uppercase;transition:color var(--transition)
+}
+.folder-hdr:hover{color:rgba(255,255,255,.8)}
+.folder-arrow{font-size:8px;transition:transform .18s;flex-shrink:0}
+.folder-hdr.open .folder-arrow{transform:rotate(90deg)}
+.folder-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folder-count{font-size:9px;background:rgba(255,255,255,.1);padding:1px 5px;border-radius:8px}
+.file-list{}
+.file-item{
+  display:flex;align-items:center;gap:6px;padding:5px 8px 5px 18px;
+  cursor:pointer;color:var(--sidebar-txt);font-size:12px;
+  transition:background var(--transition);border-left:2px solid transparent;
+  position:relative
+}
+.file-item:hover{background:rgba(255,255,255,.05);color:#fff}
+.file-item.active{background:rgba(45,91,227,.18);color:#fff;border-left-color:var(--accent)}
+.fi-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fi-size{font-size:9.5px;opacity:.55;flex-shrink:0}
+.dup-badge{font-size:8.5px;background:var(--warn);color:#fff;padding:1px 4px;border-radius:3px;flex-shrink:0}
+.fi-split{opacity:0;font-size:10px;padding:2px 5px;background:var(--accent);color:#fff;border-radius:3px;cursor:pointer;flex-shrink:0;border:none;transition:opacity .15s}
+.file-item:hover .fi-split{opacity:1}
+
+/* ─── MAIN ─── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* ─── TOOLBAR ─── */
+#toolbar{
+  height:44px;background:var(--tb);display:flex;align-items:center;
+  padding:0 6px;gap:1px;border-bottom:1px solid rgba(255,255,255,.07);
+  flex-shrink:0;overflow-x:auto;overflow-y:hidden;user-select:none
+}
+#toolbar::-webkit-scrollbar{height:0}
+.tb{
+  height:28px;min-width:28px;border:none;background:transparent;color:var(--tb-txt);
+  border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  gap:4px;padding:0 6px;font-size:12.5px;font-family:var(--font);
+  transition:background var(--transition),color var(--transition);white-space:nowrap;flex-shrink:0
+}
+.tb:hover{background:var(--tb-hover);color:#fff}
+.tb.on{background:var(--accent);color:#fff}
+.tb.on:hover{background:var(--accent2)}
+.tb-sep{width:1px;height:20px;background:rgba(255,255,255,.1);margin:0 2px;flex-shrink:0}
+.tb-lbl{font-size:10px;color:rgba(255,255,255,.35);padding:0 3px;white-space:nowrap;flex-shrink:0}
+.tb-spacer{flex:1}
+#zoom-val{
+  width:52px;height:24px;background:var(--tb-btn);border:1px solid rgba(255,255,255,.1);
+  color:var(--tb-txt);border-radius:var(--r);text-align:center;font-size:11.5px;
+  font-family:var(--font);outline:none
+}
+#zoom-val:focus{border-color:var(--accent)}
+#page-cur{
+  width:40px;height:24px;background:var(--tb-btn);border:1px solid rgba(255,255,255,.1);
+  color:var(--tb-txt);border-radius:var(--r);text-align:center;font-size:11.5px;
+  font-family:var(--font);outline:none
+}
+#page-tot{font-size:10.5px;color:rgba(255,255,255,.35);flex-shrink:0}
+
+/* anno color dots */
+.ac{
+  width:13px;height:13px;border-radius:50%;cursor:pointer;border:2px solid transparent;
+  transition:border-color .15s;flex-shrink:0
+}
+.ac.on{border-color:#fff}
+
+/* ─── VIEWER AREA ─── */
+#viewer-area{flex:1;display:flex;overflow:hidden;position:relative}
+#pane-wrap{flex:1;display:flex;overflow:hidden}
+#pane-wrap.sh{flex-direction:row}
+#pane-wrap.sv{flex-direction:column}
+
+.v-pane{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;min-height:0;position:relative}
+.pane-tabs{
+  height:34px;display:flex;align-items:center;background:var(--bg3);
+  border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0
+}
+.pane-tabs::-webkit-scrollbar{height:0}
+.p-tab{
+  height:34px;padding:0 10px;display:flex;align-items:center;gap:5px;font-size:11.5px;
+  color:var(--text2);cursor:pointer;white-space:nowrap;border-right:1px solid var(--border);
+  transition:background var(--transition);flex-shrink:0
+}
+.p-tab:hover{background:var(--bg2);color:var(--text)}
+.p-tab.on{background:var(--bg2);color:var(--text);border-bottom:2px solid var(--accent)}
+.p-tab .tx{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.p-tab .tc{opacity:0;font-size:11px;padding:1px 3px;border-radius:3px;background:none;border:none;cursor:pointer;color:var(--text2)}
+.p-tab:hover .tc,.p-tab.on .tc{opacity:1}
+.p-tab .tc:hover{background:var(--danger);color:#fff}
+
+.pane-scroll{
+  flex:1;overflow:auto;background:var(--bg);padding:16px;
+  display:flex;flex-direction:column;align-items:center;gap:10px
+}
+.pane-scroll::-webkit-scrollbar{width:6px;height:6px}
+.pane-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.empty-pane{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;color:var(--text3)
+}
+.empty-pane .ei{font-size:48px;opacity:.3}
+.empty-pane p{font-size:12.5px}
+
+/* pane divider */
+.pane-div{width:4px;background:var(--border);cursor:col-resize;flex-shrink:0;transition:background .15s}
+.pane-div:hover,.pane-div.dragging{background:var(--accent)}
+.pane-div.h{width:100%;height:4px;cursor:row-resize}
+
+/* ─── PDF PAGE ─── */
+.page-wrap{
+  position:relative;display:inline-flex;flex-direction:column;
+  box-shadow:0 2px 16px rgba(0,0,0,.18);background:#fff;flex-shrink:0
+}
+.page-wrap canvas{display:block}
+/* text layer */
+.textLayer{
+  position:absolute;inset:0;overflow:hidden;line-height:1;
+  pointer-events:auto;
+}
+.textLayer span{
+  position:absolute;cursor:text;transform-origin:0 0;
+  color:transparent;white-space:pre
+}
+.textLayer ::selection{background:rgba(45,91,227,.35)}
+.pg-badge{
+  position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,.45);color:#fff;
+  font-size:9.5px;padding:1px 6px;border-radius:8px;pointer-events:none;
+  font-family:var(--mono);z-index:5
+}
+
+/* annotations */
+.anno-layer{position:absolute;inset:0;pointer-events:none;z-index:3}
+.hl{position:absolute;pointer-events:auto;cursor:pointer;border-radius:1px;mix-blend-mode:multiply}
+[data-theme=dark] .hl,[data-theme=dark] .hl{mix-blend-mode:screen}
+@media(prefers-color-scheme:dark){.hl{mix-blend-mode:screen}}
+.ul{position:absolute;pointer-events:auto;cursor:pointer;border-bottom:2.5px solid}
+.notepin{
+  position:absolute;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:12px;cursor:pointer;z-index:6;box-shadow:0 2px 6px rgba(0,0,0,.3);pointer-events:auto
+}
+.notepin:hover .ntip{display:block}
+.ntip{
+  display:none;position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+  background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:6px;
+  padding:8px 10px;width:200px;font-size:11.5px;z-index:100;box-shadow:var(--shadow-lg);
+  pointer-events:none;white-space:pre-wrap;word-break:break-word
+}
+
+/* text boxes */
+.txt-box{
+  position:absolute;z-index:7;min-width:80px;min-height:30px;
+  border:1.5px solid var(--accent);border-radius:3px;
+  background:rgba(255,255,255,.92);cursor:move;
+  box-shadow:0 2px 8px rgba(0,0,0,.15)
+}
+[data-theme=dark] .txt-box{background:rgba(30,36,55,.95)}
+.txt-box-inner{
+  outline:none;min-height:28px;padding:4px 6px;font-size:13px;
+  word-break:break-word;overflow:hidden;
+}
+.txt-box-toolbar{
+  display:flex;gap:2px;padding:3px 4px;background:var(--bg3);border-bottom:1px solid var(--border);
+  flex-wrap:wrap;border-radius:2px 2px 0 0
+}
+.txt-box-toolbar button{
+  height:20px;min-width:20px;padding:0 4px;border:none;background:transparent;
+  color:var(--text2);cursor:pointer;font-size:11px;border-radius:3px;
+  display:flex;align-items:center;justify-content:center
+}
+.txt-box-toolbar button:hover{background:var(--border);color:var(--text)}
+.txt-box-toolbar button.on{background:var(--accent-bg);color:var(--accent)}
+.txt-box-resize{
+  position:absolute;right:-4px;bottom:-4px;width:10px;height:10px;
+  background:var(--accent);border-radius:2px;cursor:se-resize;z-index:8
+}
+
+/* ─── SELECTION TOOLBAR ─── */
+#sel-tb{
+  display:none;position:fixed;z-index:300;background:var(--tb);color:var(--tb-txt);
+  border-radius:8px;padding:3px 5px;gap:2px;box-shadow:var(--shadow-lg);
+  border:1px solid rgba(255,255,255,.1)
+}
+#sel-tb.show{display:flex}
+.stb{width:26px;height:26px;border:none;background:transparent;color:var(--tb-txt);border-radius:4px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
+.stb:hover{background:var(--tb-hover);color:#fff}
+
+/* ─── PANELS ─── */
+.side-panel{
+  position:absolute;top:0;bottom:0;width:256px;background:var(--bg2);
+  border:1px solid var(--border);z-index:50;display:none;flex-direction:column;
+  box-shadow:var(--shadow-lg)
+}
+.side-panel.right{right:0;border-right:none;border-top:none;border-bottom:none}
+.side-panel.left{left:0;border-left:none;border-top:none;border-bottom:none}
+.side-panel.show{display:flex}
+.panel-hdr{
+  padding:10px 12px;font-weight:700;font-size:12.5px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0
+}
+.panel-close{cursor:pointer;opacity:.5;font-size:15px;background:none;border:none;color:var(--text)}
+.panel-close:hover{opacity:1}
+.panel-body{flex:1;overflow-y:auto;padding:4px 0}
+.panel-body::-webkit-scrollbar{width:4px}
+.panel-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.bm-item{
+  padding:8px 12px;border-bottom:1px solid var(--border);cursor:pointer;
+  transition:background var(--transition)
+}
+.bm-item:hover{background:var(--bg3)}
+.bm-title{font-size:11.5px;color:var(--text)}
+.bm-meta{font-size:10.5px;color:var(--text3);margin-top:2px;display:flex;gap:6px}
+.bm-del{color:var(--danger);font-size:10.5px;opacity:0;float:right;cursor:pointer;background:none;border:none}
+.bm-item:hover .bm-del{opacity:1}
+.bm-type{font-size:9px;padding:1px 5px;border-radius:3px;background:var(--accent-bg);color:var(--accent);flex-shrink:0}
+
+.ol-item{
+  padding:5px 12px;font-size:11.5px;cursor:pointer;color:var(--text2);
+  transition:background var(--transition);white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.ol-item:hover{background:var(--bg3);color:var(--text)}
+
+/* ─── QUICK LINKS PANEL ─── */
+#ql-panel{
+  position:absolute;top:44px;right:0;width:320px;background:var(--bg2);
+  border:1px solid var(--border);border-top:none;border-right:none;z-index:80;
+  display:none;flex-direction:column;box-shadow:var(--shadow-lg);max-height:calc(100vh - 44px)
+}
+#ql-panel.show{display:flex}
+#ql-panel .panel-hdr{border-radius:0}
+#ql-list{flex:1;overflow-y:auto;padding:6px}
+.ql-item{
+  display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:5px;
+  cursor:pointer;transition:background var(--transition);text-decoration:none
+}
+.ql-item:hover{background:var(--bg3)}
+.ql-ico{width:20px;height:20px;border-radius:3px;object-fit:contain;flex-shrink:0}
+.ql-ico-text{width:20px;height:20px;border-radius:3px;background:var(--accent-bg);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.ql-name{font-size:12px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ql-url{font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.ql-del{opacity:0;font-size:11px;color:var(--danger);background:none;border:none;cursor:pointer;padding:2px 4px}
+.ql-item:hover .ql-del{opacity:1}
+#ql-add-form{padding:8px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:5px}
+.ql-inp{
+  width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;
+  background:var(--bg3);color:var(--text);font-size:12px;outline:none;font-family:var(--font)
+}
+.ql-inp:focus{border-color:var(--accent)}
+.ql-add-row{display:flex;gap:5px}
+.ql-act{
+  padding:5px 10px;border:none;border-radius:4px;font-size:12px;cursor:pointer;
+  background:var(--accent);color:#fff;font-family:var(--font);transition:background var(--transition);white-space:nowrap
+}
+.ql-act:hover{background:var(--accent2)}
+.ql-act.sec{background:var(--bg4);color:var(--text2)}
+.ql-act.sec:hover{background:var(--border)}
+#ql-icon-preview{width:20px;height:20px;border-radius:3px;object-fit:contain;display:none}
+
+/* ─── SEARCH BAR ─── */
+#search-bar{
+  position:absolute;top:8px;right:12px;z-index:60;
+  background:var(--bg2);border:1px solid var(--border);border-radius:8px;
+  padding:5px 8px;display:none;align-items:center;gap:5px;box-shadow:var(--shadow)
+}
+#search-bar.show{display:flex}
+#search-inp{border:none;outline:none;background:transparent;color:var(--text);font-size:12.5px;width:170px;font-family:var(--font)}
+#search-ct{font-size:10.5px;color:var(--text3);white-space:nowrap}
+.sbar-btn{background:none;border:none;cursor:pointer;color:var(--text2);padding:2px 4px;font-size:12px}
+.sbar-btn:hover{color:var(--text)}
+
+/* ─── NOTES PANEL ─── */
+#notes-panel{
+  position:fixed;bottom:0;left:240px;right:0;height:44vh;
+  background:var(--bg2);border-top:2px solid var(--accent);z-index:100;
+  display:none;flex-direction:column;box-shadow:0 -4px 24px rgba(0,0,0,.14);
+  transition:left .22s cubic-bezier(.4,0,.2,1)
+}
+#notes-panel.show{display:flex}
+#notes-panel.sb-hidden{left:0}
+#notes-rh{height:4px;background:transparent;cursor:row-resize;flex-shrink:0;transition:background .15s}
+#notes-rh:hover{background:var(--accent)}
+#notes-tb{
+  height:38px;background:var(--bg3);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 6px;gap:2px;flex-shrink:0;overflow-x:auto
+}
+#notes-tb::-webkit-scrollbar{height:0}
+.ntb{height:24px;min-width:24px;border:none;background:transparent;color:var(--text2);border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 5px;font-size:11.5px;font-family:var(--mono);transition:background var(--transition);gap:3px;white-space:nowrap}
+.ntb:hover{background:var(--accent-bg);color:var(--accent)}
+.ntb.on{background:var(--accent-bg);color:var(--accent)}
+.n-sep{width:1px;height:16px;background:var(--border);margin:0 2px;flex-shrink:0}
+.n-sp{flex:1}
+.nc{width:14px;height:14px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s;flex-shrink:0}
+.nc.on{border-color:var(--text)}
+#notes-body{flex:1;display:flex;overflow:hidden}
+#notes-ed{flex:1;border:none;outline:none;resize:none;padding:12px 14px;background:var(--bg2);color:var(--text);font-family:var(--mono);font-size:13px;line-height:1.7;overflow-y:auto}
+#notes-pv{flex:1;padding:12px 16px;overflow-y:auto;font-size:13px;line-height:1.75;display:none;color:var(--text)}
+#notes-pv.show{display:block}
+#notes-pv h1,#notes-pv h2,#notes-pv h3,#notes-pv h4{color:var(--text);margin:.9em 0 .35em}
+#notes-pv h1{font-size:1.5em}#notes-pv h2{font-size:1.25em}#notes-pv h3{font-size:1.1em}
+#notes-pv p{margin:.4em 0}
+#notes-pv code{font-family:var(--mono);background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:12px}
+#notes-pv pre{background:var(--bg3);padding:10px;border-radius:6px;overflow-x:auto;margin:.5em 0}
+#notes-pv pre code{background:none;padding:0}
+#notes-pv blockquote{border-left:3px solid var(--accent);margin:0;padding-left:10px;color:var(--text2)}
+#notes-pv table{border-collapse:collapse;width:100%;margin:.5em 0}
+#notes-pv th,#notes-pv td{border:1px solid var(--border);padding:5px 9px;font-size:12px}
+#notes-pv th{background:var(--bg3)}
+#notes-pv a{color:var(--accent)}
+#notes-pv hr{border:none;border-top:1px solid var(--border);margin:.8em 0}
+#notes-pv ul,#notes-pv ol{margin:.3em 0 .3em 1.5em}
+#notes-pv li{margin:.1em 0}
+
+/* ─── DIALOGS / TOAST ─── */
+#note-dlg{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.55);align-items:center;justify-content:center}
+#note-dlg.show{display:flex}
+.dlg{background:var(--bg2);border-radius:10px;padding:18px;width:380px;max-width:92vw;box-shadow:var(--shadow-lg);border:1px solid var(--border)}
+.dlg h3{font-size:14px;margin-bottom:10px}
+.dlg textarea{width:100%;height:90px;border:1px solid var(--border);border-radius:5px;background:var(--bg3);color:var(--text);padding:8px 10px;font-size:12.5px;font-family:var(--font);outline:none;resize:vertical}
+.dlg textarea:focus{border-color:var(--accent)}
+.dlg-acts{display:flex;gap:7px;justify-content:flex-end;margin-top:10px}
+.dlg-btn{padding:6px 15px;border-radius:5px;border:none;cursor:pointer;font-size:12.5px;font-family:var(--font);transition:background var(--transition)}
+.dlg-btn.pri{background:var(--accent);color:#fff}.dlg-btn.pri:hover{background:var(--accent2)}
+.dlg-btn.sec{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}.dlg-btn.sec:hover{background:var(--border)}
+
+#toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:var(--tb);color:#fff;padding:8px 18px;border-radius:8px;font-size:12.5px;
+  z-index:999;opacity:0;transition:all .22s;pointer-events:none;box-shadow:var(--shadow-lg);
+  border:1px solid rgba(255,255,255,.1);white-space:nowrap
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ─── LOADING ─── */
+.ld-ovl{position:absolute;inset:0;background:var(--bg2);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;gap:10px}
+.spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ld-txt{font-size:12px;color:var(--text2)}
+
+/* ─── MISC ─── */
+.color-row{display:flex;gap:5px;align-items:center}
+#sidebar.hidden+#main #notes-panel{left:0}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div id="sb-header">
+    <span class="logo">📚 PDF Scholar</span>
+    <button class="sb-btn" title="折叠全部" onclick="collapseAll()">⊟</button>
+    <button class="sb-btn" title="清空" onclick="clearAll()">🗑</button>
+  </div>
+  <div id="drop-zone">
+    <div class="dz-row">
+      <button class="dz-pick" onclick="pickFiles()">选择 PDF</button>
+      <button class="dz-pick" onclick="pickFolder()">选择文件夹</button>
+    </div>
+    <div class="dz-hint">或将 PDF / 文件夹拖放到此处</div>
+  </div>
+  <input type="file" id="fi-files" multiple accept=".pdf" onchange="handleFilePick(this)">
+  <input type="file" id="fi-folder" webkitdirectory multiple accept=".pdf" onchange="handleFolderPick(this)">
+  <div id="file-tree"></div>
+  <div id="sb-resizer"></div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- TOOLBAR -->
+  <div id="toolbar">
+    <button class="tb" id="tb-sb" title="切换侧栏 [B]" onclick="toggleSidebar()">☰</button>
+    <div class="tb-sep"></div>
+    <!-- page -->
+    <button class="tb" title="上一页 [←]" onclick="changePage(-1)">‹</button>
+    <input type="number" id="page-cur" min="1" value="1" onchange="goPage(this.value)">
+    <span id="page-tot">/ 1</span>
+    <button class="tb" title="下一页 [→]" onclick="changePage(1)">›</button>
+    <div class="tb-sep"></div>
+    <!-- zoom -->
+    <button class="tb" title="缩小 [-]" onclick="zoom(-0.15)">－</button>
+    <input type="text" id="zoom-val" value="100%" onchange="setZoom(this.value)">
+    <button class="tb" title="放大 [+]" onclick="zoom(+0.15)">＋</button>
+    <button class="tb" title="适宽" onclick="zoomFit()">⊡</button>
+    <div class="tb-sep"></div>
+    <!-- tools -->
+    <span class="tb-lbl">工具</span>
+    <button class="tb on" id="tool-sel" title="选择" onclick="setTool('sel')">▲</button>
+    <button class="tb" id="tool-hl" title="高亮 [H]" onclick="setTool('hl')">🖊</button>
+    <button class="tb" id="tool-ul" title="下划线 [U]" onclick="setTool('ul')" style="text-decoration:underline">A</button>
+    <button class="tb" id="tool-note" title="批注 [N]" onclick="setTool('note')">📌</button>
+    <button class="tb" id="tool-txt" title="文本框 [T]" onclick="setTool('txt')">T</button>
+    <!-- anno colors -->
+    <span class="ac on" style="background:#f6d155" data-c="#f6d155" onclick="setAC(this)"></span>
+    <span class="ac" style="background:#7ee8a2" data-c="#7ee8a2" onclick="setAC(this)"></span>
+    <span class="ac" style="background:#6db8ff" data-c="#6db8ff" onclick="setAC(this)"></span>
+    <span class="ac" style="background:#ff8a8a" data-c="#ff8a8a" onclick="setAC(this)"></span>
+    <span class="ac" style="background:#d4a4ff" data-c="#d4a4ff" onclick="setAC(this)"></span>
+    <div class="tb-sep"></div>
+    <!-- view -->
+    <span class="tb-lbl">视图</span>
+    <button class="tb on" id="sp-off" title="单屏" onclick="setSplit('off')">□</button>
+    <button class="tb" id="sp-h" title="左右分屏" onclick="setSplit('h')">◫</button>
+    <button class="tb" id="sp-v" title="上下分屏" onclick="setSplit('v')">⬒</button>
+    <div class="tb-sep"></div>
+    <button class="tb" id="tb-ol" title="目录" onclick="togglePanel('ol-panel')">≡</button>
+    <button class="tb" id="tb-bm" title="书签" onclick="togglePanel('bm-panel')">🔖</button>
+    <button class="tb" title="添加书签" onclick="addBookmark()">＋🔖</button>
+    <button class="tb" id="tb-sr" title="搜索 Ctrl+F" onclick="toggleSearch()">🔍</button>
+    <div class="tb-spacer"></div>
+    <button class="tb" id="tb-ql" title="快捷工具" onclick="toggleQL()">🔗</button>
+    <button class="tb on" id="tb-notes" title="笔记 Ctrl+N" onclick="toggleNotes()">📝</button>
+    <button class="tb" title="导出带标注 PDF" onclick="exportPDF()">⬇ 导出</button>
+    <button class="tb" id="tb-theme" title="切换主题" onclick="cycleTheme()">🌙</button>
+  </div>
+
+  <!-- VIEWER -->
+  <div id="viewer-area">
+    <div id="pane-wrap"></div>
+
+    <!-- Search bar -->
+    <div id="search-bar">
+      <input id="search-inp" type="text" placeholder="搜索…" oninput="doSearch(this.value)" onkeydown="searchNav(event)">
+      <span id="search-ct"></span>
+      <button class="sbar-btn" onclick="searchNav({key:'ArrowUp'})">↑</button>
+      <button class="sbar-btn" onclick="searchNav({key:'ArrowDown'})">↓</button>
+      <button class="sbar-btn" onclick="closeSearch()">✕</button>
+    </div>
+
+    <!-- Outline panel -->
+    <div id="ol-panel" class="side-panel left">
+      <div class="panel-hdr">目录 <button class="panel-close" onclick="togglePanel('ol-panel')">×</button></div>
+      <div id="ol-list" class="panel-body"></div>
+    </div>
+
+    <!-- Bookmarks panel -->
+    <div id="bm-panel" class="side-panel right">
+      <div class="panel-hdr">书签 <button class="panel-close" onclick="togglePanel('bm-panel')">×</button></div>
+      <div id="bm-list" class="panel-body"></div>
+    </div>
+
+    <!-- Quick links panel -->
+    <div id="ql-panel">
+      <div class="panel-hdr">
+        快捷工具
+        <div style="display:flex;gap:5px">
+          <button class="ql-act sec" onclick="exportQL()" style="font-size:11px">导出</button>
+          <button class="ql-act sec" onclick="document.getElementById('ql-import').click()" style="font-size:11px">导入</button>
+          <input type="file" id="ql-import" accept=".json" style="display:none" onchange="importQL(this)">
+          <button class="panel-close" onclick="toggleQL()">×</button>
+        </div>
+      </div>
+      <div id="ql-list"></div>
+      <div id="ql-add-form">
+        <input class="ql-inp" id="ql-url" placeholder="网址 https://…" type="url">
+        <input class="ql-inp" id="ql-name" placeholder="名称（留空自动获取）">
+        <div class="ql-add-row">
+          <input class="ql-inp" id="ql-ico" placeholder="图标URL（留空自动）" style="flex:1">
+          <input type="file" id="ql-ico-upload" accept="image/*" style="display:none" onchange="qlIcoUpload(this)">
+          <button class="ql-act sec" onclick="document.getElementById('ql-ico-upload').click()" title="上传图标">📁</button>
+        </div>
+        <img id="ql-icon-preview" src="" alt="">
+        <button class="ql-act" onclick="addQL()">＋ 添加</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTES -->
+  <div id="notes-panel" class="show">
+    <div id="notes-rh"></div>
+    <div id="notes-tb">
+      <span style="font-size:11px;font-weight:700;color:var(--text3);margin-right:3px;">📝</span>
+      <div class="n-sep"></div>
+      <button class="ntb" title="粗体 Ctrl+B" onclick="nmd('**','**')"><b>B</b></button>
+      <button class="ntb" title="斜体" onclick="nmd('*','*')"><i>I</i></button>
+      <button class="ntb" title="删除线" onclick="nmd('~~','~~')"><s>S</s></button>
+      <button class="ntb" title="行内代码" onclick="nmd('`','`')">⌨</button>
+      <div class="n-sep"></div>
+      <button class="ntb" onclick="nmdl('# ')">H1</button>
+      <button class="ntb" onclick="nmdl('## ')">H2</button>
+      <button class="ntb" onclick="nmdl('### ')">H3</button>
+      <button class="ntb" onclick="nmdl('- ')">•</button>
+      <button class="ntb" onclick="nmdl('1. ')">1.</button>
+      <button class="ntb" onclick="nmdl('> ')">❝</button>
+      <button class="ntb" onclick="nmd('\n```\n','\n```\n')">{ }</button>
+      <button class="ntb" onclick="nmdl('---')">—</button>
+      <button class="ntb" onclick="nInsertTable()">⊞</button>
+      <div class="n-sep"></div>
+      <div class="color-row">
+        <span class="nc on" style="background:#e74c3c" title="红" onclick="setNoteColor('#e74c3c',this)"></span>
+        <span class="nc" style="background:#e08c20" title="橙" onclick="setNoteColor('#e08c20',this)"></span>
+        <span class="nc" style="background:#27ae7a" title="绿" onclick="setNoteColor('#27ae7a',this)"></span>
+        <span class="nc" style="background:#2d5be3" title="蓝" onclick="setNoteColor('#2d5be3',this)"></span>
+        <span class="nc" style="background:#9b59b6" title="紫" onclick="setNoteColor('#9b59b6',this)"></span>
+        <span class="nc" style="background:var(--text)" title="默认" onclick="setNoteColor('',this)"></span>
+      </div>
+      <div class="n-sep"></div>
+      <button class="ntb on" id="n-edit" onclick="setNMode('edit')">编辑</button>
+      <button class="ntb" id="n-prev" onclick="setNMode('prev')">预览</button>
+      <button class="ntb" id="n-split" onclick="setNMode('split')">分栏</button>
+      <div class="n-sp"></div>
+      <button class="ntb" onclick="exportNotes('md')">导出 .md</button>
+      <button class="ntb" onclick="exportNotes('html')">导出 .html</button>
+      <button class="ntb" onclick="clearNotes()" style="color:var(--danger)">清空</button>
+      <button class="ntb" onclick="toggleNotes()" style="margin-left:3px">✕</button>
+    </div>
+    <div id="notes-body">
+      <textarea id="notes-ed" placeholder="# 论文笔记&#10;&#10;Markdown 格式笔记…"></textarea>
+      <div id="notes-pv"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Sel toolbar -->
+<div id="sel-tb">
+  <button class="stb" title="高亮" onclick="doAnno('hl')">🖊</button>
+  <button class="stb" title="下划线" onclick="doAnno('ul')" style="text-decoration:underline">A</button>
+  <button class="stb" title="批注" onclick="doAnnoNote()">📌</button>
+  <button class="stb" title="文字书签" onclick="doTextBM()">🔖</button>
+  <button class="stb" title="复制" onclick="doCopy()">⎘</button>
+</div>
+
+<!-- Note dialog -->
+<div id="note-dlg">
+  <div class="dlg">
+    <h3>📌 添加批注</h3>
+    <textarea id="note-txt" placeholder="批注内容…"></textarea>
+    <div class="dlg-acts">
+      <button class="dlg-btn sec" onclick="closeNoteDlg()">取消</button>
+      <button class="dlg-btn pri" onclick="saveNoteDlg()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script>
+'use strict';
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const DPR=window.devicePixelRatio||1;
+
+// ─── STATE ───
+const S={
+  folders:{},          // key→[{id,name,size,file}]
+  docs:{},             // id→{name,file,buf,pdfDoc,pageCount,annos:{},textboxes:{},bookmarks:[]}
+  panes:[{id:null,page:1,zoom:1,tabs:[],scroll:null}],
+  paneIdx:0,
+  split:'off',
+  tool:'sel',
+  ac:'#f6d155',
+  pending:null,
+  noteTarget:null,
+  searchRes:[],searchIdx:-1,
+  theme:'auto',
+  quicklinks:[],
+  nMode:'edit',
+};
+let _id=0; const uid=()=>'d'+(++_id);
+
+// ─── THEME ───
+function initTheme(){
+  S.theme=localStorage.getItem('psch_theme')||'auto';
+  applyTheme();
+}
+function applyTheme(){
+  if(S.theme==='auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme',S.theme);
+}
+function cycleTheme(){
+  S.theme={auto:'light',light:'dark',dark:'auto'}[S.theme];
+  localStorage.setItem('psch_theme',S.theme);
+  applyTheme();
+  toast({auto:'跟随系统',light:'浅色模式',dark:'深色模式'}[S.theme]);
+}
+
+// ─── FILE PICKING ───
+function pickFiles(){ document.getElementById('fi-files').click(); }
+function pickFolder(){ document.getElementById('fi-folder').click(); }
+
+function handleFilePick(input){
+  Array.from(input.files).forEach(f=>addFile(f,'__root__'));
+  renderTree(); input.value='';
+}
+function handleFolderPick(input){
+  const files=Array.from(input.files).filter(f=>f.name.toLowerCase().endsWith('.pdf'));
+  files.forEach(f=>{
+    // webkitRelativePath = "FolderName/sub/file.pdf"
+    const parts=f.webkitRelativePath.split('/');
+    const folder=parts.length>1?parts[0]:'__root__';
+    addFile(f,folder);
+  });
+  renderTree(); input.value='';
+}
+
+// DRAG AND DROP
+const app=document.getElementById('app');
+app.addEventListener('dragover',e=>{e.preventDefault();document.getElementById('drop-zone').classList.add('over');});
+app.addEventListener('dragleave',e=>{if(!app.contains(e.relatedTarget))document.getElementById('drop-zone').classList.remove('over');});
+app.addEventListener('drop',async e=>{
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('over');
+  const items=Array.from(e.dataTransfer.items);
+  for(const item of items){
+    if(item.kind!=='file') continue;
+    const entry=item.webkitGetAsEntry?item.webkitGetAsEntry():null;
+    if(entry&&entry.isDirectory){
+      await readDir(entry,entry.name);
+    } else {
+      const f=item.getAsFile();
+      if(f&&f.name.toLowerCase().endsWith('.pdf')) addFile(f,'__root__');
+    }
+  }
+  renderTree();
+});
+function readDir(dir,folder){
+  return new Promise(res=>{
+    const reader=dir.createReader();
+    const all=[];
+    const readBatch=()=>reader.readEntries(entries=>{
+      if(!entries.length){
+        Promise.all(all).then(res);
+        return;
+      }
+      all.push(...entries.map(entry=>{
+        if(entry.isDirectory) return readDir(entry,folder+'/'+entry.name);
+        if(entry.isFile&&entry.name.toLowerCase().endsWith('.pdf'))
+          return new Promise(r=>entry.file(f=>{addFile(f,folder);r();}));
+        return Promise.resolve();
+      }));
+      readBatch();
+    });
+    readBatch();
+  });
+}
+
+function addFile(file,folder){
+  const key=folder||'__root__';
+  if(!S.folders[key]) S.folders[key]=[];
+  const lst=S.folders[key];
+  const dup=lst.find(x=>x.name===file.name&&x.size!==file.size);
+  const id=uid();
+  lst.push({id,name:file.name,size:file.size,file,dupOf:dup?dup.id:null});
+}
+function clearAll(){ if(!confirm('清空所有文件？')) return; S.folders={}; S.docs={}; S.panes.forEach(p=>{p.id=null;p.tabs=[];p.page=1;}); renderTree(); renderPanes(); }
+function collapseAll(){ document.querySelectorAll('.folder-hdr').forEach(h=>{h.classList.remove('open'); const l=h.nextElementSibling; if(l) l.style.display='none';}); }
+function fmtSize(b){ if(b<1024) return b+'B'; if(b<1048576) return (b/1024).toFixed(0)+'KB'; return (b/1048576).toFixed(1)+'MB'; }
+
+function renderTree(){
+  const tree=document.getElementById('file-tree');
+  tree.innerHTML='';
+  Object.keys(S.folders).forEach(key=>{
+    const files=S.folders[key];
+    const label=key==='__root__'?'未分组':key;
+    const grp=document.createElement('div');
+    grp.className='folder-group';
+    const hdr=document.createElement('div');
+    hdr.className='folder-hdr open';
+    hdr.innerHTML=`<span class="folder-arrow">▶</span><span class="folder-name" title="${label}">📁 ${label}</span><span class="folder-count">${files.length}</span>`;
+    const list=document.createElement('div');
+    list.className='file-list';
+    hdr.onclick=()=>{hdr.classList.toggle('open');list.style.display=hdr.classList.contains('open')?'':'none';};
+    files.forEach((f,idx)=>{
+      const item=document.createElement('div');
+      item.className='file-item'+(S.panes.some(p=>p.tabs.includes(f.id))?' active':'');
+      item.dataset.fid=f.id;
+      const shortName=f.name.replace(/\.pdf$/i,'');
+      item.innerHTML=`<span class="fi-name" title="${f.name}">${idx+1}. ${shortName}</span><span class="fi-size">${fmtSize(f.size)}</span>${f.dupOf?'<span class="dup-badge">重复</span>':''}<button class="fi-split" title="在另一分屏打开" onclick="event.stopPropagation();openInSplit('${f.id}')">⊞</button>`;
+      item.onclick=()=>openDoc(f.id,f);
+      grp.appendChild(item);
+    });
+    grp.insertBefore(hdr,grp.firstChild);
+    hdr.after(list);
+    tree.appendChild(grp);
+    // rebuild: move items into list
+    Array.from(grp.children).slice(2).forEach(c=>list.appendChild(c));
+  });
+}
+
+// ─── OPEN DOC ───
+async function openDoc(id,fe,paneIdx){
+  paneIdx=paneIdx!==undefined?paneIdx:S.paneIdx;
+  const pane=S.panes[paneIdx];
+  if(S.docs[id]){
+    pane.id=id; pane.page=1; pane.zoom=pane.zoom||1;
+    if(!pane.tabs.includes(id)) pane.tabs.push(id);
+    renderPanes(); updateToolbar(); updateTreeActive(); return;
+  }
+  const entry=fe||findEntry(id);
+  if(!entry) return;
+  toast('加载 '+entry.name+'…');
+  const buf=await entry.file.arrayBuffer();
+  const pdfDoc=await pdfjsLib.getDocument({data:buf.slice(0)}).promise;
+  S.docs[id]={name:entry.name,file:entry.file,buf,pdfDoc,pageCount:pdfDoc.numPages,annos:{},textboxes:{},bookmarks:[]};
+  pane.id=id; pane.page=1; pane.zoom=1;
+  if(!pane.tabs.includes(id)) pane.tabs.push(id);
+  renderPanes(); updateToolbar(); updateTreeActive();
+  loadOutline(id);
+}
+function openInSplit(id){
+  const fe=findEntry(id);
+  if(!fe) return;
+  if(S.split==='off') setSplit('h');
+  const pidx=S.panes.length>1?1:0;
+  openDoc(id,fe,pidx);
+}
+function findEntry(id){ for(const k of Object.keys(S.folders)){ const f=S.folders[k].find(x=>x.id===id); if(f) return f; } return null; }
+function updateTreeActive(){ document.querySelectorAll('.file-item').forEach(el=>{const id=el.dataset.fid;el.classList.toggle('active',S.panes.some(p=>p.tabs.includes(id)));}); }
+
+// ─── PANES ───
+function renderPanes(){
+  const wrap=document.getElementById('pane-wrap');
+  wrap.innerHTML='';
+  wrap.className='';
+  if(S.split==='h'||S.split==='v') wrap.classList.add('s'+S.split);
+  const count=S.split==='off'?1:2;
+  while(S.panes.length<count) S.panes.push({id:null,page:1,zoom:1,tabs:[]});
+  for(let i=0;i<count;i++){
+    if(i>0){
+      const div=document.createElement('div');
+      div.className='pane-div'+(S.split==='v'?' h':'');
+      div.addEventListener('mousedown',startDivResize);
+      wrap.appendChild(div);
+    }
+    wrap.appendChild(buildPane(i));
+  }
+  for(let i=0;i<count;i++) renderPaneDoc(i);
+}
+
+function buildPane(idx){
+  const pane=S.panes[idx];
+  const el=document.createElement('div');
+  el.className='v-pane';
+  el.dataset.pi=idx;
+  el.addEventListener('mousedown',()=>{S.paneIdx=idx;updateToolbar();});
+
+  // tabs
+  const tabs=document.createElement('div');
+  tabs.className='pane-tabs';
+  pane.tabs.forEach(docId=>{
+    const doc=S.docs[docId]; if(!doc) return;
+    const tab=document.createElement('div');
+    tab.className='p-tab'+(docId===pane.id?' on':'');
+    const nm=doc.name.replace(/\.pdf$/i,'');
+    tab.innerHTML=`<span class="tx" title="${doc.name}">${nm}</span><button class="tc" onclick="event.stopPropagation();closeTab(${idx},'${docId}')">×</button>`;
+    tab.onclick=()=>switchTab(idx,docId);
+    tabs.appendChild(tab);
+  });
+  el.appendChild(tabs);
+
+  // scroll
+  const scroll=document.createElement('div');
+  scroll.className='pane-scroll';
+  scroll.id='ps-'+idx;
+  pane.scroll=scroll;
+  el.appendChild(scroll);
+
+  // Ctrl+wheel zoom (prevent browser zoom)
+  el.addEventListener('wheel',e=>{
+    if(!e.ctrlKey) return;
+    e.preventDefault();
+    const delta=e.deltaY>0?-0.1:0.1;
+    const p=S.panes[idx];
+    p.zoom=Math.max(0.3,Math.min(4,p.zoom+delta));
+    S.paneIdx=idx;
+    renderPaneDoc(idx);
+    updateToolbar();
+  },{passive:false});
+
+  return el;
+}
+
+function switchTab(idx,docId){ const p=S.panes[idx]; p.id=docId; p.page=1; S.paneIdx=idx; renderPanes(); updateToolbar(); updateTreeActive(); }
+function closeTab(idx,docId){ const p=S.panes[idx]; p.tabs=p.tabs.filter(x=>x!==docId); if(p.id===docId){p.id=p.tabs[p.tabs.length-1]||null;p.page=1;} renderPanes(); updateToolbar(); updateTreeActive(); }
+
+async function renderPaneDoc(idx){
+  const pane=S.panes[idx];
+  const scroll=document.getElementById('ps-'+idx);
+  if(!scroll) return;
+  scroll.innerHTML='';
+  if(!pane.id||!S.docs[pane.id]){
+    scroll.innerHTML='<div class="empty-pane"><div class="ei">📄</div><p>从左栏打开论文</p></div>'; return;
+  }
+  const doc=S.docs[pane.id];
+  const ld=document.createElement('div'); ld.className='ld-ovl';
+  ld.innerHTML='<div class="spin"></div><div class="ld-txt">渲染中…</div>';
+  scroll.appendChild(ld);
+  try{
+    for(let pg=1;pg<=doc.pageCount;pg++){
+      const page=await doc.pdfDoc.getPage(pg);
+      const wrap=await renderPage(page,pg,pane,idx,doc);
+      scroll.appendChild(wrap);
+    }
+  } finally { ld.remove(); }
+}
+
+async function renderPage(page,pgNum,pane,paneIdx,doc){
+  const scale=pane.zoom*DPR;
+  const vp=page.getViewport({scale});
+  const cssW=vp.width/DPR, cssH=vp.height/DPR;
+
+  const wrap=document.createElement('div');
+  wrap.className='page-wrap';
+  wrap.dataset.pg=pgNum;
+  wrap.dataset.pi=paneIdx;
+  wrap.style.width=cssW+'px';
+  wrap.style.height=cssH+'px';
+
+  // canvas
+  const canvas=document.createElement('canvas');
+  canvas.width=vp.width; canvas.height=vp.height;
+  canvas.style.width=cssW+'px'; canvas.style.height=cssH+'px';
+  const ctx=canvas.getContext('2d');
+  await page.render({canvasContext:ctx,viewport:vp}).promise;
+  wrap.appendChild(canvas);
+
+  // text layer for selection
+  const textContent=await page.getTextContent();
+  const textLayer=document.createElement('div');
+  textLayer.className='textLayer';
+  textLayer.style.width=cssW+'px'; textLayer.style.height=cssH+'px';
+  // render text items
+  const vpCss=page.getViewport({scale:pane.zoom});
+  textContent.items.forEach(item=>{
+    if(!item.str.trim()) return;
+    const tx=document.createElementNS('http://www.w3.org/1999/xhtml','span');
+    const [a,b,c,d,e,f]=item.transform;
+    const angle=Math.atan2(b,a);
+    // transform to CSS coords
+    const x=e*(pane.zoom);
+    const y=(vpCss.height - f*(pane.zoom));
+    const fontSize=Math.sqrt(a*a+b*b)*(pane.zoom);
+    tx.style.cssText=`left:${x}px;top:${y-fontSize}px;font-size:${fontSize}px;transform:scaleX(${item.width?(item.width*pane.zoom)/(fontSize*item.str.length||1):1})rotate(${angle}rad);`;
+    tx.textContent=item.str;
+    textLayer.appendChild(tx);
+  });
+  wrap.appendChild(textLayer);
+
+  // annotation layer
+  const annoLayer=document.createElement('div');
+  annoLayer.className='anno-layer';
+  annoLayer.style.width=cssW+'px'; annoLayer.style.height=cssH+'px';
+  wrap.appendChild(annoLayer);
+
+  // render annotations
+  renderAnnos(wrap,doc,pgNum,cssW,cssH);
+
+  // page badge
+  const badge=document.createElement('div');
+  badge.className='pg-badge'; badge.textContent=pgNum;
+  wrap.appendChild(badge);
+
+  // events
+  wrap.addEventListener('mouseup',e=>onMouseUp(e,pgNum,paneIdx,doc,cssW,cssH));
+  wrap.addEventListener('click',e=>onPageClick(e,pgNum,paneIdx,doc,cssW,cssH));
+
+  return wrap;
+}
+
+function renderAnnos(wrap,doc,pgNum,cssW,cssH){
+  // remove old anno layer; rebuild
+  const old=wrap.querySelector('.anno-layer');
+  if(old) old.remove();
+  const layer=document.createElement('div');
+  layer.className='anno-layer';
+  layer.style.cssText=`position:absolute;inset:0;width:${cssW}px;height:${cssH}px;pointer-events:none;z-index:3`;
+  wrap.appendChild(layer);
+
+  const annos=(doc.annos[pgNum]||[]);
+  annos.forEach((anno,ai)=>{
+    const sx=cssW/(anno.origW||cssW), sy=cssH/(anno.origH||cssH);
+    if(anno.type==='hl'||anno.type==='ul'){
+      anno.rects.forEach(r=>{
+        const el=document.createElement('div');
+        el.className=anno.type==='hl'?'hl':'ul';
+        el.style.cssText=`left:${r.x*sx}px;top:${r.y*sy}px;width:${r.w*sx}px;height:${r.h*sy}px;`+(anno.type==='hl'?`background:${anno.color};opacity:.45`:`border-bottom-color:${anno.color}`);
+        el.title='Alt+单击删除';
+        el.style.pointerEvents='auto';
+        el.addEventListener('click',ev=>{if(ev.altKey){doc.annos[pgNum].splice(ai,1);renderAnnos(wrap,doc,pgNum,cssW,cssH);}});
+        layer.appendChild(el);
+      });
+    } else if(anno.type==='note'){
+      const pin=document.createElement('div');
+      pin.className='notepin';
+      const sx2=cssW/(anno.origW||cssW), sy2=cssH/(anno.origH||cssH);
+      pin.style.cssText=`left:${anno.x*sx2-10}px;top:${anno.y*sy2-10}px;background:${anno.color};pointer-events:auto`;
+      pin.innerHTML=`📌<div class="ntip">${anno.text.replace(/</g,'&lt;')}</div>`;
+      pin.title='Alt+单击删除';
+      pin.addEventListener('click',ev=>{if(ev.altKey){doc.annos[pgNum].splice(ai,1);renderAnnos(wrap,doc,pgNum,cssW,cssH);}});
+      layer.appendChild(pin);
+    }
+  });
+
+  // text boxes
+  const boxes=(doc.textboxes[pgNum]||[]);
+  boxes.forEach((tb,bi)=>{
+    buildTextBox(wrap,tb,bi,doc,pgNum,cssW,cssH);
+  });
+}
+
+// ─── TEXT BOXES ───
+function buildTextBox(wrap,tb,bi,doc,pgNum,cssW,cssH){
+  const sx=cssW/(tb.origW||cssW), sy=cssH/(tb.origH||cssH);
+  const box=document.createElement('div');
+  box.className='txt-box';
+  box.style.cssText=`left:${tb.x*sx}px;top:${tb.y*sy}px;width:${(tb.w||140)*sx}px;min-height:30px;z-index:7;background:${tb.bg||'rgba(255,255,255,0.92)'};border-color:${tb.border||'#2d5be3'}`;
+
+  // mini toolbar
+  const ttb=document.createElement('div');
+  ttb.className='txt-box-toolbar';
+  ttb.innerHTML=`
+    <button title="粗体" onclick="tbFmt(this,'bold')"><b>B</b></button>
+    <button title="斜体" onclick="tbFmt(this,'italic')"><i>I</i></button>
+    <button title="下划线" onclick="tbFmt(this,'underline')"><u>U</u></button>
+    <button title="居中" onclick="tbFmt(this,'justifyCenter')">≡</button>
+    <button title="左对齐" onclick="tbFmt(this,'justifyLeft')">⇤</button>
+    <button title="列表" onclick="tbFmt(this,'insertUnorderedList')">•</button>
+    <select onchange="tbFontSize(this)" style="height:18px;font-size:10px;border:1px solid var(--border);background:var(--bg3);color:var(--text);border-radius:3px" title="字号">
+      ${[9,10,11,12,13,14,16,18,20,24,28,32].map(s=>`<option value="${s}"${s===13?' selected':''}>${s}</option>`).join('')}
+    </select>
+    <input type="color" value="${tb.color||'#1a1f2e'}" title="字体颜色" onchange="tbColor(this)" style="width:20px;height:18px;padding:0;border:none;cursor:pointer;background:none">
+    <input type="color" value="${tb.bg&&tb.bg.startsWith('#')?tb.bg:'#ffffff'}" title="背景色" onchange="tbBg(this,${bi},'${pgNum}')" style="width:20px;height:18px;padding:0;border:none;cursor:pointer;background:none" title="背景色">
+    <button title="删除文本框" onclick="delTextBox(${bi})" style="margin-left:auto;color:var(--danger)">×</button>
+  `;
+  box.appendChild(ttb);
+
+  const inner=document.createElement('div');
+  inner.className='txt-box-inner';
+  inner.contentEditable='true';
+  inner.style.color=tb.color||'';
+  inner.innerHTML=tb.html||'';
+  inner.spellcheck=false;
+  inner.addEventListener('input',()=>{ tb.html=inner.innerHTML; saveTBState(); });
+  box.appendChild(inner);
+
+  // resize handle
+  const rh=document.createElement('div');
+  rh.className='txt-box-resize';
+  box.appendChild(rh);
+
+  // drag
+  let ox=0,oy=0,bx=0,by=0;
+  ttb.addEventListener('mousedown',e=>{
+    if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
+    e.preventDefault();
+    ox=e.clientX; oy=e.clientY;
+    bx=parseFloat(box.style.left); by=parseFloat(box.style.top);
+    const mm=mv=>{
+      const nx=bx+(mv.clientX-ox), ny=by+(mv.clientY-oy);
+      box.style.left=nx+'px'; box.style.top=ny+'px';
+      tb.x=nx/sx; tb.y=ny/sy;
+    };
+    const mu=()=>{window.removeEventListener('mousemove',mm);window.removeEventListener('mouseup',mu);};
+    window.addEventListener('mousemove',mm); window.addEventListener('mouseup',mu);
+  });
+  // resize
+  rh.addEventListener('mousedown',e=>{
+    e.stopPropagation(); e.preventDefault();
+    const sx2=e.clientX, sy2=e.clientY;
+    const sw=parseFloat(box.style.width), sh=box.offsetHeight;
+    const mm=mv=>{
+      const nw=Math.max(80,sw+(mv.clientX-sx2));
+      box.style.width=nw+'px';
+      tb.w=nw/sx;
+    };
+    const mu=()=>{window.removeEventListener('mousemove',mm);window.removeEventListener('mouseup',mu);};
+    window.addEventListener('mousemove',mm); window.addEventListener('mouseup',mu);
+  });
+
+  box._tbIdx=bi;
+  box._doc=doc; box._pgNum=pgNum;
+  box._sx=sx; box._sy=sy;
+
+  // helpers
+  function tbFmt(btn,cmd){ inner.focus(); document.execCommand(cmd,false,null); }
+  function tbFontSize(sel){ inner.focus(); document.execCommand('fontSize',false,'7'); inner.querySelectorAll('font[size="7"]').forEach(f=>{f.removeAttribute('size');f.style.fontSize=sel.value+'px';}); }
+  function tbColor(inp){ inner.focus(); document.execCommand('foreColor',false,inp.value); tb.color=inp.value; }
+  function tbBg(inp){ box.style.background=inp.value; tb.bg=inp.value; }
+  function delTextBox(idx){ doc.textboxes[pgNum].splice(idx,1); renderAnnos(wrap,doc,pgNum,cssW,cssH); }
+  function saveTBState(){ tb.html=inner.innerHTML; }
+
+  wrap.appendChild(box);
+}
+
+// ─── ANNOTATION EVENTS ───
+let selTbTimer;
+function onMouseUp(e,pgNum,paneIdx,doc,cssW,cssH){
+  const sel=window.getSelection();
+  if(!sel||sel.isCollapsed){ hideSelTb(); return; }
+  const tb=document.getElementById('sel-tb');
+  tb.style.left=(e.clientX-40)+'px';
+  tb.style.top=(e.clientY-48)+'px';
+  tb.classList.add('show');
+  S.pending={pgNum,paneIdx,doc,cssW,cssH};
+}
+function hideSelTb(){ document.getElementById('sel-tb').classList.remove('show'); S.pending=null; }
+document.addEventListener('mousedown',e=>{if(!e.target.closest('#sel-tb')) hideSelTb();});
+
+function getSelRects(wrap){
+  const sel=window.getSelection();
+  if(!sel||sel.isCollapsed) return [];
+  const range=sel.getRangeAt(0);
+  const rects=Array.from(range.getClientRects());
+  const wr=wrap.getBoundingClientRect();
+  return rects.map(r=>({x:r.left-wr.left,y:r.top-wr.top,w:r.width,h:r.height})).filter(r=>r.w>1);
+}
+
+function getWrap(pending){
+  const scroll=document.getElementById('ps-'+pending.paneIdx);
+  return scroll?.querySelector(`[data-pg="${pending.pgNum}"]`);
+}
+
+function doAnno(type){
+  if(!S.pending) return;
+  const {pgNum,doc,cssW,cssH}=S.pending;
+  const wrap=getWrap(S.pending);
+  if(!wrap) return;
+  const rects=getSelRects(wrap);
+  if(!rects.length) return;
+  if(!doc.annos[pgNum]) doc.annos[pgNum]=[];
+  doc.annos[pgNum].push({type,color:S.ac,rects,origW:cssW,origH:cssH});
+  window.getSelection()?.removeAllRanges();
+  hideSelTb();
+  renderAnnos(wrap,doc,pgNum,cssW,cssH);
+}
+
+function doAnnoNote(){
+  if(!S.pending) return;
+  const {pgNum,paneIdx,doc,cssW,cssH}=S.pending;
+  const wrap=getWrap(S.pending);
+  if(!wrap) return;
+  const rects=getSelRects(wrap);
+  const x=rects.length?rects[0].x+rects[0].w/2:10;
+  const y=rects.length?rects[0].y:10;
+  S.noteTarget={pgNum,doc,cssW,cssH,x,y,wrap};
+  openNoteDlg(); hideSelTb();
+}
+
+function doTextBM(){
+  if(!S.pending) return;
+  const {pgNum,doc}=S.pending;
+  const sel=window.getSelection();
+  const txt=sel?.toString().trim()||'';
+  if(!txt){hideSelTb();return;}
+  doc.bookmarks.push({type:'text',text:txt,page:pgNum,docName:doc.name});
+  hideSelTb();
+  toast('文字书签已添加');
+  renderBMList();
+  window.getSelection()?.removeAllRanges();
+}
+
+function doCopy(){ toast('已复制'); navigator.clipboard?.writeText(window.getSelection()?.toString()||''); hideSelTb(); }
+
+function onPageClick(e,pgNum,paneIdx,doc,cssW,cssH){
+  if(S.tool==='note'){
+    const wrap=e.currentTarget;
+    const wr=wrap.getBoundingClientRect();
+    const x=e.clientX-wr.left, y=e.clientY-wr.top;
+    S.noteTarget={pgNum,doc,cssW,cssH,x,y,wrap};
+    openNoteDlg();
+  } else if(S.tool==='txt'){
+    const wrap=e.currentTarget;
+    const wr=wrap.getBoundingClientRect();
+    const x=e.clientX-wr.left, y=e.clientY-wr.top;
+    if(!doc.textboxes[pgNum]) doc.textboxes[pgNum]=[];
+    const tb={x,y,w:150,html:'',color:'#1a1f2e',bg:'rgba(255,255,255,0.92)',border:'#2d5be3',origW:cssW,origH:cssH};
+    doc.textboxes[pgNum].push(tb);
+    const bi=doc.textboxes[pgNum].length-1;
+    buildTextBox(wrap,tb,bi,doc,pgNum,cssW,cssH);
+    // focus new textbox
+    setTimeout(()=>{const box=wrap.querySelectorAll('.txt-box'); if(box.length) box[box.length-1].querySelector('.txt-box-inner').focus();},50);
+  }
+}
+
+function openNoteDlg(){ document.getElementById('note-txt').value=''; document.getElementById('note-dlg').classList.add('show'); setTimeout(()=>document.getElementById('note-txt').focus(),50); }
+function closeNoteDlg(){ document.getElementById('note-dlg').classList.remove('show'); S.noteTarget=null; }
+function saveNoteDlg(){
+  const txt=document.getElementById('note-txt').value.trim();
+  if(!txt||!S.noteTarget){ closeNoteDlg(); return; }
+  const {pgNum,doc,cssW,cssH,x,y,wrap}=S.noteTarget;
+  if(!doc.annos[pgNum]) doc.annos[pgNum]=[];
+  doc.annos[pgNum].push({type:'note',text:txt,color:S.ac,x,y,origW:cssW,origH:cssH});
+  closeNoteDlg();
+  renderAnnos(wrap,doc,pgNum,cssW,cssH);
+}
+
+// ─── TOOL ───
+function setTool(t){
+  S.tool=t;
+  ['sel','hl','ul','note','txt'].forEach(n=>document.getElementById('tool-'+n)?.classList.toggle('on',n===t));
+  document.querySelectorAll('.pane-scroll').forEach(s=>{ s.style.cursor=t==='txt'?'crosshair':t==='note'?'cell':''; });
+}
+function setAC(el){ S.ac=el.dataset.c; document.querySelectorAll('.ac').forEach(e=>e.classList.remove('on')); el.classList.add('on'); }
+
+// ─── ZOOM / PAGE ───
+function updateToolbar(){
+  const p=S.panes[S.paneIdx];
+  document.getElementById('zoom-val').value=Math.round(p.zoom*100)+'%';
+  const doc=p.id?S.docs[p.id]:null;
+  document.getElementById('page-cur').value=p.page;
+  document.getElementById('page-tot').textContent='/ '+(doc?doc.pageCount:1);
+}
+function zoom(d){ const p=S.panes[S.paneIdx]; p.zoom=Math.max(.3,Math.min(4,p.zoom+d)); renderPaneDoc(S.paneIdx); updateToolbar(); }
+function setZoom(v){ const n=parseFloat(v)||100; const p=S.panes[S.paneIdx]; p.zoom=Math.max(.3,Math.min(4,n/100)); renderPaneDoc(S.paneIdx); updateToolbar(); }
+function zoomFit(){
+  const p=S.panes[S.paneIdx];
+  const scroll=document.getElementById('ps-'+S.paneIdx);
+  const doc=p.id?S.docs[p.id]:null;
+  if(!doc||!scroll) return;
+  doc.pdfDoc.getPage(1).then(pg=>{
+    const vp=pg.getViewport({scale:1});
+    p.zoom=Math.max(.3,(scroll.clientWidth-32)/vp.width);
+    renderPaneDoc(S.paneIdx); updateToolbar();
+  });
+}
+function changePage(d){ const p=S.panes[S.paneIdx]; const doc=p.id?S.docs[p.id]:null; if(!doc) return; p.page=Math.max(1,Math.min(doc.pageCount,p.page+d)); scrollToPage(S.paneIdx,p.page); updateToolbar(); }
+function goPage(v){ const p=S.panes[S.paneIdx]; const doc=p.id?S.docs[p.id]:null; if(!doc) return; p.page=Math.max(1,Math.min(doc.pageCount,parseInt(v)||1)); scrollToPage(S.paneIdx,p.page); updateToolbar(); }
+function scrollToPage(pi,pg){ const s=document.getElementById('ps-'+pi); if(!s) return; const w=s.querySelector('[data-pg="'+pg+'"]'); if(w) w.scrollIntoView({behavior:'smooth',block:'start'}); }
+
+// page tracking from scroll
+document.getElementById('viewer-area').addEventListener('scroll',trackPage,true);
+function trackPage(e){
+  const scroll=e.target;
+  if(!scroll.classList?.contains('pane-scroll')) return;
+  const pane=scroll.closest('.v-pane');
+  const pi=parseInt(pane?.dataset.pi??'0');
+  const wraps=scroll.querySelectorAll('.page-wrap');
+  let best=1;
+  const sRect=scroll.getBoundingClientRect();
+  wraps.forEach(w=>{const r=w.getBoundingClientRect(); if(r.top<=sRect.top+sRect.height*.6) best=parseInt(w.dataset.pg);});
+  S.panes[pi].page=best;
+  if(pi===S.paneIdx) updateToolbar();
+}
+
+// ─── SPLIT ───
+function setSplit(mode){
+  S.split=mode;
+  if(mode!=='off'&&S.panes.length<2) S.panes.push({id:null,page:1,zoom:1,tabs:[]});
+  ['sp-off','sp-h','sp-v'].forEach(id=>document.getElementById(id)?.classList.remove('on'));
+  document.getElementById({off:'sp-off',h:'sp-h',v:'sp-v'}[mode])?.classList.add('on');
+  renderPanes();
+}
+function startDivResize(e){
+  e.preventDefault();
+  const div=e.currentTarget;
+  div.classList.add('dragging');
+  const wrap=document.getElementById('pane-wrap');
+  const panes=wrap.querySelectorAll('.v-pane');
+  if(panes.length<2) return;
+  const isH=S.split==='h';
+  const mm=mv=>{
+    const wr=wrap.getBoundingClientRect();
+    let r=isH?(mv.clientX-wr.left)/wr.width:(mv.clientY-wr.top)/wr.height;
+    r=Math.max(.15,Math.min(.85,r));
+    panes[0].style.flex=`0 0 ${r*100}%`;
+    panes[1].style.flex=`0 0 ${(1-r)*100}%`;
+  };
+  const mu=()=>{div.classList.remove('dragging');window.removeEventListener('mousemove',mm);window.removeEventListener('mouseup',mu);};
+  window.addEventListener('mousemove',mm); window.addEventListener('mouseup',mu);
+}
+
+// ─── SIDEBAR ───
+const sbResizer=document.getElementById('sb-resizer');
+sbResizer.addEventListener('mousedown',e=>{
+  e.preventDefault();
+  const sb=document.getElementById('sidebar');
+  const mm=mv=>{ const w=Math.max(0,Math.min(400,mv.clientX)); sb.style.width=w+'px'; updateNotesPanelLeft(); };
+  const mu=()=>{window.removeEventListener('mousemove',mm);window.removeEventListener('mouseup',mu);};
+  window.addEventListener('mousemove',mm); window.addEventListener('mouseup',mu);
+});
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  sb.classList.toggle('hidden');
+  updateNotesPanelLeft();
+}
+function updateNotesPanelLeft(){
+  const sb=document.getElementById('sidebar');
+  const np=document.getElementById('notes-panel');
+  if(sb.classList.contains('hidden')) np.classList.add('sb-hidden');
+  else np.classList.remove('sb-hidden');
+}
+
+// ─── OUTLINE ───
+async function loadOutline(docId){
+  const doc=S.docs[docId]; if(!doc) return;
+  try{
+    const outline=await doc.pdfDoc.getOutline();
+    const list=document.getElementById('ol-list');
+    list.innerHTML='';
+    if(!outline?.length){ list.innerHTML='<div style="padding:12px;font-size:12px;color:var(--text3)">暂无目录</div>'; return; }
+    const render=(items,lvl)=>items.forEach(item=>{
+      const div=document.createElement('div');
+      div.className='ol-item';
+      div.style.paddingLeft=(12+lvl*12)+'px';
+      if(lvl===0) div.style.fontWeight='600';
+      div.textContent=item.title||'';
+      div.onclick=()=>jumpOutline(docId,item);
+      list.appendChild(div);
+      if(item.items?.length) render(item.items,lvl+1);
+    });
+    render(outline,0);
+  } catch(e){}
+}
+async function jumpOutline(docId,item){
+  const p=S.panes[S.paneIdx];
+  if(p.id!==docId) return;
+  const doc=S.docs[docId];
+  try{
+    const dest=typeof item.dest==='string'?await doc.pdfDoc.getDestination(item.dest):item.dest;
+    if(!dest) return;
+    const pgIdx=await doc.pdfDoc.getPageIndex(dest[0]);
+    p.page=pgIdx+1; scrollToPage(S.paneIdx,p.page); updateToolbar();
+  } catch(e){}
+}
+
+// ─── BOOKMARKS ───
+function togglePanel(id){ document.getElementById(id)?.classList.toggle('show'); if(id==='bm-panel') renderBMList(); }
+function addBookmark(){
+  const p=S.panes[S.paneIdx]; const doc=p.id?S.docs[p.id]:null; if(!doc) return;
+  doc.bookmarks.push({type:'page',page:p.page,docName:doc.name,label:`第 ${p.page} 页`});
+  toast('书签已添加：第 '+p.page+' 页');
+  renderBMList();
+}
+function renderBMList(){
+  const list=document.getElementById('bm-list'); list.innerHTML='';
+  let any=false;
+  Object.values(S.docs).forEach(doc=>{
+    doc.bookmarks.forEach((bm,idx)=>{
+      any=true;
+      const item=document.createElement('div');
+      item.className='bm-item';
+      item.innerHTML=`<button class="bm-del" onclick="event.stopPropagation();delBM('${doc.name}',${idx})">删除</button><div class="bm-title">${bm.label||bm.text||'书签'}</div><div class="bm-meta"><span class="bm-type">${bm.type==='text'?'文字':'页面'}</span><span>${doc.name.replace(/\.pdf$/i,'')}</span>${bm.page?`<span>第${bm.page}页</span>`:''}</div>`;
+      item.onclick=()=>{
+        const docId=Object.keys(S.docs).find(k=>S.docs[k].name===doc.name);
+        if(!docId) return;
+        const p=S.panes[S.paneIdx];
+        if(bm.page){ p.id=docId; p.page=bm.page; renderPanes(); scrollToPage(S.paneIdx,bm.page); }
+      };
+      list.appendChild(item);
+    });
+  });
+  if(!any) list.innerHTML='<div style="padding:12px;font-size:12px;color:var(--text3)">暂无书签</div>';
+}
+function delBM(docName,idx){ const doc=Object.values(S.docs).find(d=>d.name===docName); if(doc){ doc.bookmarks.splice(idx,1); renderBMList(); } }
+
+// ─── SEARCH ───
+function toggleSearch(){ const b=document.getElementById('search-bar'); b.classList.toggle('show'); if(b.classList.contains('show')) document.getElementById('search-inp').focus(); else closeSearch(); }
+function closeSearch(){ document.getElementById('search-bar').classList.remove('show'); document.getElementById('search-inp').value=''; S.searchRes=[]; S.searchIdx=-1; document.getElementById('search-ct').textContent=''; }
+async function doSearch(txt){
+  S.searchRes=[]; S.searchIdx=-1;
+  if(!txt.trim()){ document.getElementById('search-ct').textContent=''; return; }
+  const p=S.panes[S.paneIdx]; const doc=p.id?S.docs[p.id]:null; if(!doc) return;
+  let cnt=0;
+  for(let i=1;i<=doc.pageCount;i++){
+    const pg=await doc.pdfDoc.getPage(i);
+    const content=await pg.getTextContent();
+    const full=content.items.map(x=>x.str).join(' ');
+    if(full.toLowerCase().includes(txt.toLowerCase())){ cnt++; S.searchRes.push(i); }
+  }
+  document.getElementById('search-ct').textContent=cnt?`${cnt}页匹配`:'无匹配';
+  if(S.searchRes.length){ S.searchIdx=0; scrollToPage(S.paneIdx,S.searchRes[0]); }
+}
+function searchNav(e){
+  if(!S.searchRes.length) return;
+  if(e.key==='ArrowDown'||e.key==='Enter') S.searchIdx=(S.searchIdx+1)%S.searchRes.length;
+  else if(e.key==='ArrowUp') S.searchIdx=(S.searchIdx-1+S.searchRes.length)%S.searchRes.length;
+  else return;
+  scrollToPage(S.paneIdx,S.searchRes[S.searchIdx]);
+}
+
+// ─── QUICK LINKS ───
+function loadQL(){ try{ S.quicklinks=JSON.parse(localStorage.getItem('psch_ql')||'[]'); } catch{ S.quicklinks=[]; } }
+function saveQL(){ localStorage.setItem('psch_ql',JSON.stringify(S.quicklinks)); }
+function toggleQL(){ document.getElementById('ql-panel').classList.toggle('show'); if(document.getElementById('ql-panel').classList.contains('show')) renderQL(); }
+function renderQL(){
+  const list=document.getElementById('ql-list'); list.innerHTML='';
+  S.quicklinks.forEach((ql,idx)=>{
+    const a=document.createElement('a');
+    a.className='ql-item'; a.href=ql.url; a.target='_blank'; a.rel='noopener';
+    let ico='';
+    if(ql.ico) ico=`<img class="ql-ico" src="${ql.ico}" alt="" onerror="this.style.display='none'">`;
+    else ico=`<div class="ql-ico-text">${(ql.name||ql.url).charAt(0).toUpperCase()}</div>`;
+    a.innerHTML=`${ico}<div style="flex:1;overflow:hidden"><div class="ql-name">${ql.name||ql.url}</div><div class="ql-url">${ql.url}</div></div><button class="ql-del" onclick="event.preventDefault();delQL(${idx})">×</button>`;
+    list.appendChild(a);
+  });
+  if(!S.quicklinks.length) list.innerHTML='<div style="padding:12px;font-size:12px;color:var(--text3)">暂无快捷工具<br>在下方添加网址</div>';
+}
+async function addQL(){
+  const url=document.getElementById('ql-url').value.trim();
+  if(!url){ toast('请输入网址'); return; }
+  let name=document.getElementById('ql-name').value.trim();
+  let ico=document.getElementById('ql-ico').value.trim();
+  // auto favicon
+  if(!ico){ try{ const u=new URL(url); ico=u.origin+'/favicon.ico'; } catch{} }
+  // auto name from title fetch attempt
+  if(!name){
+    name=url.replace(/^https?:\/\/(www\.)?/,'').split('/')[0];
+  }
+  S.quicklinks.push({url,name,ico});
+  saveQL(); renderQL();
+  document.getElementById('ql-url').value='';
+  document.getElementById('ql-name').value='';
+  document.getElementById('ql-ico').value='';
+  document.getElementById('ql-icon-preview').style.display='none';
+  toast('已添加');
+}
+function delQL(idx){ S.quicklinks.splice(idx,1); saveQL(); renderQL(); }
+function exportQL(){ const b=new Blob([JSON.stringify(S.quicklinks,null,2)],{type:'application/json'}); dl(b,'quicklinks.json'); }
+function importQL(input){
+  const f=input.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=e=>{ try{ S.quicklinks=JSON.parse(e.target.result); saveQL(); renderQL(); toast('导入成功'); } catch{ toast('导入失败'); } }; r.readAsText(f); input.value='';
+}
+function qlIcoUpload(input){
+  const f=input.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=e=>{ const prev=document.getElementById('ql-icon-preview'); prev.src=e.target.result; prev.style.display='block'; document.getElementById('ql-ico').value=e.target.result; }; r.readAsDataURL(f);
+}
+
+// ─── NOTES ───
+function toggleNotes(){ const p=document.getElementById('notes-panel'); p.classList.toggle('show'); document.getElementById('tb-notes').classList.toggle('on',p.classList.contains('show')); }
+function setNMode(m){
+  S.nMode=m;
+  const ed=document.getElementById('notes-ed');
+  const pv=document.getElementById('notes-pv');
+  ['n-edit','n-prev','n-split'].forEach(id=>document.getElementById(id)?.classList.remove('on'));
+  document.getElementById('n-'+m)?.classList.add('on');
+  if(m==='edit'){ ed.style.display='block'; pv.classList.remove('show'); pv.style.display='none'; }
+  else if(m==='prev'){ ed.style.display='none'; pv.style.display='block'; pv.classList.add('show'); renderNotes(); }
+  else{ ed.style.display='block'; pv.style.display='block'; pv.classList.add('show'); renderNotes(); }
+}
+function renderNotes(){
+  const raw=document.getElementById('notes-ed').value;
+  document.getElementById('notes-pv').innerHTML=marked.parse(raw);
+}
+document.getElementById('notes-ed').addEventListener('input',()=>{ if(S.nMode!=='edit') renderNotes(); localStorage.setItem('psch_notes',document.getElementById('notes-ed').value); });
+function nmd(b,a){ const ta=document.getElementById('notes-ed'); const s=ta.selectionStart,e=ta.selectionEnd; const sel=ta.value.substring(s,e); ta.setRangeText(b+sel+a,s,e,'end'); if(!sel){ta.selectionStart=ta.selectionEnd=s+b.length;} ta.focus(); renderNotes(); localStorage.setItem('psch_notes',ta.value); }
+function nmdl(p){ const ta=document.getElementById('notes-ed'); const s=ta.selectionStart; const ls=ta.value.lastIndexOf('\n',s-1)+1; ta.setRangeText(p,ls,ls,'end'); ta.focus(); renderNotes(); localStorage.setItem('psch_notes',ta.value); }
+function nInsertTable(){ nmd('\n| 列1 | 列2 | 列3 |\n|---|---|---|\n| 内容 | 内容 | 内容 |\n',''); }
+function setNoteColor(c,el){ document.getElementById('notes-ed').style.color=c; document.getElementById('notes-pv').style.color=c; document.querySelectorAll('.nc').forEach(e=>e.classList.remove('on')); el.classList.add('on'); }
+function exportNotes(fmt){
+  const raw=document.getElementById('notes-ed').value;
+  if(!raw.trim()){toast('笔记为空');return;}
+  if(fmt==='md') dl(new Blob([raw],{type:'text/markdown'}),'notes.md');
+  else {
+    const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:sans-serif;max-width:800px;margin:2em auto;padding:0 1em;line-height:1.7}code{background:#eee;padding:2px 5px;border-radius:3px}pre{background:#eee;padding:12px;border-radius:6px;overflow:auto}blockquote{border-left:3px solid #2d5be3;margin:0;padding-left:12px;color:#555}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:6px 10px}</style></head><body>${marked.parse(raw)}</body></html>`;
+    dl(new Blob([html],{type:'text/html'}),'notes.html');
+  }
+  toast('笔记已导出');
+}
+function clearNotes(){ if(!confirm('清空笔记？')) return; document.getElementById('notes-ed').value=''; renderNotes(); localStorage.setItem('psch_notes',''); }
+
+// Notes panel resize
+document.getElementById('notes-rh').addEventListener('mousedown',e=>{
+  e.preventDefault();
+  const panel=document.getElementById('notes-panel');
+  const mm=mv=>{ const h=window.innerHeight-mv.clientY; panel.style.height=Math.max(80,Math.min(window.innerHeight*.85,h))+'px'; };
+  const mu=()=>{window.removeEventListener('mousemove',mm);window.removeEventListener('mouseup',mu);};
+  window.addEventListener('mousemove',mm); window.addEventListener('mouseup',mu);
+});
+
+// ─── EXPORT PDF ───
+async function exportPDF(){
+  const p=S.panes[S.paneIdx]; const docObj=p.id?S.docs[p.id]:null;
+  if(!docObj){toast('请先打开 PDF');return;}
+  toast('生成带标注的 PDF…');
+  try{
+    const {PDFDocument,rgb,StandardFonts}=PDFLib;
+    const pdfDoc=await PDFDocument.load(docObj.buf.slice(0));
+    const pages=pdfDoc.getPages();
+    const font=await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+    for(const [pgStr,annos] of Object.entries(docObj.annos)){
+      const pgNum=parseInt(pgStr);
+      const pdfPage=pages[pgNum-1]; if(!pdfPage) continue;
+      const {width:pw,height:ph}=pdfPage.getSize();
+
+      for(const anno of annos){
+        const sx=pw/(anno.origW||pw), sy=ph/(anno.origH||ph);
+        if((anno.type==='hl'||anno.type==='ul')&&anno.rects){
+          const [r,g,b]=hexRgb(anno.color||'#f6d155');
+          anno.rects.forEach(rc=>{
+            if(anno.type==='hl'){
+              pdfPage.drawRectangle({x:rc.x*sx,y:ph-(rc.y+rc.h)*sy,width:rc.w*sx,height:rc.h*sy,color:rgb(r,g,b),opacity:.4});
+            } else {
+              pdfPage.drawLine({start:{x:rc.x*sx,y:ph-(rc.y+rc.h)*sy},end:{x:(rc.x+rc.w)*sx,y:ph-(rc.y+rc.h)*sy},thickness:1.5,color:rgb(r,g,b)});
+            }
+          });
+        } else if(anno.type==='note'){
+          const [r,g,b]=hexRgb(anno.color||'#f6d155');
+          pdfPage.drawCircle({x:anno.x*sx,y:ph-anno.y*sy,size:5,color:rgb(r,g,b)});
+          const note=anno.text.substring(0,80);
+          try{
+            pdfPage.drawText(note,{x:Math.min(anno.x*sx+8,pw-160),y:ph-anno.y*sy+3,size:7.5,font,color:rgb(0.1,0.1,0.1),maxWidth:160,lineHeight:10});
+          } catch(e2){}
+        }
+      }
+    }
+
+    // text boxes as text
+    for(const [pgStr,boxes] of Object.entries(docObj.textboxes)){
+      const pgNum=parseInt(pgStr);
+      const pdfPage=pages[pgNum-1]; if(!pdfPage) continue;
+      const {width:pw,height:ph}=pdfPage.getSize();
+      for(const tb of boxes){
+        const sx=pw/(tb.origW||pw), sy=ph/(tb.origH||ph);
+        // strip HTML
+        const tmp=document.createElement('div'); tmp.innerHTML=tb.html||''; const txt=tmp.textContent||'';
+        if(!txt.trim()) continue;
+        const [r,g,b]=hexRgb(tb.color||'#1a1f2e');
+        // draw background
+        const w=(tb.w||140)*sx, h=60;
+        pdfPage.drawRectangle({x:tb.x*sx,y:ph-(tb.y+h)*sy,width:w,height:h,color:rgb(1,1,1),opacity:.9});
+        pdfPage.drawRectangle({x:tb.x*sx,y:ph-(tb.y+h)*sy,width:w,height:h,borderColor:rgb(...hexRgb(tb.border||'#2d5be3')),borderWidth:1});
+        try{
+          pdfPage.drawText(txt.substring(0,200),{x:tb.x*sx+4,y:ph-(tb.y+14)*sy,size:9,font,color:rgb(r,g,b),maxWidth:w-8,lineHeight:11});
+        } catch(e2){}
+      }
+    }
+
+    const bytes=await pdfDoc.save();
+    dl(new Blob([bytes],{type:'application/pdf'}),docObj.name.replace(/\.pdf$/i,'_annotated.pdf'));
+    toast('PDF 已导出');
+  } catch(err){ console.error(err); toast('导出失败: '+err.message); }
+}
+
+function hexRgb(hex){
+  hex=hex.replace('#','');
+  if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+  if(!/^[0-9a-fA-F]{6}$/.test(hex)) return [0,0,0];
+  const n=parseInt(hex,16);
+  return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255];
+}
+
+// ─── UTIL ───
+function dl(blob,filename){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); }
+let _tt; function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),2500); }
+
+// ─── KEYBOARD ───
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable) return;
+  if(e.ctrlKey||e.metaKey){
+    if(e.key==='f'){e.preventDefault();toggleSearch();return;}
+    if(e.key==='n'){e.preventDefault();toggleNotes();return;}
+    if(e.key==='='||e.key==='+'){e.preventDefault();zoom(.15);return;}
+    if(e.key==='-'){e.preventDefault();zoom(-.15);return;}
+    if(e.key==='0'){e.preventDefault();zoomFit();return;}
+  }
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp') changePage(-1);
+  if(e.key==='ArrowRight'||e.key==='ArrowDown') changePage(1);
+  if(e.key==='b'||e.key==='B') toggleSidebar();
+  if(e.key==='h') setTool('hl');
+  if(e.key==='u') setTool('ul');
+  if(e.key==='t') setTool('txt');
+  if(e.key==='Escape') setTool('sel');
+});
+
+// ─── PWA ───
+if('serviceWorker' in navigator){
+  const sw=`const C='psch-v2';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll([location.pathname]))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+  const b=new Blob([sw],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(b)).catch(()=>{});
+}
+
+// ─── INIT ───
+initTheme();
+loadQL();
+const saved=localStorage.getItem('psch_notes');
+if(saved) document.getElementById('notes-ed').value=saved;
+renderPanes();
+setTool('sel');
+setSplit('off');
+document.getElementById('sp-off').classList.add('on');
+// init notes as shown (edit mode)
+setNMode('edit');
+
+console.log('📚 PDF Scholar v2 ready');
+console.log('快捷键: B=侧栏 H=高亮 U=下划线 T=文本框 Esc=选择 Ctrl+F=搜索 Ctrl+N=笔记 ←→=翻页 Ctrl+0=适宽');
+</script>
+</body>
+</html>
+HTMLEOF
