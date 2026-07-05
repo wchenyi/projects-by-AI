@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>户型重心 CAD 工作台</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#151b23; --panel-2:#1b2330; --border:#2a3441; --border-soft:#202a37;
+    --text:#e6edf5; --text-muted:#8b97a8; --text-faint:#576375;
+    --accent:#4fd1ff; --accent-dim:#2a5f73; --mark:#ff9f43; --mark-dim:#7a4d20;
+    --grid-line:#1c2531; --danger:#ff6b6b; --ok:#5ee6a0; --guide:#ff5fc4; --gold:#d4a437;
+    --radius:10px; --mono:'JetBrains Mono','SFMono-Regular',Consolas,monospace;
+    --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  [data-theme="light"]{
+    --bg:#eef1f5; --panel:#ffffff; --panel-2:#f5f7fa; --border:#d7dee6; --border-soft:#e3e8ee;
+    --text:#1a2330; --text-muted:#5a6676; --text-faint:#8b97a8;
+    --accent:#0f8fbf; --accent-dim:#cdeaf5; --mark:#d97a1e; --mark-dim:#f5dfc4;
+    --grid-line:#e2e7ee; --danger:#d9455b; --ok:#1f9d63; --guide:#c4258a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overscroll-behavior:none;}
+  #app{display:flex;flex-direction:column;height:100vh;height:100dvh;width:100%;}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0;z-index:30;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,var(--accent),var(--accent-dim));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:12px;color:#04202b;flex-shrink:0;}
+  .brand h1{font-size:14.5px;margin:0;font-weight:600;letter-spacing:.2px;}
+  .brand span{display:block;font-size:10.5px;color:var(--text-muted);font-family:var(--mono);margin-top:1px;}
+  .icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--panel-2);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .icon-btn:hover{border-color:var(--accent);}
+  .icon-btn svg{width:17px;height:17px;}
+  .pro-btn{height:34px;padding:0 13px;border-radius:8px;border:1px solid var(--border);background:var(--panel-2);color:var(--text-muted);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);}
+  .pro-btn:hover{border-color:var(--gold);}
+  .pro-btn.active{background:var(--gold);color:#2a1c02;border-color:var(--gold);}
+
+  /* tab bar */
+  .tabbar{display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--panel);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;}
+  .tab{display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:7px;background:var(--panel-2);border:1px solid var(--border-soft);font-size:12px;cursor:pointer;white-space:nowrap;color:var(--text-muted);flex-shrink:0;}
+  .tab.active{background:var(--bg);color:var(--text);border-color:var(--accent);}
+  .tab .x{color:var(--text-faint);font-size:13px;line-height:1;padding:1px 3px;border-radius:3px;}
+  .tab .x:hover{color:var(--danger);}
+  .tab-add{padding:6px 11px;border-radius:7px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:11.5px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+  .tab-add:hover{border-color:var(--accent);color:var(--text);}
+
+  /* toolbar */
+  .toolbar{display:flex;align-items:center;gap:3px;padding:7px 10px;background:var(--panel-2);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;}
+  .tool-btn{flex-shrink:0;font-size:11.5px;padding:6px 10px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--text-muted);cursor:pointer;white-space:nowrap;font-family:var(--sans);}
+  .tool-btn:hover{background:var(--panel);color:var(--text);}
+  .tool-btn.active{background:var(--accent);color:#04202b;font-weight:600;}
+  .tool-btn.toggle-on{background:var(--gold);color:#2a1c02;font-weight:600;}
+  .tool-sep{width:1px;align-self:stretch;background:var(--border);margin:2px 5px;flex-shrink:0;}
+  .zoom-group{display:flex;align-items:center;gap:2px;margin-left:auto;flex-shrink:0;padding-left:8px;}
+  .zoom-label{font-family:var(--mono);font-size:11px;color:var(--text-muted);min-width:44px;text-align:center;}
+  .hint-bar{padding:6px 14px;font-size:11.5px;color:var(--text-faint);background:var(--panel-2);border-bottom:1px solid var(--border-soft);flex-shrink:0;}
+  .hint-bar b{color:var(--text-muted);}
+
+  #main{flex:1;display:flex;min-height:0;}
+  #sidebar{width:320px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;}
+  #canvas-wrap{flex:1;position:relative;overflow:auto;background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);background-size:24px 24px;text-align:center;padding:26px;}
+  #canvas-inner{display:inline-block;position:relative;}
+  canvas#board{background:var(--panel-2);box-shadow:0 0 0 1px var(--border);cursor:crosshair;touch-action:none;display:block;}
+  #placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:var(--text-faint);pointer-events:none;text-align:center;padding:20px;}
+  #placeholder svg{width:50px;height:50px;opacity:.5;}
+  #placeholder b{color:var(--text-muted);font-weight:500;font-size:14px;}
+  #placeholder small{font-size:12px;}
+
+  .card{background:var(--panel-2);border:1px solid var(--border-soft);border-radius:var(--radius);padding:13px;}
+  .card h2{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin:0 0 10px 0;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .card h2 .n{font-family:var(--mono);color:var(--accent);}
+
+  .dropzone{border:1.5px dashed var(--border);border-radius:8px;padding:16px 10px;text-align:center;cursor:pointer;color:var(--text-muted);font-size:12px;}
+  .dropzone:hover,.dropzone.drag{border-color:var(--accent);background:rgba(79,209,255,.06);color:var(--text);}
+  .dropzone svg{width:20px;height:20px;margin-bottom:5px;opacity:.7;}
+  .dropzone b{color:var(--text);}
+  input[type=file]{display:none;}
+
+  .btn-row{display:flex;gap:7px;flex-wrap:wrap;}
+  button.btn{font-family:var(--sans);font-size:12px;font-weight:500;border-radius:7px;border:1px solid var(--border);background:var(--panel);color:var(--text);padding:7px 11px;cursor:pointer;display:flex;align-items:center;gap:6px;flex:1;justify-content:center;white-space:nowrap;}
+  button.btn:hover{border-color:var(--accent);}
+  button.btn:disabled{opacity:.4;cursor:not-allowed;}
+  button.btn.primary{background:var(--accent);border-color:var(--accent);color:#04202b;font-weight:600;}
+  button.btn.danger:hover{border-color:var(--danger);color:var(--danger);}
+  button.btn.small{padding:5px 9px;font-size:11px;flex:none;}
+
+  .hint{font-size:11.5px;color:var(--text-muted);line-height:1.6;margin-top:8px;}
+  table.points{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px;}
+  table.points th{text-align:left;color:var(--text-faint);font-weight:500;padding:3px 4px;border-bottom:1px solid var(--border-soft);}
+  table.points td{padding:3px 4px;color:var(--text-muted);border-bottom:1px solid var(--border-soft);}
+  table.points td.del{cursor:pointer;color:var(--text-faint);text-align:right;}
+  table.points td.del:hover{color:var(--danger);}
+  .points-scroll{max-height:110px;overflow-y:auto;}
+  .empty-row{color:var(--text-faint);font-size:11.5px;text-align:center;padding:8px 0;}
+
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+  .stat{background:var(--panel);border:1px solid var(--border-soft);border-radius:7px;padding:7px 9px;}
+  .stat .l{font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.04em;}
+  .stat .v{font-family:var(--mono);font-size:13px;color:var(--text);margin-top:2px;font-weight:600;}
+  .stat .v.accent{color:var(--accent);}
+  .stat .v.mark{color:var(--mark);}
+  .stat.full{grid-column:1/-1;}
+
+  .scale-status{font-size:11px;font-family:var(--mono);padding:7px 9px;border-radius:7px;background:var(--panel);border:1px solid var(--border-soft);color:var(--text-muted);margin-bottom:9px;}
+  .scale-status.set{color:var(--ok);border-color:var(--ok);}
+
+  input.text-input{width:100%;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 8px;font-size:12px;font-family:var(--mono);}
+  input.text-input:focus{outline:none;border-color:var(--accent);}
+
+  .prop-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:11.5px;color:var(--text-muted);}
+  .prop-row label{flex-shrink:0;}
+  .prop-row input[type=range]{flex:1;accent-color:var(--accent);}
+  .prop-row input[type=color]{width:32px;height:24px;padding:0;border:1px solid var(--border);border-radius:5px;background:none;cursor:pointer;}
+  .prop-row input[type=number]{width:58px;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:4px 6px;font-family:var(--mono);font-size:11.5px;}
+  .align-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:4px;margin-bottom:8px;}
+  .align-grid button{padding:5px 0;font-size:9.5px;}
+  textarea.text-input{width:100%;min-height:56px;resize:vertical;font-family:var(--sans);margin-bottom:8px;}
+  .prop-empty{font-size:11.5px;color:var(--text-faint);text-align:center;padding:14px 4px;}
+  .prop-type-tag{display:inline-block;font-size:10px;font-family:var(--mono);color:var(--accent);background:rgba(79,209,255,.12);border-radius:4px;padding:2px 7px;margin-bottom:10px;}
+
+  .pin-row{display:flex;align-items:center;gap:7px;padding:6px 7px;border:1px solid var(--border-soft);border-radius:7px;background:var(--panel);margin-bottom:6px;cursor:pointer;}
+  .pin-row.active{border-color:var(--accent);}
+  .pin-row input[type=color]{width:26px;height:26px;padding:0;border:1px solid var(--border);border-radius:5px;flex-shrink:0;cursor:pointer;}
+  .pin-info{flex:1;display:flex;flex-direction:column;font-size:11px;color:var(--text-muted);min-width:0;}
+  .pin-info b{color:var(--text);font-size:11.5px;}
+  .pin-info span{font-family:var(--mono);font-size:10.5px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel-2);border:1px solid var(--border);color:var(--text);padding:10px 16px;border-radius:8px;font-size:12.5px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:100;box-shadow:0 6px 20px rgba(0,0,0,.3);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:860px){
+    #main{flex-direction:column;}
+    #sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border);max-height:38vh;flex-shrink:0;}
+    #canvas-wrap{flex:1;min-height:38vh;}
+  }
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+</style>
+</head>
+<body data-theme="dark">
+<div id="app">
+
+  <header>
+    <div class="brand">
+      <div class="brand-mark">CG</div>
+      <div><h1>户型重心 CAD 工作台</h1><span>Multi-sheet · Centroid · Draw</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="pro-btn" id="proToggle" title="仅为界面繁简切换，不含真实授权/设备锁定；Pro 模式需桌面宽屏浏览器">简易模式</button>
+      <button class="icon-btn" id="themeBtn" title="切换深色/浅色">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="tabbar" id="tabbar"></div>
+
+  <div class="toolbar" id="toolbar">
+    <!-- populated by JS -->
+  </div>
+  <div class="hint-bar" id="hintBar"></div>
+
+  <div id="main">
+    <aside id="sidebar">
+
+      <div class="card">
+        <h2>上传 / 新建</h2>
+        <div class="dropzone" id="dropzone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+          <div><b>点击或拖拽上传</b>（支持多选，每张图一个标签页）</div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" multiple>
+        <div class="btn-row" style="margin-top:8px;">
+          <button class="btn" id="newDrawBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4Z"/></svg>
+            新建手绘图纸
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>角点与重心 <span class="n" id="ptCountTag">(0)</span></h2>
+        <div class="btn-row">
+          <button class="btn" id="undoBtn" disabled>撤销角点</button>
+          <button class="btn danger" id="clearBtn" disabled>清空角点</button>
+        </div>
+        <div class="points-scroll" id="pointsList" style="margin-top:9px;"></div>
+        <div class="hint">添加 ≥3 个角点后可在"计算结果"里看到实时重心。点击下方按钮可把当前重心固定为一个新标记，支持同时保留多个，各自可单独上色，并可挂载专属风水尺。</div>
+        <div id="pinList" style="margin-top:9px;"></div>
+        <button class="btn" id="addPinBtn" style="width:100%;margin-top:8px;" disabled>固定当前重心为新标记</button>
+      </div>
+
+      <div class="card">
+        <h2>比例尺标定</h2>
+        <div class="scale-status" id="scaleStatus">未标定 · 面积/坐标按像素显示</div>
+        <div class="btn-row">
+          <button class="btn" id="clearScaleBtn" disabled>清除标定</button>
+        </div>
+        <div class="hint">在工具栏选择"比例尺"工具，点击图上一段已知实际长度的两端并输入长度即可。</div>
+      </div>
+
+      <div class="card">
+        <h2>计算结果</h2>
+        <div class="stat-grid">
+          <div class="stat"><div class="l">顶点数</div><div class="v" id="statPts">0</div></div>
+          <div class="stat"><div class="l">周长</div><div class="v" id="statPerim">–</div></div>
+          <div class="stat full"><div class="l">面积</div><div class="v accent" id="statArea">–</div></div>
+          <div class="stat full"><div class="l">重心坐标</div><div class="v mark" id="statCentroid">–</div></div>
+        </div>
+      </div>
+
+      <div class="card" id="propCard">
+        <h2>对象属性</h2>
+        <div id="propBody"><div class="prop-empty">点击画布中的对象、参考线或风水尺可在此编辑</div></div>
+      </div>
+
+      <div class="card">
+        <h2>导出</h2>
+        <button class="btn primary" id="exportBtn" disabled style="width:100%;">导出当前图纸为 PNG</button>
+      </div>
+
+    </aside>
+
+    <div id="canvas-wrap">
+      <div id="canvas-inner">
+        <canvas id="board" width="1000" height="700"></canvas>
+      </div>
+      <div id="placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15l4-4 4 3 5-6 5 5"/></svg>
+        <b>还没有图纸</b>
+        <small>上传户型图，或新建一张手绘图纸开始</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="imgInsertInput" accept="image/*" style="display:none;">
+
+<script>
+(function(){
+"use strict";
+
+/* ============================= 常量与工具 ============================= */
+const BOX_TYPES = ['rect','roundrect','circle','diamond','star','text','image'];
+const HIT_RADIUS = 12;
+let objCounter = 0, sheetCounter = 0;
+const newId = p => p + '_' + (++objCounter);
+
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+function rotatePoint(p,c,angle){
+  const cos=Math.cos(angle), sin=Math.sin(angle);
+  const dx=p.x-c.x, dy=p.y-c.y;
+  return { x:c.x+dx*cos-dy*sin, y:c.y+dx*sin+dy*cos };
+}
+function distToSegment(p,a,b){
+  const l2 = (b.x-a.x)**2 + (b.y-a.y)**2;
+  if(l2===0) return dist(p,a);
+  let t = ((p.x-a.x)*(b.x-a.x)+(p.y-a.y)*(b.y-a.y))/l2;
+  t = clamp(t,0,1);
+  return dist(p,{x:a.x+t*(b.x-a.x), y:a.y+t*(b.y-a.y)});
+}
+function roundRectPath(ctx,x,y,w,h,r){
+  r = Math.max(0, Math.min(r, Math.min(w,h)/2));
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function starPath(ctx,cx,cy,rx,ry){
+  const spikes=5, step=Math.PI/spikes;
+  let rot=-Math.PI/2;
+  ctx.beginPath();
+  for(let i=0;i<spikes;i++){
+    const xo=cx+Math.cos(rot)*rx, yo=cy+Math.sin(rot)*ry;
+    if(i===0) ctx.moveTo(xo,yo); else ctx.lineTo(xo,yo);
+    rot+=step;
+    const xi=cx+Math.cos(rot)*rx*0.42, yi=cy+Math.sin(rot)*ry*0.42;
+    ctx.lineTo(xi,yi);
+    rot+=step;
+  }
+  ctx.closePath();
+}
+function polygonCentroid(pts){
+  const n=pts.length;
+  if(n===0) return null;
+  if(n<3){ let sx=0,sy=0; pts.forEach(p=>{sx+=p.x;sy+=p.y;}); return {x:sx/n,y:sy/n,area:0}; }
+  let area=0,cx=0,cy=0;
+  for(let i=0;i<n;i++){
+    const j=(i+1)%n;
+    const cross = pts[i].x*pts[j].y - pts[j].x*pts[i].y;
+    area+=cross; cx+=(pts[i].x+pts[j].x)*cross; cy+=(pts[i].y+pts[j].y)*cross;
+  }
+  area/=2;
+  if(Math.abs(area)<1e-9){ let sx=0,sy=0; pts.forEach(p=>{sx+=p.x;sy+=p.y;}); return {x:sx/n,y:sy/n,area:0}; }
+  return { x:cx/(6*area), y:cy/(6*area), area:Math.abs(area) };
+}
+function perimeter(pts){
+  const n=pts.length;
+  if(n<2) return 0;
+  let per=0;
+  const segs = n>=3 ? n : n-1;
+  for(let i=0;i<segs;i++){ const j=(i+1)%n; per += dist(pts[i],pts[j]); }
+  return per;
+}
+function currentAccentColor(){
+  return getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#4fd1ff';
+}
+function isDark(){ return document.body.getAttribute('data-theme')!=='light'; }
+
+/* ============================= 状态 ============================= */
+const sheets = [];
+let activeSheetId = null;
+let activeTool = 'select';
+let dragState = null;
+let proMode = false;
+const FALLBACK_FONTS = ['sans-serif','serif','monospace','"Microsoft YaHei","PingFang SC",sans-serif','"SimSun","STSong",serif','"KaiTi","STKaiti",serif','"FangSong","STFangsong",serif','"Microsoft JhengHei",sans-serif','cursive','"Segoe UI",sans-serif','"Times New Roman",serif','"Courier New",monospace'];
+let availableFonts = FALLBACK_FONTS.slice();
+
+function activeSheet(){ return sheets.find(s=>s.id===activeSheetId) || null; }
+function getObjById(sheet,id){ return sheet.objects.find(o=>o.id===id); }
+function isBoxType(t){ return BOX_TYPES.includes(t); }
+
+function createSheet(opts){
+  sheetCounter++;
+  return {
+    id: 's'+sheetCounter,
+    name: opts.name || ('图纸 '+sheetCounter),
+    img: opts.img || null,
+    natW: opts.natW || 1000,
+    natH: opts.natH || 700,
+    zoom: 1,
+    points: [],
+    objects: [],
+    guides: [],
+    calib: { scale: null },
+    pins: [],
+    selection: { type:null, id:null },
+    _wallDraft: { points:[] },
+    _calibPts: [],
+    _distPts: []
+  };
+}
+
+/* ============================= DOM refs ============================= */
+const canvas = document.getElementById('board');
+const ctx = canvas.getContext('2d');
+const canvasWrap = document.getElementById('canvas-wrap');
+const placeholder = document.getElementById('placeholder');
+const tabbarEl = document.getElementById('tabbar');
+const toolbarEl = document.getElementById('toolbar');
+const hintBar = document.getElementById('hintBar');
+const fileInput = document.getElementById('fileInput');
+const dropzone = document.getElementById('dropzone');
+const newDrawBtn = document.getElementById('newDrawBtn');
+const undoBtn = document.getElementById('undoBtn');
+const clearBtn = document.getElementById('clearBtn');
+const clearScaleBtn = document.getElementById('clearScaleBtn');
+const scaleStatus = document.getElementById('scaleStatus');
+const exportBtn = document.getElementById('exportBtn');
+const pointsList = document.getElementById('pointsList');
+const ptCountTag = document.getElementById('ptCountTag');
+const statPts = document.getElementById('statPts');
+const statPerim = document.getElementById('statPerim');
+const statArea = document.getElementById('statArea');
+const statCentroid = document.getElementById('statCentroid');
+const pinListEl = document.getElementById('pinList');
+const addPinBtn = document.getElementById('addPinBtn');
+const propBody = document.getElementById('propBody');
+const themeBtn = document.getElementById('themeBtn');
+const themeIcon = document.getElementById('themeIcon');
+const toast = document.getElementById('toast');
+const imgInsertInput = document.getElementById('imgInsertInput');
+
+const ICONS = {
+  moon:'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'
+};
+function setTheme(t){
+  document.body.setAttribute('data-theme', t);
+  themeIcon.innerHTML = t==='dark' ? ICONS.sun : ICONS.moon;
+  redraw();
+}
+themeBtn.addEventListener('click', ()=> setTheme(isDark() ? 'light' : 'dark'));
+setTheme('dark');
+
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=> toast.classList.remove('show'), 2200);
+}
+
+/* ============================= Pro / 简易模式 =============================
+   说明：这只是一个客户端界面上的繁简开关，用来隐藏/显示较复杂的工具，
+   不涉及账号、支付或设备锁定 —— 单文件网页工具做不出真正的授权校验。 */
+const proToggle = document.getElementById('proToggle');
+const ADVANCED_TOOLS = ['wall','freehand','text','rect','roundrect','circle','diamond','star','distance'];
+function isDesktopViewport(){ return window.innerWidth >= 860; }
+function setProMode(v){
+  if(v && !isDesktopViewport()){ showToast('Pro 模式仅支持桌面宽屏浏览器（窗口宽度需 ≥ 860px）'); return; }
+  proMode = v;
+  proToggle.textContent = proMode ? 'Pro 模式' : '简易模式';
+  proToggle.classList.toggle('active', proMode);
+  applyProUI();
+}
+function applyProUI(){
+  toolbarEl.querySelectorAll('[data-tool]').forEach(btn=>{
+    const adv = ADVANCED_TOOLS.includes(btn.dataset.tool);
+    btn.style.display = (adv && !proMode) ? 'none' : '';
+  });
+  ['insertImgBtn','addGuideH','addGuideV'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.display = proMode ? '' : 'none';
+  });
+  if(!proMode && ADVANCED_TOOLS.includes(activeTool)){ activeTool='select'; }
+  newDrawBtn.style.display = proMode ? '' : 'none';
+  dropzone.style.opacity = canAddSheet() ? '' : '0.4';
+  renderTabs();
+  updateToolbarUI();
+}
+proToggle.addEventListener('click', ()=> setProMode(!proMode));
+window.addEventListener('resize', ()=>{ if(proMode && !isDesktopViewport()) setProMode(false); });
+
+/* ============================= 本地字体读取 =============================
+   仅 Chrome / Edge 桌面版支持 window.queryLocalFonts()，且每次都需要用户手动授权；
+   其余浏览器（Safari、Firefox、所有移动端）不支持，会自动回退到内置字体列表。 */
+async function loadLocalFonts(){
+  if(!('queryLocalFonts' in window)){
+    showToast('当前浏览器不支持读取本地字体，仅 Chrome/Edge 桌面版支持，已使用内置字体列表');
+    return;
+  }
+  try{
+    const fonts = await window.queryLocalFonts();
+    const names = Array.from(new Set(fonts.map(f=>`"${f.family}"`))).sort();
+    availableFonts = names.length ? names : FALLBACK_FONTS.slice();
+    showToast('已读取 '+names.length+' 个本地字体');
+    renderPropertiesPanel();
+  }catch(err){
+    showToast('未获得字体访问授权，或该浏览器需要在设置中开启此权限');
+  }
+}
+
+/* ============================= 工具栏 ============================= */
+const TOOLS = [
+  {key:'select', label:'选择'},
+  {key:'point', label:'角点'},
+  {key:'wall', label:'墙线'},
+  {key:'freehand', label:'手绘'},
+  {key:'text', label:'文本'},
+  {key:'rect', label:'矩形'},
+  {key:'roundrect', label:'圆角矩形'},
+  {key:'circle', label:'圆形'},
+  {key:'diamond', label:'菱形'},
+  {key:'star', label:'五角星'},
+  {key:'distance', label:'距离标注'},
+  {key:'calibrate', label:'比例尺'},
+];
+const HINTS = {
+  select:'点击对象进行选中；拖动主体移动，拖角点缩放，拖顶部圆点旋转。Delete 删除，Esc 取消/清除选中。',
+  point:'点击空白处添加户型角点（≥3个用于计算重心）；拖动可微调，双击删除。',
+  wall:'依次点击绘制墙线（自动吸附到 0°/45°/90°），双击结束当前墙体，Esc 取消未完成的墙线。',
+  freehand:'按住鼠标拖动即可手绘任意线条，松开结束。',
+  text:'点击画布位置，在弹出的输入框中填写文字内容。',
+  rect:'拖拽绘制矩形，也可直接单击生成默认大小。', roundrect:'拖拽绘制圆角矩形，可在属性面板调整圆角大小。',
+  circle:'拖拽绘制圆形/椭圆。', diamond:'拖拽绘制菱形。', star:'拖拽绘制五角星。',
+  distance:'依次点击两个点（会自动吸附角点/重心），生成真实距离标注（需先标定比例尺）。',
+  calibrate:'点击一段已知实际长度的两端点，然后输入真实长度完成标定。'
+};
+function buildToolbar(){
+  let html = '';
+  TOOLS.forEach((t,i)=>{
+    html += `<button class="tool-btn" data-tool="${t.key}">${t.label}</button>`;
+    if(i===0 || i===4 || i===9) html += '<div class="tool-sep"></div>';
+  });
+  html += '<div class="tool-sep"></div>';
+  html += `<button class="tool-btn" id="insertImgBtn">插入图片</button>`;
+  html += `<button class="tool-btn" id="addGuideH">+横参考线</button>`;
+  html += `<button class="tool-btn" id="addGuideV">+竖参考线</button>`;
+  html += `<div class="zoom-group">
+      <button class="tool-btn" id="zoomOut">－</button>
+      <span class="zoom-label" id="zoomLabel">100%</span>
+      <button class="tool-btn" id="zoomIn">＋</button>
+      <button class="tool-btn" id="zoomReset">重置</button>
+    </div>`;
+  toolbarEl.innerHTML = html;
+
+  toolbarEl.querySelectorAll('[data-tool]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      activeTool = btn.dataset.tool;
+      const sheet = activeSheet();
+      if(sheet){ sheet._wallDraft={points:[]}; sheet._calibPts=[]; sheet._distPts=[]; }
+      updateToolbarUI(); redraw();
+    });
+  });
+  document.getElementById('insertImgBtn').addEventListener('click', ()=>{
+    if(!activeSheet()){ showToast('请先创建或上传一张图纸'); return; }
+    imgInsertInput.click();
+  });
+  document.getElementById('addGuideH').addEventListener('click', ()=> addGuide('h'));
+  document.getElementById('addGuideV').addEventListener('click', ()=> addGuide('v'));
+  document.getElementById('zoomIn').addEventListener('click', ()=> setZoom(activeSheet(), (activeSheet()?.zoom||1)*1.2));
+  document.getElementById('zoomOut').addEventListener('click', ()=> setZoom(activeSheet(), (activeSheet()?.zoom||1)/1.2));
+  document.getElementById('zoomReset').addEventListener('click', ()=> setZoom(activeSheet(), 1));
+}
+function updateToolbarUI(){
+  toolbarEl.querySelectorAll('[data-tool]').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.tool===activeTool);
+  });
+  const sheet = activeSheet();
+  hintBar.innerHTML = '<b>'+ (TOOLS.find(t=>t.key===activeTool)?.label || '选择') +'：</b> ' + (HINTS[activeTool]||'');
+  const disabled = !sheet;
+  document.getElementById('insertImgBtn').disabled = disabled;
+  document.getElementById('addGuideH').disabled = disabled;
+  document.getElementById('addGuideV').disabled = disabled;
+  updateZoomLabel();
+}
+function updateZoomLabel(){
+  const sheet = activeSheet();
+  document.getElementById('zoomLabel').textContent = Math.round((sheet?sheet.zoom:1)*100)+'%';
+}
+buildToolbar();
+
+/* ============================= 标签页 ============================= */
+function renderTabs(){
+  let html = '';
+  sheets.forEach(s=>{
+    html += `<div class="tab ${s.id===activeSheetId?'active':''}" data-id="${s.id}">
+      <span class="tname">${escapeHtml(s.name)}</span><span class="x" data-close="${s.id}">✕</span>
+    </div>`;
+  });
+  const showAddImg = proMode || sheets.length===0;
+  const showAddDraw = proMode;
+  if(showAddImg) html += `<button class="tab-add" id="tabAddImg">+ 图片</button>`;
+  if(showAddDraw) html += `<button class="tab-add" id="tabAddDraw">+ 手绘</button>`;
+  tabbarEl.innerHTML = html;
+  tabbarEl.querySelectorAll('.tab').forEach(el=>{
+    el.addEventListener('click', e=>{
+      if(e.target.dataset.close) return;
+      switchTab(el.dataset.id);
+    });
+    el.querySelector('.tname').addEventListener('dblclick', ()=>{
+      const s = sheets.find(x=>x.id===el.dataset.id);
+      const nn = prompt('重命名图纸：', s.name);
+      if(nn && nn.trim()){ s.name = nn.trim(); renderTabs(); }
+    });
+  });
+  tabbarEl.querySelectorAll('[data-close]').forEach(el=>{
+    el.addEventListener('click', e=>{ e.stopPropagation(); removeSheet(el.dataset.close); });
+  });
+  const addImgBtn = document.getElementById('tabAddImg'); if(addImgBtn) addImgBtn.addEventListener('click', ()=> fileInput.click());
+  const addDrawBtn = document.getElementById('tabAddDraw'); if(addDrawBtn) addDrawBtn.addEventListener('click', createDrawSheet);
+}
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function switchTab(id){
+  activeSheetId = id;
+  renderTabs();
+  applyCanvasSize(activeSheet());
+  updateToolbarUI();
+  refreshAll();
+}
+function removeSheet(id){
+  const idx = sheets.findIndex(s=>s.id===id);
+  if(idx<0) return;
+  sheets.splice(idx,1);
+  if(activeSheetId===id){
+    const next = sheets[idx] || sheets[idx-1] || sheets[0];
+    activeSheetId = next ? next.id : null;
+  }
+  renderTabs();
+  if(!activeSheetId){
+    placeholder.style.display='flex';
+    canvas.style.display='none';
+  } else {
+    applyCanvasSize(activeSheet());
+    updateToolbarUI();
+    refreshAll();
+  }
+  applyProUI();
+}
+function addSheetAndActivate(sheet){
+  sheets.push(sheet);
+  activeSheetId = sheet.id;
+  placeholder.style.display='none';
+  canvas.style.display='block';
+  renderTabs();
+  applyCanvasSize(sheet);
+  updateToolbarUI();
+  refreshAll();
+  applyProUI();
+}
+function canAddSheet(){ return proMode || sheets.length===0; }
+function createDrawSheet(){
+  if(!canAddSheet()){ showToast('简易模式下只支持单张户型图，可切换到 Pro 模式或先移除当前图纸'); return; }
+  addSheetAndActivate(createSheet({ natW:1200, natH:800 }));
+  showToast('已新建手绘图纸，选择"墙线"或"手绘"工具开始绘制');
+}
+
+/* ============================= 上传图片 ============================= */
+dropzone.addEventListener('click', ()=>{
+  if(!canAddSheet()){ showToast('简易模式下只支持单张户型图，可切换到 Pro 模式或先移除当前图纸'); return; }
+  fileInput.click();
+});
+fileInput.addEventListener('change', e=>{ if(e.target.files.length) loadFiles(e.target.files); fileInput.value=''; });
+['dragenter','dragover'].forEach(ev=> dropzone.addEventListener(ev, e=>{ e.preventDefault(); dropzone.classList.add('drag'); }));
+['dragleave','drop'].forEach(ev=> dropzone.addEventListener(ev, e=>{ e.preventDefault(); dropzone.classList.remove('drag'); }));
+dropzone.addEventListener('drop', e=>{
+  if(!canAddSheet()){ showToast('简易模式下只支持单张户型图，可切换到 Pro 模式或先移除当前图纸'); return; }
+  if(e.dataTransfer.files.length) loadFiles(e.dataTransfer.files);
+});
+newDrawBtn.addEventListener('click', createDrawSheet);
+
+function loadFiles(fileList){
+  const files = Array.from(fileList).filter(f=>f.type.startsWith('image/'));
+  if(!files.length) return;
+  if(!proMode){
+    if(sheets.length>=1){ showToast('简易模式下只支持单张户型图'); return; }
+    loadSingleFile(files[0]);
+    if(files.length>1) showToast('简易模式下一次只能加载一张图，已为你载入第一张');
+    return;
+  }
+  files.forEach(f=> loadSingleFile(f));
+}
+function loadSingleFile(file){
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const sheet = createSheet({ name:file.name.replace(/\.[^.]+$/,'').slice(0,18)||'户型图', img, natW:img.naturalWidth, natH:img.naturalHeight });
+      addSheetAndActivate(sheet);
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* image insert (as object) */
+imgInsertInput.addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file){ return; }
+  const sheet = activeSheet();
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    const img = new Image();
+    img.onload = ()=>{
+      let w = img.naturalWidth, h = img.naturalHeight;
+      const maxDim = Math.min(sheet.natW,sheet.natH)*0.5;
+      if(Math.max(w,h) > maxDim){ const r = maxDim/Math.max(w,h); w*=r; h*=r; }
+      const obj = { id:newId('img'), type:'image', x:(sheet.natW-w)/2, y:(sheet.natH-h)/2, w, h, rotation:0, opacity:1, imgEl:img };
+      sheet.objects.push(obj);
+      select(sheet,'object',obj.id);
+      activeTool='select'; updateToolbarUI();
+      refreshAll();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  imgInsertInput.value='';
+});
+
+/* ============================= 画布尺寸 / 缩放 ============================= */
+function computeFitSize(sheet){
+  const availW = canvasWrap.clientWidth - 52;
+  const availH = canvasWrap.clientHeight - 52;
+  const ratio = sheet.natW / sheet.natH;
+  let w = availW, h = availW/ratio;
+  if(h > availH){ h = availH; w = availH*ratio; }
+  return { w: Math.max(w,50), h: Math.max(h,50) };
+}
+function applyCanvasSize(sheet){
+  if(!sheet) return;
+  canvas.width = sheet.natW;
+  canvas.height = sheet.natH;
+  const fit = computeFitSize(sheet);
+  canvas.style.width = (fit.w * sheet.zoom) + 'px';
+  canvas.style.height = (fit.h * sheet.zoom) + 'px';
+  redraw();
+}
+function setZoom(sheet, z){
+  if(!sheet) return;
+  sheet.zoom = clamp(z, 0.2, 6);
+  applyCanvasSize(sheet);
+  updateZoomLabel();
+}
+canvasWrap.addEventListener('wheel', e=>{
+  const sheet = activeSheet(); if(!sheet) return;
+  if(e.ctrlKey){ e.preventDefault(); setZoom(sheet, sheet.zoom * (e.deltaY<0 ? 1.1 : 0.9)); return; }
+  if(canvas.style.display==='none') return;
+  const pos = getNaturalPos(e);
+  for(let i=sheet.pins.length-1;i>=0;i--){
+    const p = sheet.pins[i];
+    if(p.fengshui && dist(pos,{x:p.fengshui.x,y:p.fengshui.y}) <= p.fengshui.radius*1.15){
+      e.preventDefault();
+      p.fengshui.radius = clamp(p.fengshui.radius * (e.deltaY<0 ? 1.08 : 0.93), 20, 4000);
+      if(sheet.selection.type==='pin' && sheet.selection.id===p.id) renderPropertiesPanel();
+      redraw();
+      return;
+    }
+  }
+}, {passive:false});
+window.addEventListener('resize', ()=>{ const s=activeSheet(); if(s) applyCanvasSize(s); });
+
+/* ============================= 坐标映射 ============================= */
+function getNaturalPos(evt){
+  const rect = canvas.getBoundingClientRect();
+  const cx = (evt.touches ? evt.touches[0].clientX : evt.clientX) - rect.left;
+  const cy = (evt.touches ? evt.touches[0].clientY : evt.clientY) - rect.top;
+  return { x: cx*(canvas.width/rect.width), y: cy*(canvas.height/rect.height) };
+}
+function hitRadiusNatural(){
+  const rect = canvas.getBoundingClientRect();
+  return HIT_RADIUS * (canvas.width/rect.width);
+}
+function findVertexNear(sheet,pos){
+  const r = hitRadiusNatural();
+  for(let i=sheet.points.length-1;i>=0;i--){ if(dist(sheet.points[i],pos)<=r) return i; }
+  return -1;
+}
+function findGuideNear(sheet,pos){
+  const r = hitRadiusNatural();
+  for(let i=sheet.guides.length-1;i>=0;i--){
+    const g = sheet.guides[i];
+    if(g.orient==='h' && Math.abs(pos.y-g.pos)<=r) return i;
+    if(g.orient==='v' && Math.abs(pos.x-g.pos)<=r) return i;
+  }
+  return -1;
+}
+function getLiveCentroidPos(sheet){
+  if(sheet.points.length<3) return null;
+  const c = polygonCentroid(sheet.points);
+  return { x:c.x, y:c.y };
+}
+
+/* ============================= 对象通用几何 ============================= */
+function getCorners(obj){
+  const cx=obj.x+obj.w/2, cy=obj.y+obj.h/2, rot=obj.rotation||0;
+  const local = [{x:obj.x,y:obj.y},{x:obj.x+obj.w,y:obj.y},{x:obj.x+obj.w,y:obj.y+obj.h},{x:obj.x,y:obj.y+obj.h}];
+  return local.map(p=>rotatePoint(p,{x:cx,y:cy},rot));
+}
+function rotateHandlePos(obj){
+  const cx=obj.x+obj.w/2, cy=obj.y+obj.h/2;
+  return rotatePoint({x:cx, y:obj.y-32}, {x:cx,y:cy}, obj.rotation||0);
+}
+function moveObjectBy(obj,dx,dy){
+  if(obj.type==='wall' || obj.type==='freehand'){ obj.points.forEach(p=>{p.x+=dx;p.y+=dy;}); }
+  else if(obj.type==='dimension'){ obj.p1.x+=dx; obj.p1.y+=dy; obj.p2.x+=dx; obj.p2.y+=dy; }
+  else { obj.x+=dx; obj.y+=dy; }
+}
+function findObjectAt(sheet,pos){
+  for(let i=sheet.objects.length-1;i>=0;i--){
+    const obj = sheet.objects[i];
+    if(isBoxType(obj.type)){
+      const cx=obj.x+obj.w/2, cy=obj.y+obj.h/2;
+      const local = rotatePoint(pos, {x:cx,y:cy}, -(obj.rotation||0));
+      if(local.x>=obj.x-4 && local.x<=obj.x+obj.w+4 && local.y>=obj.y-4 && local.y<=obj.y+obj.h+4) return obj;
+    } else if(obj.type==='wall' || obj.type==='freehand'){
+      for(let j=0;j<obj.points.length-1;j++){ if(distToSegment(pos,obj.points[j],obj.points[j+1]) < 10) return obj; }
+    } else if(obj.type==='dimension'){
+      if(distToSegment(pos,obj.p1,obj.p2) < 10) return obj;
+    }
+  }
+  return null;
+}
+function layoutText(obj){
+  ctx.font = `${obj.fontSize}px ${obj.fontFamily||'sans-serif'}`;
+  const lines = String(obj.text||'').split('\n');
+  const widths = lines.map(l=>ctx.measureText(l).width);
+  obj.w = Math.max(24, Math.max.apply(null,widths)+16);
+  obj.h = Math.max(24, lines.length*obj.fontSize*1.35+12);
+  obj._lines = lines;
+}
+
+/* ============================= 渲染 ============================= */
+function redraw(opts){ const sheet=activeSheet(); if(sheet) renderSheet(sheet, opts||{}); }
+
+function renderSheet(sheet, opts){
+  const showUi = !opts.forExport;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if(sheet.img){
+    ctx.drawImage(sheet.img,0,0,canvas.width,canvas.height);
+  } else {
+    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--panel-2').trim() || '#1b2330';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--grid-line').trim();
+    ctx.lineWidth = 1;
+    const step=20;
+    for(let x=0;x<=canvas.width;x+=step){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
+    for(let y=0;y<=canvas.height;y+=step){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
+  }
+
+  const rect = canvas.getBoundingClientRect();
+  const s = rect.width ? (canvas.width/rect.width) : 1;
+
+  sheet.objects.forEach(obj=>{
+    if(obj.type==='wall') drawPolylineObj(obj,s,10);
+    else if(obj.type==='freehand') drawPolylineObj(obj,s,null);
+    else if(isBoxType(obj.type) && obj.type!=='text' && obj.type!=='image') drawShapeObj(obj);
+    else if(obj.type==='image') drawImageObj(obj);
+    else if(obj.type==='text') drawTextObj(obj);
+    else if(obj.type==='dimension') drawDimensionObj(obj,sheet,s);
+  });
+
+  // in-progress previews
+  if(showUi){
+    if(dragState && dragState.kind==='freehandDraw' && dragState.points.length>1){
+      drawPolylineObj({points:dragState.points, stroke:dragState.stroke, strokeWidth:dragState.strokeWidth, opacity:.85}, s, null);
+    }
+    if(dragState && dragState.kind==='shapeDraw' && dragState.currentPos){
+      const {start,tool}=dragState, cur=dragState.currentPos;
+      const x=Math.min(start.x,cur.x), y=Math.min(start.y,cur.y), w=Math.abs(cur.x-start.x), h=Math.abs(cur.y-start.y);
+      ctx.save(); ctx.setLineDash([6*s,4*s]); ctx.strokeStyle=currentAccentColor(); ctx.lineWidth=1.6*s;
+      ctx.strokeRect(x,y,w,h); ctx.restore();
+    }
+    if(sheet._wallDraft && sheet._wallDraft.points.length){
+      ctx.save(); ctx.strokeStyle='#93a2b5'; ctx.lineWidth=6*s; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.globalAlpha=.7;
+      ctx.beginPath();
+      sheet._wallDraft.points.forEach((p,i)=> i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+      if(sheet._wallDraft.preview) ctx.lineTo(sheet._wallDraft.preview.x, sheet._wallDraft.preview.y);
+      ctx.stroke();
+      ctx.setLineDash([]); ctx.fillStyle='#93a2b5';
+      sheet._wallDraft.points.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,4*s,0,Math.PI*2); ctx.fill(); });
+      ctx.restore();
+    }
+    if(sheet._calibPts && sheet._calibPts.length){
+      ctx.save(); ctx.fillStyle='#ff9f43'; ctx.strokeStyle='#ff9f43'; ctx.lineWidth=2*s;
+      sheet._calibPts.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,5*s,0,Math.PI*2); ctx.fill(); });
+      ctx.restore();
+    }
+    if(sheet._distPts && sheet._distPts.length){
+      ctx.save(); ctx.fillStyle='#5ee6a0';
+      sheet._distPts.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,5*s,0,Math.PI*2); ctx.fill(); });
+      ctx.restore();
+    }
+  }
+
+  // centroid polygon
+  const pts = sheet.points;
+  if(pts.length>=2){
+    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x,pts[i].y);
+    if(pts.length>=3) ctx.closePath();
+    const accent = currentAccentColor();
+    if(pts.length>=3){ ctx.fillStyle = accent+'22'; ctx.fill(); }
+    ctx.strokeStyle=accent; ctx.lineWidth=2.2*s; ctx.lineJoin='round'; ctx.stroke();
+  }
+  if(showUi){
+    pts.forEach((p,i)=>{
+      ctx.beginPath(); ctx.arc(p.x,p.y,5.5*s,0,Math.PI*2);
+      ctx.fillStyle = isDark() ? '#0d1117' : '#ffffff'; ctx.fill();
+      ctx.lineWidth=2.2*s; ctx.strokeStyle=currentAccentColor(); ctx.stroke();
+      ctx.fillStyle=currentAccentColor(); ctx.font=`${11*s}px monospace`;
+      ctx.fillText(String(i+1), p.x+9*s, p.y-9*s);
+    });
+  }
+
+  // live (unpinned) centroid preview
+  const liveC = getLiveCentroidPos(sheet);
+  if(liveC) drawCentroidMarker(liveC.x, liveC.y, currentAccentColor(), s, '当前重心', true);
+
+  // pinned centroids + their attached fengshui compasses
+  sheet.pins.forEach((p,i)=>{
+    drawCentroidMarker(p.x, p.y, p.color, s, '重心'+(i+1), false);
+    if(p.fengshui){
+      const isSel = sheet.selection.type==='pin' && sheet.selection.id===p.id;
+      drawFengshui(p.fengshui, s, showUi && isSel);
+    }
+  });
+
+  if(showUi){
+    // guides
+    sheet.guides.forEach(g=>{
+      ctx.save();
+      ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--guide').trim() || '#ff5fc4';
+      const selected = sheet.selection.type==='guide' && sheet.selection.id===g.id;
+      ctx.lineWidth = (selected?2.4:1.4)*s; ctx.setLineDash([7*s,5*s]); ctx.globalAlpha=.85;
+      ctx.beginPath();
+      if(g.orient==='h'){ ctx.moveTo(0,g.pos); ctx.lineTo(canvas.width,g.pos); }
+      else { ctx.moveTo(g.pos,0); ctx.lineTo(g.pos,canvas.height); }
+      ctx.stroke(); ctx.restore();
+    });
+
+    // selection handles
+    if(sheet.selection.type==='object'){
+      const obj = getObjById(sheet, sheet.selection.id);
+      if(obj && isBoxType(obj.type)) drawSelectionHandles(obj,s);
+      if(obj && obj.type==='dimension') drawDimEndpointHandles(obj,s);
+      if(obj && (obj.type==='wall'||obj.type==='freehand')) drawPolySelectionOutline(obj,s);
+    }
+  }
+}
+
+function drawPolylineObj(obj,s,forceWidth){
+  ctx.save();
+  ctx.globalAlpha = obj.opacity ?? 1;
+  ctx.strokeStyle = obj.stroke || '#4fd1ff';
+  ctx.lineWidth = (forceWidth || obj.strokeWidth || 3) * s;
+  ctx.lineJoin='round'; ctx.lineCap='round';
+  ctx.beginPath();
+  obj.points.forEach((p,i)=> i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+  ctx.stroke();
+  ctx.restore();
+}
+function drawShapeObj(obj){
+  ctx.save();
+  ctx.globalAlpha = obj.opacity ?? 1;
+  const cx=obj.x+obj.w/2, cy=obj.y+obj.h/2;
+  ctx.translate(cx,cy); ctx.rotate(obj.rotation||0); ctx.translate(-cx,-cy);
+  switch(obj.type){
+    case 'rect': ctx.beginPath(); ctx.rect(obj.x,obj.y,obj.w,obj.h); break;
+    case 'roundrect': roundRectPath(ctx,obj.x,obj.y,obj.w,obj.h, obj.radius||14); break;
+    case 'circle': ctx.beginPath(); ctx.ellipse(cx,cy,obj.w/2,obj.h/2,0,0,Math.PI*2); break;
+    case 'diamond': ctx.beginPath(); ctx.moveTo(cx,obj.y); ctx.lineTo(obj.x+obj.w,cy); ctx.lineTo(cx,obj.y+obj.h); ctx.lineTo(obj.x,cy); ctx.closePath(); break;
+    case 'star': starPath(ctx,cx,cy,obj.w/2,obj.h/2); break;
+  }
+  if(obj.fill && obj.fill!=='none'){ ctx.fillStyle=obj.fill; ctx.fill(); }
+  if(obj.stroke && obj.stroke!=='none' && obj.strokeWidth>0){ ctx.strokeStyle=obj.stroke; ctx.lineWidth=obj.strokeWidth; ctx.stroke(); }
+  ctx.restore();
+}
+function drawImageObj(obj){
+  ctx.save();
+  ctx.globalAlpha = obj.opacity ?? 1;
+  const cx=obj.x+obj.w/2, cy=obj.y+obj.h/2;
+  ctx.translate(cx,cy); ctx.rotate(obj.rotation||0); ctx.translate(-cx,-cy);
+  ctx.drawImage(obj.imgEl, obj.x, obj.y, obj.w, obj.h);
+  ctx.restore();
+}
+function drawTextObj(obj){
+  ctx.save();
+  ctx.globalAlpha = obj.opacity ?? 1;
+  const cx=obj.x+obj.w/2, cy=obj.y+obj.h/2;
+  ctx.translate(cx,cy); ctx.rotate(obj.rotation||0); ctx.translate(-cx,-cy);
+  ctx.fillStyle = obj.color; ctx.font = `${obj.fontSize}px ${obj.fontFamily||'sans-serif'}`; ctx.textBaseline='top';
+  (obj._lines || [obj.text]).forEach((line,i)=> ctx.fillText(line, obj.x+8, obj.y+6+i*obj.fontSize*1.35));
+  ctx.restore();
+}
+function drawDimensionObj(obj, sheet, s){
+  const {p1,p2} = obj;
+  const distPx = dist(p1,p2);
+  const label = sheet.calib.scale ? (distPx*sheet.calib.scale).toFixed(2)+' m' : distPx.toFixed(0)+' px';
+  ctx.save();
+  ctx.strokeStyle='#5ee6a0'; ctx.fillStyle='#5ee6a0'; ctx.lineWidth=2*s;
+  ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+  const ang = Math.atan2(p2.y-p1.y, p2.x-p1.x), tl=8*s;
+  [p1,p2].forEach(p=>{
+    ctx.beginPath();
+    ctx.moveTo(p.x+Math.cos(ang+Math.PI/2)*tl, p.y+Math.sin(ang+Math.PI/2)*tl);
+    ctx.lineTo(p.x-Math.cos(ang+Math.PI/2)*tl, p.y-Math.sin(ang+Math.PI/2)*tl);
+    ctx.stroke();
+  });
+  const mx=(p1.x+p2.x)/2, my=(p1.y+p2.y)/2;
+  ctx.font = `600 ${12*s}px monospace`;
+  const tw = ctx.measureText(label).width;
+  ctx.fillStyle = isDark() ? 'rgba(13,17,23,.85)' : 'rgba(255,255,255,.92)';
+  roundRectPath(ctx, mx-tw/2-6*s, my-10*s, tw+12*s, 20*s, 4*s); ctx.fill();
+  ctx.strokeStyle='#5ee6a0'; ctx.lineWidth=1.2*s;
+  roundRectPath(ctx, mx-tw/2-6*s, my-10*s, tw+12*s, 20*s, 4*s); ctx.stroke();
+  ctx.fillStyle='#5ee6a0'; ctx.textBaseline='middle';
+  ctx.fillText(label, mx-tw/2, my+1);
+  ctx.restore();
+}
+function drawCentroidMarker(x,y,color,s,label,isLive){
+  ctx.save();
+  if(isLive) ctx.globalAlpha = 0.55;
+  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=2.4*s;
+  if(isLive) ctx.setLineDash([4*s,3*s]);
+  const r1=13*s, r2=6*s, len=20*s;
+  ctx.beginPath(); ctx.arc(x,y,r1,0,Math.PI*2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.arc(x,y,r2,0,Math.PI*2); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x-len,y); ctx.lineTo(x-r1,y); ctx.moveTo(x+r1,y); ctx.lineTo(x+len,y);
+  ctx.moveTo(x,y-len); ctx.lineTo(x,y-r1); ctx.moveTo(x,y+r1); ctx.lineTo(x,y+len);
+  ctx.stroke();
+  ctx.font = `600 ${13*s}px sans-serif`;
+  const tw = ctx.measureText(label).width;
+  const padX=8*s, boxH=20*s, bx=x+len+6*s, by=y-boxH/2;
+  ctx.fillStyle = isDark() ? 'rgba(13,17,23,.85)' : 'rgba(255,255,255,.9)';
+  roundRectPath(ctx,bx,by,tw+padX*2,boxH,5*s); ctx.fill();
+  ctx.strokeStyle=color; ctx.lineWidth=1.4*s;
+  roundRectPath(ctx,bx,by,tw+padX*2,boxH,5*s); ctx.stroke();
+  ctx.fillStyle=color; ctx.textBaseline='middle';
+  ctx.fillText(label, bx+padX, by+boxH/2);
+  ctx.restore();
+}
+function drawSelectionHandles(obj,s){
+  const corners = getCorners(obj);
+  const rh = rotateHandlePos(obj);
+  ctx.save();
+  ctx.strokeStyle='#4fd1ff'; ctx.lineWidth=1.4*s;
+  ctx.setLineDash([5*s,4*s]);
+  ctx.beginPath(); corners.forEach((c,i)=> i===0?ctx.moveTo(c.x,c.y):ctx.lineTo(c.x,c.y)); ctx.closePath(); ctx.stroke();
+  ctx.setLineDash([]);
+  const hs=5*s;
+  if(obj.type!=='text'){
+    corners.forEach(c=>{ ctx.fillStyle='#0d1117'; ctx.fillRect(c.x-hs,c.y-hs,hs*2,hs*2); ctx.strokeRect(c.x-hs,c.y-hs,hs*2,hs*2); });
+  }
+  const cx=obj.x+obj.w/2, cy=obj.y+obj.h/2;
+  const topMid = rotatePoint({x:cx,y:obj.y},{x:cx,y:cy},obj.rotation||0);
+  ctx.beginPath(); ctx.moveTo(topMid.x,topMid.y); ctx.lineTo(rh.x,rh.y); ctx.stroke();
+  ctx.beginPath(); ctx.arc(rh.x,rh.y,hs,0,Math.PI*2); ctx.fillStyle='#0d1117'; ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
+function drawDimEndpointHandles(obj,s){
+  ctx.save(); ctx.fillStyle='#5ee6a0'; ctx.strokeStyle='#0d1117'; ctx.lineWidth=1.2*s;
+  [obj.p1,obj.p2].forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,6*s,0,Math.PI*2); ctx.fill(); ctx.stroke(); });
+  ctx.restore();
+}
+function drawPolySelectionOutline(obj,s){
+  ctx.save(); ctx.strokeStyle='#4fd1ff'; ctx.lineWidth=1.4*s; ctx.setLineDash([5*s,4*s]);
+  obj.points.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,4*s,0,Math.PI*2); ctx.stroke(); });
+  ctx.setLineDash([]); ctx.restore();
+}
+/* 二十四山，按罗盘方位角顺序：子=0°，顺时针每山15°，午=180° */
+const LUOPAN_MOUNTAINS = ['子','癸','丑','艮','寅','甲','卯','乙','辰','巽','巳','丙','午','丁','未','坤','申','庚','酉','辛','戌','乾','亥','壬'];
+/* 屏幕角度：0号位(子,0°)默认朝下，12号位(午,180°)默认朝上——即"午"默认指向画面正上方（正南）；
+   fs.rotation 可整体旋转罗盘（用于后续"画面旋转时保持指向"等功能）。*/
+function luopanAngle(idx24, fs){ return (idx24/24)*Math.PI*2 + Math.PI/2 + fs.rotation; }
+
+function drawFengshui(fs,s,selected){
+  const color = fs.color || '#d4a437';
+  const R = fs.radius;
+  ctx.save();
+  ctx.globalAlpha = fs.opacity ?? 0.92;
+  ctx.strokeStyle=color; ctx.fillStyle=color;
+
+  // 外圈边界
+  ctx.lineWidth = 2.2*s;
+  ctx.beginPath(); ctx.arc(fs.x,fs.y,R,0,Math.PI*2); ctx.stroke();
+
+  // 二十四山刻度线 + 文字 + 角度值（子=0°，顺时针每山15°；8个正位线条更粗更清晰）
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(let i=0;i<24;i++){
+    const a = luopanAngle(i, fs);
+    const principal = i%3===0;
+    const deg = i*15;
+    ctx.save();
+    ctx.lineWidth = (principal?1.8:1.2)*s;
+    ctx.globalAlpha = (fs.opacity??0.92) * (principal?1:0.85);
+    ctx.beginPath();
+    ctx.moveTo(fs.x,fs.y);
+    ctx.lineTo(fs.x+Math.cos(a)*R, fs.y+Math.sin(a)*R);
+    ctx.stroke();
+    ctx.restore();
+    ctx.font = `600 ${principal?15:13}px sans-serif`;
+    ctx.fillText(LUOPAN_MOUNTAINS[i], fs.x+Math.cos(a)*(R+18*s), fs.y+Math.sin(a)*(R+18*s));
+    ctx.font = `${9.5*s}px monospace`;
+    ctx.globalAlpha = (fs.opacity??0.92) * 0.8;
+    ctx.fillText(deg+'°', fs.x+Math.cos(a)*(R-11*s), fs.y+Math.sin(a)*(R-11*s));
+    ctx.globalAlpha = fs.opacity ?? 0.92;
+  }
+
+  // 中心十字
+  ctx.lineWidth=1.6*s;
+  ctx.beginPath();
+  ctx.moveTo(fs.x-8*s,fs.y); ctx.lineTo(fs.x+8*s,fs.y);
+  ctx.moveTo(fs.x,fs.y-8*s); ctx.lineTo(fs.x,fs.y+8*s);
+  ctx.stroke();
+  ctx.restore();
+
+  if(selected){
+    ctx.save();
+    ctx.fillStyle=color; ctx.strokeStyle='#0d1117'; ctx.lineWidth=1.2*s;
+    const rhp = {x:fs.x+R, y:fs.y};
+    ctx.beginPath(); ctx.arc(rhp.x,rhp.y,6*s,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    const roth = { x:fs.x+Math.cos(fs.rotation-Math.PI/2)*(R+24*s), y:fs.y+Math.sin(fs.rotation-Math.PI/2)*(R+24*s) };
+    ctx.beginPath(); ctx.arc(roth.x,roth.y,6*s,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+}
+
+/* ============================= 参考线 & 风水尺 ============================= */
+function addGuide(orient){
+  const sheet = activeSheet(); if(!sheet) return;
+  sheet.guides.push({ id:newId('guide'), orient, pos: orient==='h' ? sheet.natH/2 : sheet.natW/2 });
+  redraw();
+}
+function hitTestFengshuiHandles(fs,pos){
+  const r = hitRadiusNatural();
+  const rhp = {x:fs.x+fs.radius, y:fs.y};
+  if(dist(pos,rhp)<=r) return 'radius';
+  const roth = { x:fs.x+Math.cos(fs.rotation-Math.PI/2)*(fs.radius+24), y:fs.y+Math.sin(fs.rotation-Math.PI/2)*(fs.radius+24) };
+  if(dist(pos,roth)<=r) return 'rotate';
+  if(dist(pos,{x:fs.x,y:fs.y}) <= fs.radius) return 'move';
+  return null;
+}
+
+/* ============================= 选择 & 属性面板 ============================= */
+function bindProp(id,ev,fn){ const el=document.getElementById(id); if(el) el.addEventListener(ev,fn); }
+function select(sheet, type, id){
+  sheet.selection = { type, id };
+  renderPropertiesPanel();
+  redraw();
+}
+function renderPropertiesPanel(){
+  const sheet = activeSheet();
+  if(!sheet || !sheet.selection.type){
+    propBody.innerHTML = '<div class="prop-empty">点击画布中的对象、参考线或风水尺可在此编辑</div>';
+    return;
+  }
+  if(sheet.selection.type==='guide'){
+    const g = sheet.guides.find(x=>x.id===sheet.selection.id);
+    if(!g){ propBody.innerHTML='<div class="prop-empty">该参考线已被删除</div>'; return; }
+    propBody.innerHTML = `
+      <div class="prop-type-tag">参考线 · ${g.orient==='h'?'水平':'垂直'}</div>
+      <div class="prop-row"><label>位置(px)</label><input type="number" id="pGuidePos" value="${Math.round(g.pos)}"></div>
+      <button class="btn danger" id="pGuideDel" style="width:100%;">删除参考线</button>`;
+    document.getElementById('pGuidePos').addEventListener('input', e=>{ g.pos=parseFloat(e.target.value)||0; redraw(); });
+    document.getElementById('pGuideDel').addEventListener('click', ()=>{ sheet.guides=sheet.guides.filter(x=>x.id!==g.id); select(sheet,null,null); });
+    return;
+  }
+  if(sheet.selection.type==='pin'){
+    const p = sheet.pins.find(x=>x.id===sheet.selection.id);
+    if(!p){ propBody.innerHTML='<div class="prop-empty">该重心点已被删除</div>'; return; }
+    let html = `<div class="prop-type-tag">固定重心点</div>
+      <div class="prop-row"><label>标记颜色</label><input type="color" id="pPinColor" value="${p.color}"></div>`;
+    if(p.fengshui){
+      html += `<div class="prop-type-tag" style="margin-top:8px;">附属风水尺</div>
+        <div class="prop-row"><label>半径</label><input type="range" id="pFsR" min="20" max="4000" value="${Math.round(p.fengshui.radius)}"></div>
+        <div class="prop-row"><label>旋转(°)</label><input type="range" id="pFsRot" min="0" max="360" value="${Math.round(((p.fengshui.rotation*180/Math.PI)+360)%360)}"></div>
+        <div class="prop-row"><label>不透明度</label><input type="range" id="pFsOp" min="0.1" max="1" step="0.05" value="${p.fengshui.opacity}"></div>
+        <div class="prop-row"><label>罗盘颜色</label><input type="color" id="pFsColor" value="${p.fengshui.color}"></div>
+        <div class="hint">鼠标滚轮悬停在该罗盘范围内可直接滚轮缩放；拖动外圈圆点缩放，拖动顶部圆点旋转，拖动圆心移动。</div>
+        <button class="btn danger small" id="pFsRemove" style="width:100%;margin-top:6px;">移除风水尺</button>`;
+    } else {
+      html += `<button class="btn small" id="pFsAdd" style="width:100%;margin-top:8px;">为该点添加风水尺</button>`;
+    }
+    html += `<button class="btn danger small" id="pPinDel" style="width:100%;margin-top:8px;">删除该重心点</button>`;
+    propBody.innerHTML = html;
+    bindProp('pPinColor','input', e=>{ p.color=e.target.value; renderPinList(); redraw(); });
+    bindProp('pFsR','input', e=>{ p.fengshui.radius=parseFloat(e.target.value); redraw(); });
+    bindProp('pFsRot','input', e=>{ p.fengshui.rotation=parseFloat(e.target.value)*Math.PI/180; redraw(); });
+    bindProp('pFsOp','input', e=>{ p.fengshui.opacity=parseFloat(e.target.value); redraw(); });
+    bindProp('pFsColor','input', e=>{ p.fengshui.color=e.target.value; redraw(); });
+    bindProp('pFsRemove','click', ()=>{ p.fengshui=null; renderPropertiesPanel(); renderPinList(); redraw(); });
+    bindProp('pFsAdd','click', ()=>{ p.fengshui={x:p.x,y:p.y,radius:Math.min(sheet.natW,sheet.natH)*0.28,rotation:0,opacity:0.92,color:p.color}; renderPropertiesPanel(); renderPinList(); redraw(); });
+    bindProp('pPinDel','click', ()=>{ sheet.pins=sheet.pins.filter(x=>x.id!==p.id); select(sheet,null,null); renderPinList(); });
+    return;
+  }
+  if(sheet.selection.type==='object'){
+    const obj = getObjById(sheet, sheet.selection.id);
+    if(!obj){ propBody.innerHTML='<div class="prop-empty">该对象已被删除</div>'; return; }
+    renderObjectProps(sheet,obj);
+  }
+}
+function renderObjectProps(sheet,obj){
+  const typeLabel = {rect:'矩形',roundrect:'圆角矩形',circle:'圆形',diamond:'菱形',star:'五角星',text:'文本',image:'图片',wall:'墙线',freehand:'手绘线',dimension:'距离标注'}[obj.type]||obj.type;
+  let html = `<div class="prop-type-tag">${typeLabel}</div>`;
+
+  if(isBoxType(obj.type) && obj.type!=='text' && obj.type!=='image'){
+    html += `<div class="prop-row"><label>填充</label><input type="color" id="pFill" value="${toHex(obj.fill)}"></div>
+      <div class="prop-row"><label>边框</label><input type="color" id="pStroke" value="${toHex(obj.stroke)}"></div>
+      <div class="prop-row"><label>边框宽</label><input type="range" id="pStrokeW" min="0" max="20" value="${obj.strokeWidth}"></div>`;
+    if(obj.type==='roundrect'){
+      html += `<div class="prop-row"><label>圆角</label><input type="range" id="pRadius" min="0" max="${Math.floor(Math.min(obj.w,obj.h)/2)}" value="${obj.radius||14}"></div>`;
+    }
+  }
+  if(obj.type==='text'){
+    const fontOptions = availableFonts.map(f=>`<option value='${f.replace(/'/g,"&#39;")}' ${obj.fontFamily===f?'selected':''}>${f.split(',')[0].replace(/"/g,'')}</option>`).join('');
+    html += `<textarea class="text-input" id="pText">${escapeHtml(obj.text)}</textarea>
+      <div class="prop-row"><label>字体</label><select class="text-input" id="pFontFamily" style="flex:1;">${fontOptions}</select></div>
+      <button class="btn small" id="pFontRefresh" style="width:100%;margin-bottom:8px;">读取本机已安装字体</button>
+      <div class="prop-row"><label>字号</label><input type="range" id="pFontSize" min="10" max="80" value="${obj.fontSize}"></div>
+      <div class="prop-row"><label>颜色</label><input type="color" id="pColor" value="${toHex(obj.color)}"></div>`;
+  }
+  if(obj.type==='image'){
+    html += `<div class="prop-row"><label>宽度</label><input type="number" id="pImgW" value="${Math.round(obj.w)}"></div>
+      <div class="prop-row"><label>高度</label><input type="number" id="pImgH" value="${Math.round(obj.h)}"></div>`;
+  }
+  if(obj.type==='wall' || obj.type==='freehand'){
+    html += `<div class="prop-row"><label>颜色</label><input type="color" id="pStroke" value="${toHex(obj.stroke)}"></div>
+      <div class="prop-row"><label>线宽</label><input type="range" id="pStrokeW" min="1" max="30" value="${obj.strokeWidth}"></div>`;
+  }
+  if(isBoxType(obj.type)){
+    html += `<div class="prop-row"><label>旋转(°)</label><input type="range" id="pRot" min="0" max="360" value="${Math.round(((obj.rotation||0)*180/Math.PI+360)%360)}"></div>`;
+  }
+  if(obj.type!=='dimension'){
+    html += `<div class="prop-row"><label>不透明度</label><input type="range" id="pOpacity" min="0" max="1" step="0.05" value="${obj.opacity??1}"></div>`;
+  }
+  if(isBoxType(obj.type)){
+    html += `<div class="align-grid">
+      <button class="btn small" data-align="left">左对齐</button>
+      <button class="btn small" data-align="hcenter">水平居中</button>
+      <button class="btn small" data-align="right">右对齐</button>
+      <button class="btn small" data-align="top">顶对齐</button>
+      <button class="btn small" data-align="vcenter">垂直居中</button>
+      <button class="btn small" data-align="bottom">底对齐</button>
+    </div>`;
+  }
+  html += `<div class="btn-row" style="margin-top:6px;">
+      <button class="btn small" id="pFront">置顶</button>
+      <button class="btn small" id="pBack">置底</button>
+      <button class="btn danger small" id="pDel">删除</button>
+    </div>`;
+  propBody.innerHTML = html;
+
+  const bind = (id,ev,fn)=>{ const el=document.getElementById(id); if(el) el.addEventListener(ev,fn); };
+  bind('pFill','input', e=>{ obj.fill=e.target.value; redraw(); });
+  bind('pStroke','input', e=>{ obj.stroke=e.target.value; redraw(); });
+  bind('pStrokeW','input', e=>{ obj.strokeWidth=parseFloat(e.target.value); redraw(); });
+  bind('pRadius','input', e=>{ obj.radius=parseFloat(e.target.value); redraw(); });
+  bind('pText','input', e=>{ obj.text=e.target.value; layoutText(obj); redraw(); });
+  bind('pFontFamily','change', e=>{ obj.fontFamily=e.target.value; layoutText(obj); redraw(); });
+  bind('pFontRefresh','click', loadLocalFonts);
+  bind('pFontSize','input', e=>{ obj.fontSize=parseFloat(e.target.value); layoutText(obj); redraw(); });
+  bind('pColor','input', e=>{ obj.color=e.target.value; redraw(); });
+  bind('pImgW','input', e=>{ obj.w=Math.max(10,parseFloat(e.target.value)||10); redraw(); });
+  bind('pImgH','input', e=>{ obj.h=Math.max(10,parseFloat(e.target.value)||10); redraw(); });
+  bind('pRot','input', e=>{ obj.rotation = parseFloat(e.target.value)*Math.PI/180; redraw(); });
+  bind('pOpacity','input', e=>{ obj.opacity=parseFloat(e.target.value); redraw(); });
+  bind('pFront','click', ()=>{ sheet.objects = sheet.objects.filter(o=>o!==obj); sheet.objects.push(obj); redraw(); });
+  bind('pBack','click', ()=>{ sheet.objects = sheet.objects.filter(o=>o!==obj); sheet.objects.unshift(obj); redraw(); });
+  bind('pDel','click', ()=>{ sheet.objects = sheet.objects.filter(o=>o.id!==obj.id); select(sheet,null,null); });
+  propBody.querySelectorAll('[data-align]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const a = btn.dataset.align;
+      if(a==='left') obj.x=0;
+      if(a==='right') obj.x=sheet.natW-obj.w;
+      if(a==='hcenter') obj.x=(sheet.natW-obj.w)/2;
+      if(a==='top') obj.y=0;
+      if(a==='bottom') obj.y=sheet.natH-obj.h;
+      if(a==='vcenter') obj.y=(sheet.natH-obj.h)/2;
+      redraw();
+    });
+  });
+}
+function toHex(c){
+  if(!c || c==='none') return '#888888';
+  if(c.startsWith('#')) return c.length===7 ? c : '#4fd1ff';
+  return '#4fd1ff';
+}
+
+/* ============================= 交互：鼠标/触摸 ============================= */
+function snapWallPoint(sheet,pos){
+  const draft = sheet._wallDraft;
+  let p = { x: Math.round(pos.x/8)*8, y: Math.round(pos.y/8)*8 };
+  if(draft.points.length){
+    const prev = draft.points[draft.points.length-1];
+    const dx=pos.x-prev.x, dy=pos.y-prev.y;
+    const distv = Math.hypot(dx,dy);
+    const angle = Math.atan2(dy,dx);
+    const snapAngle = Math.round(angle/(Math.PI/4))*(Math.PI/4);
+    p = { x: prev.x + Math.cos(snapAngle)*distv, y: prev.y + Math.sin(snapAngle)*distv };
+    p.x = Math.round(p.x/5)*5; p.y = Math.round(p.y/5)*5;
+  }
+  return p;
+}
+function defaultShapeObject(type,x,y,w,h){
+  const obj = { id:newId(type), type, x,y,w,h, rotation:0, fill:'#4fd1ff', stroke:'#1c7fa8', strokeWidth:2, opacity:0.6 };
+  if(type==='roundrect') obj.radius = Math.min(14, Math.min(w,h)/2);
+  return obj;
+}
+function finishCalibration(sheet, pts){
+  const [p1,p2] = pts;
+  const pixelDist = dist(p1,p2);
+  setTimeout(()=>{
+    const input = prompt('这段线段的实际长度是多少米？（例如 3.6）','');
+    const val = parseFloat(input);
+    if(!input || isNaN(val) || val<=0){ showToast('已取消标定'); return; }
+    sheet.calib.scale = val/pixelDist;
+    updateScaleStatusUI(sheet);
+    refreshAll();
+    showToast('比例尺标定完成');
+  },30);
+}
+function nearCentroidHit(sheet,pos){
+  const r = hitRadiusNatural()*1.6;
+  const live = getLiveCentroidPos(sheet);
+  if(live && dist(pos,live)<=r) return live;
+  for(const p of sheet.pins){ if(dist(pos,p)<=r) return {x:p.x,y:p.y}; }
+  return null;
+}
+
+function handleSelectDown(sheet,pos){
+  const sel = sheet.selection;
+  if(sel.type==='object'){
+    const obj = getObjById(sheet, sel.id);
+    if(obj && isBoxType(obj.type)){
+      const rh = rotateHandlePos(obj);
+      if(dist(pos,rh) <= hitRadiusNatural()){ dragState={kind:'rotate', id:obj.id, center:{x:obj.x+obj.w/2,y:obj.y+obj.h/2}}; return; }
+      if(obj.type!=='text'){
+        const corners = getCorners(obj);
+        const r = hitRadiusNatural();
+        for(let i=0;i<4;i++){
+          if(dist(pos,corners[i]) <= r){
+            const oppIdx = (i+2)%4;
+            const localCorners = [{x:obj.x,y:obj.y},{x:obj.x+obj.w,y:obj.y},{x:obj.x+obj.w,y:obj.y+obj.h},{x:obj.x,y:obj.y+obj.h}];
+            dragState = { kind:'resize', id:obj.id, center0:{x:obj.x+obj.w/2,y:obj.y+obj.h/2}, rotation:obj.rotation||0, anchorLocal: localCorners[oppIdx] };
+            return;
+          }
+        }
+      }
+    }
+    if(obj && obj.type==='dimension'){
+      if(dist(pos,obj.p1) <= hitRadiusNatural()){ dragState={kind:'dimEndpoint', id:obj.id, which:'p1'}; return; }
+      if(dist(pos,obj.p2) <= hitRadiusNatural()){ dragState={kind:'dimEndpoint', id:obj.id, which:'p2'}; return; }
+    }
+  }
+  const vIdx = findVertexNear(sheet,pos);
+  if(vIdx>=0){ dragState={kind:'vertex', idx:vIdx}; return; }
+  const gIdx = findGuideNear(sheet,pos);
+  if(gIdx>=0){ select(sheet,'guide',sheet.guides[gIdx].id); dragState={kind:'guide', idx:gIdx}; return; }
+
+  for(let i=sheet.pins.length-1;i>=0;i--){
+    const p = sheet.pins[i];
+    if(!p.fengshui) continue;
+    const h = hitTestFengshuiHandles(p.fengshui,pos);
+    if(h){
+      select(sheet,'pin',p.id);
+      if(h==='radius') dragState={kind:'fengshuiRadius', pinId:p.id};
+      else if(h==='rotate') dragState={kind:'fengshuiRotate', pinId:p.id};
+      else dragState={kind:'fengshuiMove', pinId:p.id, last:pos};
+      return;
+    }
+  }
+  for(let i=sheet.pins.length-1;i>=0;i--){
+    const p = sheet.pins[i];
+    if(dist(pos,p) <= hitRadiusNatural()*1.6){ select(sheet,'pin',p.id); dragState={kind:'movePin', id:p.id, last:pos}; return; }
+  }
+
+  const obj = findObjectAt(sheet,pos);
+  if(obj){ select(sheet,'object',obj.id); dragState={kind:'moveObject', id:obj.id, last:pos}; return; }
+  select(sheet,null,null);
+}
+
+function onCanvasDown(e){
+  const sheet = activeSheet(); if(!sheet) return;
+  e.preventDefault();
+  const pos = getNaturalPos(e);
+
+  if(activeTool==='calibrate'){
+    sheet._calibPts.push(pos);
+    if(sheet._calibPts.length===2){ const p=sheet._calibPts.slice(); sheet._calibPts=[]; finishCalibration(sheet,p); }
+    redraw(); return;
+  }
+  if(activeTool==='point'){
+    const idx = findVertexNear(sheet,pos);
+    if(idx>=0){ dragState={kind:'vertex', idx}; return; }
+    sheet.points.push(pos); refreshAll(); return;
+  }
+  if(activeTool==='wall'){
+    const snapped = snapWallPoint(sheet,pos);
+    sheet._wallDraft.points.push(snapped);
+    redraw(); return;
+  }
+  if(activeTool==='freehand'){
+    dragState = { kind:'freehandDraw', points:[pos], stroke: currentAccentColor(), strokeWidth:3 };
+    return;
+  }
+  if(activeTool==='text'){
+    const txt = prompt('输入文本内容：','文字');
+    if(txt===null || !txt.trim()) return;
+    const obj = { id:newId('text'), type:'text', x:pos.x, y:pos.y, fontSize:22, fontFamily:'sans-serif', color:currentAccentColor(), rotation:0, opacity:1, text:txt };
+    layoutText(obj);
+    sheet.objects.push(obj);
+    select(sheet,'object',obj.id);
+    refreshAll();
+    return;
+  }
+  if(['rect','roundrect','circle','diamond','star'].includes(activeTool)){
+    dragState = { kind:'shapeDraw', tool:activeTool, start:pos, currentPos:pos };
+    return;
+  }
+  if(activeTool==='distance'){
+    let p = pos;
+    const vIdx = findVertexNear(sheet,pos);
+    if(vIdx>=0) p = sheet.points[vIdx];
+    else { const c = nearCentroidHit(sheet,pos); if(c) p = c; }
+    sheet._distPts.push(p);
+    if(sheet._distPts.length===2){
+      const obj = { id:newId('dim'), type:'dimension', p1:sheet._distPts[0], p2:sheet._distPts[1] };
+      sheet.objects.push(obj);
+      sheet._distPts = [];
+      select(sheet,'object',obj.id);
+      refreshAll();
+    } else redraw();
+    return;
+  }
+  handleSelectDown(sheet,pos);
+}
+
+function onCanvasMove(e){
+  const sheet = activeSheet(); if(!sheet) return;
+  const pos = getNaturalPos(e);
+  if(activeTool==='wall' && sheet._wallDraft.points.length){
+    sheet._wallDraft.preview = snapWallPoint(sheet,pos);
+    redraw(); return;
+  }
+  if(!dragState) return;
+  e.preventDefault();
+  switch(dragState.kind){
+    case 'vertex': sheet.points[dragState.idx] = pos; refreshAll(); break;
+    case 'guide': { const g=sheet.guides[dragState.idx]; if(g) g.pos = g.orient==='h' ? pos.y : pos.x; redraw(); break; }
+    case 'moveObject': { const obj=getObjById(sheet,dragState.id); if(obj){ moveObjectBy(obj, pos.x-dragState.last.x, pos.y-dragState.last.y); dragState.last=pos; } redraw(); break; }
+    case 'resize': {
+      const obj = getObjById(sheet,dragState.id);
+      if(obj){
+        const local = rotatePoint(pos, dragState.center0, -dragState.rotation);
+        const a = dragState.anchorLocal;
+        const nx = Math.min(local.x,a.x), ny=Math.min(local.y,a.y);
+        const nw = Math.max(10, Math.abs(local.x-a.x)), nh = Math.max(10, Math.abs(local.y-a.y));
+        obj.x=nx; obj.y=ny; obj.w=nw; obj.h=nh;
+        if(obj.type==='roundrect' && obj.radius > Math.min(nw,nh)/2) obj.radius = Math.min(nw,nh)/2;
+      }
+      redraw(); break;
+    }
+    case 'rotate': {
+      const obj = getObjById(sheet,dragState.id);
+      if(obj){
+        let a = Math.atan2(pos.y-dragState.center.y, pos.x-dragState.center.x) + Math.PI/2;
+        const deg = a*180/Math.PI, snapped = Math.round(deg/15)*15;
+        if(Math.abs(deg-snapped) < 4) a = snapped*Math.PI/180;
+        obj.rotation = a;
+      }
+      redraw(); break;
+    }
+    case 'dimEndpoint': { const obj=getObjById(sheet,dragState.id); if(obj) obj[dragState.which]=pos; redraw(); break; }
+    case 'freehandDraw': dragState.points.push(pos); redraw(); break;
+    case 'shapeDraw': dragState.currentPos = pos; redraw(); break;
+    case 'fengshuiMove': {
+      const p=sheet.pins.find(x=>x.id===dragState.pinId);
+      if(p && p.fengshui){ p.fengshui.x += pos.x-dragState.last.x; p.fengshui.y += pos.y-dragState.last.y; dragState.last=pos; }
+      redraw(); break;
+    }
+    case 'fengshuiRadius': {
+      const p=sheet.pins.find(x=>x.id===dragState.pinId);
+      if(p && p.fengshui){
+        p.fengshui.radius = clamp(dist(pos,{x:p.fengshui.x,y:p.fengshui.y}),20,4000);
+        if(sheet.selection.type==='pin' && sheet.selection.id===p.id) renderPropertiesPanel();
+      }
+      redraw(); break;
+    }
+    case 'fengshuiRotate': {
+      const p=sheet.pins.find(x=>x.id===dragState.pinId);
+      if(p && p.fengshui){ p.fengshui.rotation = Math.atan2(pos.y-p.fengshui.y,pos.x-p.fengshui.x)+Math.PI/2; }
+      redraw(); break;
+    }
+    case 'movePin': {
+      const p=sheet.pins.find(x=>x.id===dragState.id);
+      if(p){
+        const dx=pos.x-dragState.last.x, dy=pos.y-dragState.last.y;
+        p.x+=dx; p.y+=dy;
+        if(p.fengshui){ p.fengshui.x+=dx; p.fengshui.y+=dy; }
+        dragState.last=pos;
+        renderPinList();
+      }
+      redraw(); break;
+    }
+  }
+}
+function onCanvasUp(){
+  const sheet = activeSheet();
+  if(sheet && dragState){
+    if(dragState.kind==='shapeDraw'){
+      const {start,tool,currentPos} = dragState;
+      let x=Math.min(start.x,currentPos.x), y=Math.min(start.y,currentPos.y);
+      let w=Math.abs(currentPos.x-start.x), h=Math.abs(currentPos.y-start.y);
+      if(w<8||h<8){ w=120;h=120; x=start.x-60;y=start.y-60; }
+      const obj = defaultShapeObject(tool,x,y,w,h);
+      sheet.objects.push(obj);
+      select(sheet,'object',obj.id);
+    } else if(dragState.kind==='freehandDraw'){
+      if(dragState.points.length>1){
+        const obj = { id:newId('fh'), type:'freehand', points:dragState.points, stroke:dragState.stroke, strokeWidth:dragState.strokeWidth, opacity:1 };
+        sheet.objects.push(obj);
+        select(sheet,'object',obj.id);
+      }
+    }
+    refreshAll();
+  }
+  dragState = null;
+}
+function onCanvasDblClick(e){
+  const sheet = activeSheet(); if(!sheet) return;
+  const pos = getNaturalPos(e);
+  if(activeTool==='wall' && sheet._wallDraft.points.length>=2){
+    const obj = { id:newId('wall'), type:'wall', points:sheet._wallDraft.points.slice(), stroke:'#93a2b5', strokeWidth:10, opacity:1 };
+    sheet.objects.push(obj);
+    sheet._wallDraft = { points:[] };
+    select(sheet,'object',obj.id);
+    refreshAll();
+    return;
+  }
+  const idx = findVertexNear(sheet,pos);
+  if(idx>=0){ sheet.points.splice(idx,1); refreshAll(); return; }
+  const gIdx = findGuideNear(sheet,pos);
+  if(gIdx>=0){ sheet.guides.splice(gIdx,1); if(sheet.selection.type==='guide') select(sheet,null,null); redraw(); return; }
+}
+
+canvas.addEventListener('mousedown', onCanvasDown);
+window.addEventListener('mousemove', onCanvasMove);
+window.addEventListener('mouseup', onCanvasUp);
+canvas.addEventListener('dblclick', onCanvasDblClick);
+canvas.addEventListener('touchstart', onCanvasDown, {passive:false});
+canvas.addEventListener('touchmove', onCanvasMove, {passive:false});
+window.addEventListener('touchend', onCanvasUp);
+
+document.addEventListener('keydown', e=>{
+  const tag = (e.target.tagName||'').toLowerCase();
+  if(tag==='input' || tag==='textarea') return;
+  const sheet = activeSheet(); if(!sheet) return;
+  if(e.key==='Escape'){
+    sheet._wallDraft={points:[]}; sheet._calibPts=[]; sheet._distPts=[];
+    select(sheet,null,null);
+  }
+  if(e.key==='Delete' || e.key==='Backspace'){
+    if(sheet.selection.type==='object'){ sheet.objects=sheet.objects.filter(o=>o.id!==sheet.selection.id); select(sheet,null,null); refreshAll(); e.preventDefault(); }
+    else if(sheet.selection.type==='guide'){ sheet.guides=sheet.guides.filter(g=>g.id!==sheet.selection.id); select(sheet,null,null); e.preventDefault(); }
+    else if(sheet.selection.type==='pin'){ sheet.pins=sheet.pins.filter(p=>p.id!==sheet.selection.id); select(sheet,null,null); refreshAll(); e.preventDefault(); }
+  }
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='z'){
+    if(activeTool==='point'){ sheet.points.pop(); refreshAll(); e.preventDefault(); }
+  }
+});
+
+/* ============================= 侧栏：角点/重心/标定/统计/导出 ============================= */
+undoBtn.addEventListener('click', ()=>{ const s=activeSheet(); if(!s) return; s.points.pop(); refreshAll(); });
+clearBtn.addEventListener('click', ()=>{
+  const s=activeSheet(); if(!s) return;
+  if(s.points.length && !confirm('确定清空全部角点？')) return;
+  s.points=[]; refreshAll();
+});
+const PIN_PALETTE = ['#ff9f43','#5ee6a0','#4fd1ff','#ff6b6b','#c792ea','#f7d154','#ff8ecb','#8fd3ff'];
+addPinBtn.addEventListener('click', ()=>{
+  const sheet=activeSheet(); if(!sheet) return;
+  if(sheet.points.length<3){ showToast('至少需要 3 个角点才能生成重心'); return; }
+  const c = polygonCentroid(sheet.points);
+  const color = PIN_PALETTE[sheet.pins.length % PIN_PALETTE.length];
+  const pin = { id:newId('pin'), x:c.x, y:c.y, color, fengshui:null };
+  sheet.pins.push(pin);
+  select(sheet,'pin',pin.id);
+  refreshAll();
+});
+function renderPinList(){
+  const sheet = activeSheet();
+  if(!sheet){ pinListEl.innerHTML=''; return; }
+  if(sheet.pins.length===0){ pinListEl.innerHTML = '<div class="empty-row">尚无固定的重心点</div>'; return; }
+  let html='';
+  sheet.pins.forEach((p,i)=>{
+    const coordText = sheet.calib.scale
+      ? `${(p.x*sheet.calib.scale).toFixed(2)}m, ${(p.y*sheet.calib.scale).toFixed(2)}m`
+      : `${p.x.toFixed(0)}px, ${p.y.toFixed(0)}px`;
+    const active = sheet.selection.type==='pin' && sheet.selection.id===p.id;
+    html += `<div class="pin-row ${active?'active':''}" data-id="${p.id}">
+      <input type="color" class="pin-swatch" data-id="${p.id}" value="${p.color}">
+      <div class="pin-info"><b>重心 ${i+1}</b><span>${coordText}</span></div>
+      <button class="btn small" data-fs="${p.id}">${p.fengshui?'风水尺✓':'+风水尺'}</button>
+      <button class="btn danger small" data-del="${p.id}">✕</button>
+    </div>`;
+  });
+  pinListEl.innerHTML = html;
+  pinListEl.querySelectorAll('.pin-swatch').forEach(el=> el.addEventListener('input', ()=>{
+    const p=sheet.pins.find(x=>x.id===el.dataset.id); if(p){ p.color=el.value; redraw(); }
+  }));
+  pinListEl.querySelectorAll('[data-fs]').forEach(el=> el.addEventListener('click', e=>{
+    e.stopPropagation();
+    const p=sheet.pins.find(x=>x.id===el.dataset.fs); if(!p) return;
+    p.fengshui = p.fengshui ? null : { x:p.x, y:p.y, radius:Math.min(sheet.natW,sheet.natH)*0.28, rotation:0, opacity:0.92, color:p.color };
+    select(sheet,'pin',p.id);
+    refreshAll();
+  }));
+  pinListEl.querySelectorAll('[data-del]').forEach(el=> el.addEventListener('click', e=>{
+    e.stopPropagation();
+    sheet.pins = sheet.pins.filter(x=>x.id!==el.dataset.del);
+    if(sheet.selection.type==='pin' && sheet.selection.id===el.dataset.del) select(sheet,null,null);
+    refreshAll();
+  }));
+  pinListEl.querySelectorAll('.pin-row').forEach(el=> el.addEventListener('click', e=>{
+    if(e.target.closest('button') || e.target.type==='color') return;
+    select(sheet,'pin', el.dataset.id);
+  }));
+}
+clearScaleBtn.addEventListener('click', ()=>{ const s=activeSheet(); if(!s) return; s.calib.scale=null; updateScaleStatusUI(s); refreshAll(); });
+exportBtn.addEventListener('click', ()=>{
+  const s=activeSheet(); if(!s) return;
+  renderSheet(s,{forExport:true});
+  const url = canvas.toDataURL('image/png');
+  redraw();
+  const a=document.createElement('a'); a.download=(s.name||'户型图')+'-标注.png'; a.href=url; a.click();
+});
+
+function updateScaleStatusUI(sheet){
+  if(!sheet){ scaleStatus.textContent='未标定 · 面积/坐标按像素显示'; scaleStatus.className='scale-status'; clearScaleBtn.disabled=true; return; }
+  if(sheet.calib.scale){
+    scaleStatus.textContent = `已标定 · 1 像素 ≈ ${sheet.calib.scale.toFixed(5)} 米`;
+    scaleStatus.className = 'scale-status set';
+    clearScaleBtn.disabled = false;
+  } else {
+    scaleStatus.textContent = '未标定 · 面积/坐标按像素显示';
+    scaleStatus.className = 'scale-status';
+    clearScaleBtn.disabled = true;
+  }
+}
+function fmtLen(sheet, px){ return sheet.calib.scale ? (px*sheet.calib.scale).toFixed(2)+' m' : px.toFixed(0)+' px'; }
+function fmtArea(sheet, pxArea){ return sheet.calib.scale ? (pxArea*sheet.calib.scale*sheet.calib.scale).toFixed(2)+' m²' : pxArea.toFixed(0)+' px²'; }
+
+function updatePointsUI(){
+  const sheet = activeSheet();
+  if(!sheet){ pointsList.innerHTML='<div class="empty-row">暂无图纸</div>'; ptCountTag.textContent='(0)'; undoBtn.disabled=clearBtn.disabled=true; addPinBtn.disabled=true; return; }
+  ptCountTag.textContent = `(${sheet.points.length})`;
+  undoBtn.disabled = sheet.points.length===0;
+  clearBtn.disabled = sheet.points.length===0;
+  addPinBtn.disabled = sheet.points.length<3;
+  if(sheet.points.length===0){ pointsList.innerHTML='<div class="empty-row">尚未添加角点</div>'; return; }
+  let html = '<table class="points"><thead><tr><th>#</th><th>X</th><th>Y</th><th></th></tr></thead><tbody>';
+  sheet.points.forEach((p,i)=>{ html += `<tr><td>${i+1}</td><td>${p.x.toFixed(0)}</td><td>${p.y.toFixed(0)}</td><td class="del" data-i="${i}">✕</td></tr>`; });
+  html += '</tbody></table>';
+  pointsList.innerHTML = html;
+  pointsList.querySelectorAll('.del').forEach(el=> el.addEventListener('click', ()=>{ sheet.points.splice(parseInt(el.dataset.i,10),1); refreshAll(); }));
+}
+function updateStatsUI(){
+  const sheet = activeSheet();
+  if(!sheet){ statPts.textContent='0'; statPerim.textContent=statArea.textContent=statCentroid.textContent='–'; exportBtn.disabled=true; updateScaleStatusUI(null); return; }
+  exportBtn.disabled = false;
+  updateScaleStatusUI(sheet);
+  const n = sheet.points.length;
+  statPts.textContent = n;
+  if(n<3){
+    statPerim.textContent = n<2 ? '–' : fmtLen(sheet, perimeter(sheet.points));
+    statArea.textContent = '–'; statCentroid.textContent='–';
+    return;
+  }
+  const c = polygonCentroid(sheet.points);
+  statPerim.textContent = fmtLen(sheet, perimeter(sheet.points));
+  statArea.textContent = fmtArea(sheet, c.area);
+  const cpos = getLiveCentroidPos(sheet);
+  if(cpos){
+    statCentroid.textContent = sheet.calib.scale
+      ? `${(cpos.x*sheet.calib.scale).toFixed(2)} m, ${(cpos.y*sheet.calib.scale).toFixed(2)} m`
+      : `${cpos.x.toFixed(1)} px, ${cpos.y.toFixed(1)} px`;
+  } else statCentroid.textContent='–';
+}
+function refreshAll(){
+  updatePointsUI();
+  updateStatsUI();
+  renderPinList();
+  renderPropertiesPanel();
+  redraw();
+}
+
+/* ============================= 初始化 ============================= */
+placeholder.style.display='flex';
+canvas.style.display='none';
+setProMode(false);
+updateToolbarUI();
+refreshAll();
+
+})();
+</script>
+</body>
+</html>
