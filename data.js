@@ -252,6 +252,17 @@ const projects = [
         versions: [
             { name: '进入软件', url: 'https://projects.wangcy.site/page-reader' }
         ]
+    },
+    {
+        id: 24,
+        category: 'office',
+        name: 'cad',
+        description: '简易版cad',
+        icon: '📄',
+        tags: ['Claude'],
+        versions: [
+            { name: '进入软件', url: 'https://projects.wangcy.site/cad' }
+        ]
     }
 ];
 
